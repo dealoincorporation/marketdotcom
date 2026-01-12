@@ -4,6 +4,9 @@ import { getPrismaClient } from "@/lib/prisma"
 import { sendEmailVerificationEmail } from "@/lib/email"
 import crypto from "crypto"
 
+// Force dynamic rendering to avoid Edge Runtime issues
+export const dynamic = 'force-dynamic'
+
 export async function POST(request: NextRequest) {
   try {
     const { name, email, phone, password } = await request.json()
