@@ -40,9 +40,6 @@ export async function getPrismaClient() {
   return globalForPrisma.prisma
 }
 
-// For backward compatibility - only use this in places where lazy loading isn't critical
-export const prisma = globalForPrisma.prisma ?? createPrismaClient()
-
-if (process.env.NODE_ENV !== "production" && !process.env.VERCEL && !process.env.NETLIFY) {
-  globalForPrisma.prisma = prisma
-}
+// For backward compatibility - use getPrismaClient() instead for lazy loading
+// This export is deprecated and should be replaced with getPrismaClient()
+export const prisma = undefined as any // Don't create client at module load time
