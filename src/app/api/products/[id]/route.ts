@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
-import { getServerSession } from "next-auth"
-import { authOptions } from "@/lib/auth"
+import { getUserFromRequest } from "@/lib/auth"
 import { getPrismaClient } from "@/lib/prisma"
 
 // GET /api/products/[id] - Get a specific product
@@ -43,9 +42,9 @@ export async function PUT(
 ) {
   try {
     const prisma = await getPrismaClient()
-    const session = await getServerSession(authOptions)
+    const user = getUserFromRequest(request)
 
-    if (!session || session.user.role !== "ADMIN") {
+    if (!user || user.role !== "ADMIN") {
       return NextResponse.json(
         { error: "Unauthorized" },
         { status: 401 }
@@ -110,9 +109,9 @@ export async function DELETE(
 ) {
   try {
     const prisma = await getPrismaClient()
-    const session = await getServerSession(authOptions)
+    const user = getUserFromRequest(request)
 
-    if (!session || session.user.role !== "ADMIN") {
+    if (!user || user.role !== "ADMIN") {
       return NextResponse.json(
         { error: "Unauthorized" },
         { status: 401 }

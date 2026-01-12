@@ -1,14 +1,13 @@
 import { NextResponse } from "next/server"
-import { getServerSession } from "next-auth"
-import { authOptions } from "@/lib/auth"
+import { getUserFromRequest } from "@/lib/auth"
 import { getPrismaClient } from "@/lib/prisma"
 
 export async function POST(request: Request) {
   try {
     const prisma = await getPrismaClient()
-    const session = await getServerSession(authOptions)
+    const user = getUserFromRequest(request)
 
-    if (!session) {
+    if (!user) {
       return NextResponse.json(
         { error: "Unauthorized" },
         { status: 401 }
@@ -29,7 +28,7 @@ export async function POST(request: Request) {
 
     // Update wallet balance
     const updatedUser = await prisma.user.update({
-      where: { id: session.user.id },
+      where: { id: user.userId },
       data: {
         walletBalance: {
           increment: amount
@@ -40,7 +39,7 @@ export async function POST(request: Request) {
     // Create wallet transaction record
     await prisma.walletTransaction.create({
       data: {
-        userId: session.user.id,
+        userId: user.userId,
         type: "CREDIT",
         amount,
         method,
@@ -53,7 +52,7 @@ export async function POST(request: Request) {
     // Create notification
     await prisma.notification.create({
       data: {
-        userId: session.user.id,
+        userId: user.userId,
         title: "Wallet Funded Successfully",
         message: `Your wallet has been credited with ₦${amount.toLocaleString()}`,
         type: "WALLET"

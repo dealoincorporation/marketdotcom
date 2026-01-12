@@ -1,15 +1,14 @@
 import { NextResponse } from "next/server"
-import { getServerSession } from "next-auth"
-import { authOptions } from "@/lib/auth"
+import { getUserFromRequest } from "@/lib/auth"
 import { getPrismaClient } from "@/lib/prisma"
 import { PaystackService } from "@/lib/paystack"
 
 export async function POST(request: Request) {
   try {
     const prisma = await getPrismaClient()
-    const session = await getServerSession(authOptions)
+    const user = getUserFromRequest(request)
 
-    if (!session) {
+    if (!user) {
       return NextResponse.json(
         { error: "Unauthorized" },
         { status: 401 }
@@ -41,7 +40,7 @@ export async function POST(request: Request) {
     const order = await prisma.order.findFirst({
       where: {
         transactionId: reference,
-        userId: session.user.id
+        userId: user.userId
       }
     })
 
@@ -73,7 +72,7 @@ export async function POST(request: Request) {
       },
       create: {
         orderId: order.id,
-        userId: session.user.id,
+        userId: user.userId,
         amount: transactionData.amount / 100, // Convert from kobo
         currency: "NGN",
         method: "PAYSTACK",

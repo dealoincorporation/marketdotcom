@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
     // Test 1: Basic environment check
     const envCheck = {
@@ -10,10 +10,11 @@ export async function GET() {
       DATABASE_URL: process.env.DATABASE_URL ? 'SET' : 'NOT_SET',
     }
 
-    // Test 2: Try to import NextAuth
+    // Test 2: Check authentication
     let nextAuthStatus = 'NOT_TESTED'
     try {
-      const NextAuth = (await import('next-auth')).default
+      const { getUserFromRequest } = await import('@/lib/auth')
+      const user = getUserFromRequest(request)
       nextAuthStatus = 'IMPORTED_SUCCESS'
     } catch (error: any) {
       nextAuthStatus = `IMPORT_FAILED: ${error.message}`
@@ -22,7 +23,7 @@ export async function GET() {
     // Test 3: Try to import auth options
     let authOptionsStatus = 'NOT_TESTED'
     try {
-      const { authOptions } = await import('@/lib/auth')
+      const { verifyToken } = await import('@/lib/auth')
       authOptionsStatus = 'LOADED_SUCCESS'
     } catch (error: any) {
       authOptionsStatus = `LOAD_FAILED: ${error.message}`

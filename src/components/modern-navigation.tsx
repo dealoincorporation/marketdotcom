@@ -3,14 +3,14 @@
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import { motion, AnimatePresence } from "framer-motion"
-import { useSession, signOut } from "next-auth/react"
+import { useAuth } from "@/contexts/AuthContext"
 import { Button } from "@/components/ui/button"
 import { ShoppingBag, Menu, X, ChevronDown, User, LogOut, LayoutDashboard } from "lucide-react"
 
 export function ModernNavigation() {
   const [isOpen, setIsOpen] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
-  const { data: session, status } = useSession()
+  const { user, logout, isLoading } = useAuth()
 
   useEffect(() => {
     const handleScroll = () => {
@@ -22,7 +22,7 @@ export function ModernNavigation() {
   }, [])
 
   const handleSignOut = async () => {
-    await signOut({ callbackUrl: "/" })
+    logout()
     setIsOpen(false)
   }
 
@@ -118,7 +118,7 @@ export function ModernNavigation() {
 
           {/* Desktop CTA Buttons */}
           <div className="hidden lg:flex items-center space-x-4">
-            {session ? (
+            {user ? (
               <>
                 <motion.div
                   initial={{ opacity: 0, x: 20 }}
@@ -142,7 +142,7 @@ export function ModernNavigation() {
                   className="flex items-center space-x-2"
                 >
                   <div className="text-sm text-gray-600">
-                    Hi, {session.user?.name?.split(' ')[0] || 'User'}
+                    Hi, {user?.name?.split(' ')[0] || 'User'}
                   </div>
                   <Button
                     variant="ghost"
@@ -250,10 +250,10 @@ export function ModernNavigation() {
                 transition={{ duration: 0.3, delay: 0.4 }}
                 className="pt-4 border-t border-gray-200 space-y-3"
               >
-                {session ? (
+                {user ? (
                   <>
                     <div className="px-4 py-2 text-center text-gray-600 font-medium">
-                      Welcome back, {session.user?.name?.split(' ')[0] || 'User'}!
+                      Welcome back, {user?.name?.split(' ')[0] || 'User'}!
                     </div>
                     <Link href="/dashboard" onClick={() => setIsOpen(false)}>
                       <Button className="w-full justify-center bg-orange-600 hover:bg-orange-700 text-white font-semibold">

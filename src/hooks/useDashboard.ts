@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useSession } from 'next-auth/react'
+import { useAuth } from '@/contexts/AuthContext'
 import { Product, Category, Order, User } from '@prisma/client'
 
 interface WalletInfo {
@@ -41,7 +41,7 @@ const defaultWalletInfo: WalletInfo = {
 }
 
 export function useDashboard(): UseDashboardReturn {
-  const { data: session } = useSession()
+  const { user } = useAuth()
   const [products, setProducts] = useState<Product[]>([])
   const [categories, setCategories] = useState<Category[]>([])
   const [orders, setOrders] = useState<Order[]>([])
@@ -163,10 +163,10 @@ export function useDashboard(): UseDashboardReturn {
 
   // Initial data fetch
   useEffect(() => {
-    if (session) {
+    if (user) {
       refreshAll()
     }
-  }, [session])
+  }, [user])
 
   return {
     // Data

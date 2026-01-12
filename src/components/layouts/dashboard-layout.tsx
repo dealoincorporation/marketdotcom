@@ -17,7 +17,7 @@ import {
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useCartStore } from '@/lib/cart-store'
-import { useSession } from 'next-auth/react'
+import { useAuth } from '@/contexts/AuthContext'
 import { formatCurrency, getInitials } from '@/lib/helpers'
 type DashboardTab = "marketplace" | "orders" | "manage-products" | "wallet" | "admin"
 
@@ -54,7 +54,7 @@ export function DashboardLayout({
   isMobileMenuOpen,
   setIsMobileMenuOpen,
 }: DashboardLayoutProps) {
-  const { data: session } = useSession()
+  const { user } = useAuth()
   const { items, getTotalItems, getTotalPrice } = useCartStore()
   const totalItems = getTotalItems()
 
@@ -96,7 +96,7 @@ export function DashboardLayout({
               <div className="hidden lg:block text-sm text-gray-600">
                 Welcome back,{' '}
                 <span className="font-medium text-gray-900">
-                  {session?.user?.name || session?.user?.email}
+                  {user?.name || user?.email}
                 </span>
               </div>
               <Link href="/cart">
@@ -137,15 +137,15 @@ export function DashboardLayout({
               <div className="flex items-center space-x-3">
                 <div className="w-10 h-10 bg-gradient-to-br from-orange-400 to-red-500 rounded-full flex items-center justify-center shadow-md">
                   <span className="text-white font-semibold text-lg">
-                    {session?.user?.name?.charAt(0) || session?.user?.email?.charAt(0) || 'U'}
+                    {user?.name?.charAt(0) || user?.email?.charAt(0) || 'U'}
                   </span>
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-gray-900 truncate">
-                    {session?.user?.name || 'User'}
+                    {user?.name || 'User'}
                   </p>
                   <p className="text-xs text-gray-500 truncate">
-                    {session?.user?.email}
+                    {user?.email}
                   </p>
                 </div>
               </div>
@@ -183,7 +183,7 @@ export function DashboardLayout({
               })}
 
               {/* Admin Panel - conditionally rendered */}
-              {session?.user?.role === 'ADMIN' && (
+              {user?.role === 'ADMIN' && (
                 <>
                   <button
                     onClick={() => {

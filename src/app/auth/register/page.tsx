@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
+import { useAuth } from "@/contexts/AuthContext"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -23,6 +24,7 @@ export default function RegisterPage() {
   const [loading, setLoading] = useState(false)
   const [acceptTerms, setAcceptTerms] = useState(false)
   const router = useRouter()
+  const { register } = useAuth()
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData(prev => ({
@@ -86,88 +88,22 @@ export default function RegisterPage() {
     }
 
     try {
-      const response = await fetch("/api/auth/register", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          name: formData.name,
-          email: formData.email,
-          phone: formData.phone,
-          password: formData.password,
-        }),
+      await register({
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone,
+        password: formData.password,
       })
 
-      if (response.ok) {
-        toast.success("Account created successfully! Please check your email for verification.", {
-          duration: 4000,
-          style: {
-            background: 'rgba(34, 197, 94, 0.95)',
-            backdropFilter: 'blur(10px)',
-            color: 'white',
-            border: '1px solid rgba(34, 197, 94, 0.3)',
-          }
-        })
-        router.push("/auth/verify-email?email=" + encodeURIComponent(formData.email))
-      } else {
-        const data = await response.json()
-
-        if (data.message?.includes("Prisma") || data.message?.includes("database")) {
-          toast.error("Database connection error. Please try again later or contact support.", {
-            duration: 6000,
-            style: {
-              background: 'rgba(239, 68, 68, 0.95)',
-              backdropFilter: 'blur(10px)',
-              color: 'white',
-              border: '1px solid rgba(239, 68, 68, 0.3)',
-            }
-          })
-        } else if (data.message?.includes("email") && data.message?.includes("exists")) {
-          toast.error("An account with this email already exists. Please try logging in instead.", {
-            duration: 5000,
-            style: {
-              background: 'rgba(239, 68, 68, 0.95)',
-              backdropFilter: 'blur(10px)',
-              color: 'white',
-              border: '1px solid rgba(239, 68, 68, 0.3)',
-            }
-          })
-        } else {
-          toast.error(data.message || "Registration failed. Please try again.", {
-            duration: 4000,
-            style: {
-              background: 'rgba(239, 68, 68, 0.95)',
-              backdropFilter: 'blur(10px)',
-              color: 'white',
-              border: '1px solid rgba(239, 68, 68, 0.3)',
-            }
-          })
-        }
-      }
+      toast.success("Account created successfully!")
+      router.push("/auth/verify-email?email=" + encodeURIComponent(formData.email))
     } catch (error: any) {
       console.error("Registration error:", error)
 
-      if (error.message?.includes("Prisma") || error.message?.includes("database") || error.message?.includes("connect")) {
-        toast.error("Database connection error. Please check your internet connection and try again.", {
-          duration: 6000,
-          style: {
-            background: 'rgba(239, 68, 68, 0.95)',
-            backdropFilter: 'blur(10px)',
-            color: 'white',
-            border: '1px solid rgba(239, 68, 68, 0.3)',
-          }
-        })
+      if (error?.message?.includes("already exists")) {
+        toast.error("An account with this email already exists. Please try logging in instead.")
       } else {
-        toast.error("Network error. Please check your connection and try again.", {
-          duration: 4000,
-          style: {
-            background: 'rgba(239, 68, 68, 0.95)',
-            backdropFilter: 'blur(10px)',
-            color: 'white',
-            border: '1px solid rgba(239, 68, 68, 0.3)',
-          }
-        })
+        toast.error(error?.message || "Registration failed. Please try again.")
       }
     } finally {
       setLoading(false)

@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
 import { useCartStore } from "@/lib/cart-store"
-import { useSession } from "next-auth/react"
+import { useAuth } from "@/contexts/AuthContext"
 
 // Sample products data (in a real app, this would come from the database)
 const sampleProducts = [
@@ -100,7 +100,7 @@ export default function MarketplacePage() {
   const [searchQuery, setSearchQuery] = useState("")
   const [showFilters, setShowFilters] = useState(false)
 
-  const { data: session } = useSession()
+  const { user } = useAuth()
   const { items, addItem, removeItem, getItemQuantity } = useCartStore()
 
   useEffect(() => {
@@ -151,7 +151,7 @@ export default function MarketplacePage() {
             </Link>
 
             <div className="flex items-center space-x-4">
-              {session ? (
+              {user ? (
                 <div className="flex items-center space-x-4">
                   <Link href="/dashboard">
                     <Button variant="ghost" size="sm">

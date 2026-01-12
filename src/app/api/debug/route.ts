@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
-import { authOptions } from '@/lib/auth'
+import { getUserFromRequest } from '@/lib/auth'
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
     const envCheck = {
       timestamp: new Date().toISOString(),
@@ -48,10 +48,10 @@ export async function GET() {
       }
     }
 
-    // Test NextAuth configuration
+    // Test authentication configuration
     let authStatus = 'NOT_TESTED'
     try {
-      const { authOptions } = await import('@/lib/auth')
+      const { verifyToken } = await import('@/lib/auth')
       authStatus = 'CONFIG_LOADED'
     } catch (error: any) {
       authStatus = `ERROR: ${error.message}`
@@ -60,9 +60,9 @@ export async function GET() {
     // Test session retrieval
     let sessionStatus = 'NOT_TESTED'
     try {
-      const { getServerSession } = await import('next-auth')
-      const session = await getServerSession(authOptions as any)
-      sessionStatus = session ? 'SESSION_FOUND' : 'NO_SESSION'
+      const { getUserFromRequest } = await import('@/lib/auth')
+      const user = getUserFromRequest(request)
+      sessionStatus = user ? 'USER_FOUND' : 'NO_USER'
     } catch (error: any) {
       sessionStatus = `ERROR: ${error.message}`
     }

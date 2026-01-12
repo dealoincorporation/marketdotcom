@@ -2,8 +2,9 @@
 
 import React, { useState, useEffect, Suspense } from "react"
 import { motion } from "framer-motion"
-import { useSession } from "next-auth/react"
+import { useAuth } from "@/contexts/AuthContext"
 import { useRouter, useSearchParams } from "next/navigation"
+import { useDashboard } from "@/hooks/useDashboard"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { DashboardLayout } from "@/components/layouts/dashboard-layout"
@@ -20,8 +21,6 @@ import ManageProductsTab from "./components/ManageProductsTab"
 import { ProductForm } from "@/components/forms/product-form"
 
 // Import hooks
-import { useDashboard } from "@/hooks/useDashboard"
-import { useAuth } from "@/hooks/useAuth"
 import { useProducts } from "@/hooks/useProducts"
 import { useCartStore } from "@/lib/cart-store"
 
@@ -32,7 +31,7 @@ type DashboardTab = "marketplace" | "orders" | "manage-products" | "wallet" | "a
 
 function DashboardContent() {
   // Custom hooks
-  const { data: session } = useSession()
+  const { user } = useAuth()
   const { logout } = useAuth()
   const { products: rawProducts, categories: rawCategories, orders: rawOrders, walletInfo, loading, refreshAll } = useDashboard()
   const products = rawProducts as any[]
@@ -52,7 +51,7 @@ function DashboardContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
 
-  const isAdmin = session?.user?.role === "ADMIN"
+  const isAdmin = user?.role === "ADMIN"
 
   // Handle URL tab parameter
   useEffect(() => {
@@ -148,7 +147,7 @@ function DashboardContent() {
     return items.reduce((total, item) => total + item.quantity, 0)
   }
 
-  if (!session) {
+  if (!user) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50 flex items-center justify-center p-4">
         <motion.div

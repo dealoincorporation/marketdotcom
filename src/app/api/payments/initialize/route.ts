@@ -1,15 +1,14 @@
 import { NextResponse } from "next/server"
-import { getServerSession } from "next-auth"
-import { authOptions } from "@/lib/auth"
+import { getUserFromRequest } from "@/lib/auth"
 import { getPrismaClient } from "@/lib/prisma"
 import { PaystackService, generateReference } from "@/lib/paystack"
 
 export async function POST(request: Request) {
   try {
     const prisma = await getPrismaClient()
-    const session = await getServerSession(authOptions)
+    const user = getUserFromRequest(request)
 
-    if (!session) {
+    if (!user) {
       return NextResponse.json(
         { error: "Unauthorized" },
         { status: 401 }
@@ -29,7 +28,7 @@ export async function POST(request: Request) {
     const order = await prisma.order.findFirst({
       where: {
         id: orderId,
-        userId: session.user.id,
+        userId: user.userId,
         paymentStatus: "PENDING"
       }
     })
@@ -56,12 +55,12 @@ export async function POST(request: Request) {
     // Initialize Paystack transaction
     const paystackResponse = await PaystackService.initializeTransaction({
       amount: amount,
-      email: session.user.email || "",
+      email: user.email || "",
       reference: reference,
       callback_url: `${process.env.NEXTAUTH_URL}/checkout?reference=${reference}`,
       metadata: {
         orderId: orderId,
-        userId: session.user.id,
+        userId: user.userId,
         custom_fields: [
           {
             display_name: "Order ID",

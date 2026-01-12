@@ -1,19 +1,18 @@
 import { NextRequest, NextResponse } from "next/server"
-import { getServerSession } from "next-auth"
-import { authOptions } from "@/lib/auth"
+import { getUserFromRequest } from "@/lib/auth"
 import { getPrismaClient } from "@/lib/prisma"
 import { sendOrderStatusUpdateEmail } from "@/lib/email"
 
-// Force dynamic rendering since this route uses getServerSession and headers
+// Force dynamic rendering since this route uses authentication and headers
 export const dynamic = 'force-dynamic'
 
 // GET /api/orders - Get orders (filtered by user role)
 export async function GET(request: NextRequest) {
   try {
     const prisma = await getPrismaClient()
-    const session = await getServerSession(authOptions)
+    const user = getUserFromRequest(request)
 
-    if (!session) {
+    if (!user) {
       return NextResponse.json(
         { error: "Unauthorized" },
         { status: 401 }
@@ -27,8 +26,8 @@ export async function GET(request: NextRequest) {
     const where: any = {}
 
     // If not admin, only show user's own orders
-    if (session.user.role !== "ADMIN") {
-      where.userId = session.user.id
+    if (user.role !== "ADMIN") {
+      where.userId = user.userId
     } else if (userId) {
       where.userId = userId
     }
@@ -68,9 +67,9 @@ export async function GET(request: NextRequest) {
 export async function PUT(request: NextRequest) {
   try {
     const prisma = await getPrismaClient()
-    const session = await getServerSession(authOptions)
+    const user = getUserFromRequest(request)
 
-    if (!session || session.user.role !== "ADMIN") {
+    if (!user || user.role !== "ADMIN") {
       return NextResponse.json(
         { error: "Unauthorized" },
         { status: 401 }

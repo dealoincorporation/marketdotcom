@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import Link from "next/link"
-import { useSession } from "next-auth/react"
+import { useAuth } from "@/contexts/AuthContext"
 import { useRouter } from "next/navigation"
 import {
   ArrowLeft,
@@ -50,7 +50,7 @@ interface DeliverySlot {
 }
 
 export default function CheckoutPage() {
-  const { data: session } = useSession()
+  const { user } = useAuth()
   const router = useRouter()
   const { items, getTotalItems, getTotalPrice, clearCart } = useCartStore()
 
@@ -120,7 +120,7 @@ export default function CheckoutPage() {
   const finalTotal = subtotal + deliveryFee - walletDeduction
 
   useEffect(() => {
-    if (!session) {
+    if (!user) {
       router.push('/auth/login?redirect=/checkout')
       return
     }
@@ -132,7 +132,7 @@ export default function CheckoutPage() {
 
     // Fetch wallet balance
     fetchWalletBalance()
-  }, [session, items, router])
+  }, [user, items, router])
 
   const fetchWalletBalance = async () => {
     try {
@@ -251,7 +251,7 @@ export default function CheckoutPage() {
       // Open Paystack payment modal
       const handler = window.PaystackPop.setup({
         key: process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY || 'pk_test_9071bb582b6486e980b86bce551587236426329a', // Your provided test key
-        email: session?.user?.email || '',
+        email: user?.email || '',
         amount: amount * 100, // Convert to kobo
         reference: paymentData.reference,
         onClose: function() {
@@ -317,7 +317,7 @@ export default function CheckoutPage() {
     })
   }
 
-  if (!session) {
+  if (!user) {
     return <div>Loading...</div>
   }
 

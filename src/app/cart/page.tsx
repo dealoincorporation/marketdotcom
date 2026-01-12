@@ -3,7 +3,7 @@
 import { useState } from "react"
 import Link from "next/link"
 import { motion } from "framer-motion"
-import { useSession } from "next-auth/react"
+import { useAuth } from "@/contexts/AuthContext"
 import {
   ShoppingBag,
   Trash2,
@@ -23,7 +23,7 @@ import { useCartStore } from "@/lib/cart-store"
 import { useRouter } from "next/navigation"
 
 export default function CartPage() {
-  const { data: session } = useSession()
+  const { user } = useAuth()
   const router = useRouter()
   const {
     items,
@@ -40,7 +40,7 @@ export default function CartPage() {
   const finalTotal = totalPrice + deliveryFee
 
   const handleCheckout = () => {
-    if (!session) {
+    if (!user) {
       router.push(`/auth/login?redirect=/checkout`)
     } else {
       router.push('/checkout')
@@ -241,7 +241,7 @@ export default function CartPage() {
                 </div>
 
                 <div className="space-y-3 pt-4">
-                  {!session && (
+                  {!user && (
                     <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                       <p className="text-sm text-blue-800">
                         <strong>Please sign in to checkout</strong><br />
@@ -256,10 +256,10 @@ export default function CartPage() {
                     size="lg"
                   >
                     <CreditCard className="mr-2 h-5 w-5" />
-                    {session ? 'Proceed to Checkout' : 'Sign In to Checkout'}
+                    {user ? 'Proceed to Checkout' : 'Sign In to Checkout'}
                   </Button>
 
-                  {!session && (
+                  {!user && (
                     <div className="text-center">
                       <p className="text-sm text-gray-600 mb-2">Don't have an account?</p>
                       <Link href={`/auth/register?redirect=/checkout`}>

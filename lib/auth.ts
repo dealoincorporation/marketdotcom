@@ -37,7 +37,7 @@ export async function comparePassword(password: string, hash: string): Promise<b
   return bcrypt.compare(password, hash)
 }
 
-export function getUserFromRequest(req: any): JWTPayload | null {
+export function getUserFromRequest(req: Request): JWTPayload | null {
   const authHeader = req.headers.get('authorization')
 
   if (!authHeader || !authHeader.startsWith('Bearer ')) {

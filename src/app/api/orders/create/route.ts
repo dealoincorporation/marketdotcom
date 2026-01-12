@@ -1,18 +1,33 @@
 import { NextResponse } from "next/server"
-import { getServerSession } from "next-auth"
-import { authOptions } from "@/lib/auth"
+import { getUserFromRequest } from "@/lib/auth"
 import { getPrismaClient } from "@/lib/prisma"
 import { sendOrderConfirmationEmail, sendAdminOrderNotification } from "@/lib/email"
 
 export async function POST(request: Request) {
   try {
     const prisma = await getPrismaClient()
-    const session = await getServerSession(authOptions)
+    const user = getUserFromRequest(request)
 
-    if (!session) {
+    if (!user) {
       return NextResponse.json(
         { error: "Unauthorized" },
         { status: 401 }
+      )
+    }
+
+    // Get user data from database for email
+    const userData = await prisma.user.findUnique({
+      where: { id: user.userId },
+      select: {
+        name: true,
+        email: true
+      }
+    })
+
+    if (!userData) {
+      return NextResponse.json(
+        { error: "User data not found" },
+        { status: 404 }
       )
     }
 
@@ -37,7 +52,7 @@ export async function POST(request: Request) {
     // Create order
     const order = await prisma.order.create({
       data: {
-        userId: session.user.id,
+        userId: user.userId,
         status: "PENDING",
         totalAmount,
         deliveryFee,
@@ -69,7 +84,7 @@ export async function POST(request: Request) {
     await prisma.delivery.create({
       data: {
         orderId: order.id,
-        userId: session.user.id,
+        userId: user.userId,
         address: deliveryAddress.address,
         city: deliveryAddress.city,
         state: deliveryAddress.state,
@@ -86,7 +101,7 @@ export async function POST(request: Request) {
     // Deduct from wallet if used
     if (useWallet && walletDeduction > 0) {
       await prisma.user.update({
-        where: { id: session.user.id },
+        where: { id: user.userId },
         data: {
           walletBalance: {
             decrement: walletDeduction
@@ -97,7 +112,7 @@ export async function POST(request: Request) {
       // Create reward record for wallet usage
       await prisma.reward.create({
         data: {
-          userId: session.user.id,
+          userId: user.userId,
           points: 0,
           description: `Wallet used for order #${order.id}`,
           type: "PURCHASE"
@@ -109,7 +124,7 @@ export async function POST(request: Request) {
     const pointsEarned = Math.floor(totalAmount / 100) // 1 point per ₦100 spent
     if (pointsEarned > 0) {
       await prisma.user.update({
-        where: { id: session.user.id },
+        where: { id: user.userId },
         data: {
           points: {
             increment: pointsEarned
@@ -119,7 +134,7 @@ export async function POST(request: Request) {
 
       await prisma.reward.create({
         data: {
-          userId: session.user.id,
+          userId: user.userId,
           points: pointsEarned,
           description: `Points earned from order #${order.id}`,
           type: "PURCHASE",
@@ -131,7 +146,7 @@ export async function POST(request: Request) {
     // Create notification for user
     await prisma.notification.create({
       data: {
-        userId: session.user.id,
+        userId: user.userId,
         title: "Order Placed Successfully",
         message: `Your order #${order.id} has been placed and will be delivered on ${new Date(deliveryDate).toLocaleDateString()} between ${deliveryTime}`,
         type: "ORDER",
@@ -143,8 +158,8 @@ export async function POST(request: Request) {
     try {
       const emailData = {
         orderId: order.id,
-        customerName: session.user.name || 'Valued Customer',
-        customerEmail: session.user.email || '',
+        customerName: userData.name || 'Valued Customer',
+        customerEmail: userData.email || '',
         items: items.map((item: any) => ({
           name: item.name,
           quantity: item.quantity,

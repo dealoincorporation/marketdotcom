@@ -1,7 +1,6 @@
 "use client"
 
 import { useState, Suspense, useEffect } from "react"
-import { signIn, getSession } from "next-auth/react"
 import { useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
@@ -9,6 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Loader2, Eye, EyeOff } from "lucide-react"
 import { AuthLayout } from "@/components/auth-layout"
+import { useAuth } from "@/contexts/AuthContext"
 import toast from "react-hot-toast"
 
 function LoginForm() {
@@ -19,6 +19,7 @@ function LoginForm() {
   const [rememberMe, setRememberMe] = useState(false)
   const router = useRouter()
   const searchParams = useSearchParams()
+  const { login } = useAuth()
 
   // Load saved credentials on component mount
   useEffect(() => {
@@ -38,7 +39,6 @@ function LoginForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setLoading(true)
 
     // Handle remember me functionality
     if (rememberMe) {
@@ -50,184 +50,19 @@ function LoginForm() {
     }
 
     try {
-      console.log("Attempting login for:", email)
-      const result = await signIn("credentials", {
-        email,
-        password,
-        redirect: false,
-      })
-
-      console.log("SignIn result:", result)
-
-      if (result?.error) {
-        console.log("SignIn error:", result.error)
-        if (result.error.includes("Prisma") || result.error.includes("database")) {
-          toast.error("Database connection error. Please try again later.", {
-            duration: 6000,
-            style: {
-              background: 'rgba(239, 68, 68, 0.95)',
-              backdropFilter: 'blur(10px)',
-              color: 'white',
-              border: '1px solid rgba(239, 68, 68, 0.3)',
-            }
-          })
-        } else if (result.error === "CredentialsSignin") {
-          toast.error("Invalid email or password. Please check your credentials.", {
-            duration: 4000,
-            style: {
-              background: 'rgba(239, 68, 68, 0.95)',
-              backdropFilter: 'blur(10px)',
-              color: 'white',
-              border: '1px solid rgba(239, 68, 68, 0.3)',
-            }
-          })
-        } else {
-          toast.error(`Login failed: ${result.error}`, {
-            duration: 6000,
-            style: {
-              background: 'rgba(239, 68, 68, 0.95)',
-              backdropFilter: 'blur(10px)',
-              color: 'white',
-              border: '1px solid rgba(239, 68, 68, 0.3)',
-            }
-          })
-        }
-      } else if (result?.ok && result?.url) {
-        // Check if NextAuth redirected to error page
-        if (result.url.includes('/api/auth/error') || result.url.includes('error=')) {
-          console.log("SignIn redirected to error page:", result.url)
-          toast.error("Authentication failed. Please check your credentials and try again.", {
-            duration: 4000,
-            style: {
-              background: 'rgba(239, 68, 68, 0.95)',
-              backdropFilter: 'blur(10px)',
-              color: 'white',
-              border: '1px solid rgba(239, 68, 68, 0.3)',
-            }
-          })
-        } else {
-          console.log("SignIn successful, redirecting...")
-          toast.success("Login successful! Redirecting...", {
-            duration: 2000,
-            style: {
-              background: 'rgba(34, 197, 94, 0.95)',
-              backdropFilter: 'blur(10px)',
-              color: 'white',
-              border: '1px solid rgba(34, 197, 94, 0.3)',
-            }
-          })
-
-          // Wait for session to be established before redirecting
-          setTimeout(async () => {
-            try {
-              const session = await getSession()
-              console.log("Session after login:", session)
-              if (session?.user) {
-                router.push("/dashboard")
-              } else {
-                toast.error("Session not established. Please try logging in again.", {
-                  duration: 4000,
-                  style: {
-                    background: 'rgba(239, 68, 68, 0.95)',
-                    backdropFilter: 'blur(10px)',
-                    color: 'white',
-                    border: '1px solid rgba(239, 68, 68, 0.3)',
-                  }
-                })
-              }
-            } catch (sessionError) {
-              console.error("Session error:", sessionError)
-              toast.error("Session establishment failed. Please try again.", {
-                duration: 4000,
-                style: {
-                  background: 'rgba(239, 68, 68, 0.95)',
-                  backdropFilter: 'blur(10px)',
-                  color: 'white',
-                  border: '1px solid rgba(239, 68, 68, 0.3)',
-                }
-              })
-            }
-          }, 1500)
-        }
-      } else if (result?.ok) {
-        // Simple success case without URL check
-        console.log("SignIn successful (no URL), redirecting...")
-        toast.success("Login successful! Redirecting...", {
-          duration: 2000,
-          style: {
-            background: 'rgba(34, 197, 94, 0.95)',
-            backdropFilter: 'blur(10px)',
-            color: 'white',
-            border: '1px solid rgba(34, 197, 94, 0.3)',
-          }
-        })
-
-        // Wait for session to be established before redirecting
-        setTimeout(async () => {
-          try {
-            const session = await getSession()
-            console.log("Session after login:", session)
-            if (session?.user) {
-              router.push("/dashboard")
-            } else {
-              toast.error("Session not established. Please try logging in again.", {
-                duration: 4000,
-                style: {
-                  background: 'rgba(239, 68, 68, 0.95)',
-                  backdropFilter: 'blur(10px)',
-                  color: 'white',
-                  border: '1px solid rgba(239, 68, 68, 0.3)',
-                }
-              })
-            }
-          } catch (sessionError) {
-            console.error("Session error:", sessionError)
-            toast.error("Session establishment failed. Please try again.", {
-              duration: 4000,
-              style: {
-                background: 'rgba(239, 68, 68, 0.95)',
-                backdropFilter: 'blur(10px)',
-                color: 'white',
-                border: '1px solid rgba(239, 68, 68, 0.3)',
-              }
-            })
-          }
-        }, 1500)
-      } else {
-        console.log("SignIn result neither error nor ok:", result)
-        toast.error("Authentication failed. Please check your credentials and try again.", {
-          duration: 4000,
-          style: {
-            background: 'rgba(239, 68, 68, 0.95)',
-            backdropFilter: 'blur(10px)',
-            color: 'white',
-            border: '1px solid rgba(239, 68, 68, 0.3)',
-          }
-        })
-      }
+      setLoading(true)
+      await login(email, password, rememberMe)
+      toast.success('Login successful!')
+      router.push(searchParams.get('redirect') || '/dashboard')
     } catch (error: any) {
-      console.error("Login error:", error)
+      console.error('Login error:', error)
 
-      if (error.message?.includes("Prisma") || error.message?.includes("database")) {
-        toast.error("Database connection error. Please contact support.", {
-          duration: 6000,
-          style: {
-            background: 'rgba(239, 68, 68, 0.95)',
-            backdropFilter: 'blur(10px)',
-            color: 'white',
-            border: '1px solid rgba(239, 68, 68, 0.3)',
-          }
-        })
+      if (error?.message?.includes('Invalid credentials')) {
+        toast.error('Invalid email or password. Please check your credentials.')
+      } else if (error?.message?.includes('verify your email')) {
+        toast.error('Please verify your email before logging in.')
       } else {
-        toast.error(`Network error: ${error.message || 'Unknown error'}`, {
-          duration: 4000,
-          style: {
-            background: 'rgba(239, 68, 68, 0.95)',
-            backdropFilter: 'blur(10px)',
-            color: 'white',
-            border: '1px solid rgba(239, 68, 68, 0.3)',
-          }
-        })
+        toast.error(error?.message || 'Login failed. Please try again.')
       }
     } finally {
       setLoading(false)

@@ -1,18 +1,17 @@
 import { NextRequest, NextResponse } from "next/server"
-import { getServerSession } from "next-auth"
-import { authOptions } from "@/lib/auth"
+import { getUserFromRequest } from "@/lib/auth"
 import { getPrismaClient } from "@/lib/prisma"
 
-// Force dynamic rendering since this route uses getServerSession and headers
+// Force dynamic rendering since this route uses authentication and headers
 export const dynamic = 'force-dynamic'
 
 // GET /api/wallet - Get user's wallet info
-export async function GET() {
+export async function GET(request: Request) {
   try {
     const prisma = await getPrismaClient()
-    const session = await getServerSession(authOptions)
+    const authUser = getUserFromRequest(request)
 
-    if (!session) {
+    if (!authUser) {
       return NextResponse.json(
         { error: "Unauthorized" },
         { status: 401 }
@@ -20,7 +19,7 @@ export async function GET() {
     }
 
     const user = await prisma.user.findUnique({
-      where: { id: session.user.id },
+      where: { id: authUser.userId },
       select: {
         id: true,
         walletBalance: true,
@@ -60,9 +59,9 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const prisma = await getPrismaClient()
-    const session = await getServerSession(authOptions)
+    const authUser = getUserFromRequest(request)
 
-    if (!session) {
+    if (!authUser) {
       return NextResponse.json(
         { error: "Unauthorized" },
         { status: 401 }
@@ -82,7 +81,7 @@ export async function POST(request: NextRequest) {
     // In a real app, this would integrate with a payment provider
     // For now, we'll simulate adding funds to the wallet
     const user = await prisma.user.update({
-      where: { id: session.user.id },
+      where: { id: authUser.userId },
       data: {
         walletBalance: {
           increment: parseFloat(amount)
@@ -97,7 +96,7 @@ export async function POST(request: NextRequest) {
     // Create a reward record for the funding
     await prisma.reward.create({
       data: {
-        userId: session.user.id,
+        userId: authUser.userId,
         points: 0, // Could add bonus points for funding
         description: `Wallet funded with ₦${amount}`,
         type: "FUNDING"
