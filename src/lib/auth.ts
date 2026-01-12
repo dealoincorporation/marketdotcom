@@ -44,6 +44,17 @@ export const authOptions: NextAuthOptions = {
         console.log("Environment check - NEXTAUTH_SECRET:", !!process.env.NEXTAUTH_SECRET)
         console.log("Environment check - DATABASE_URL:", !!process.env.DATABASE_URL)
 
+        // Check environment variables first
+        if (!process.env.NEXTAUTH_SECRET) {
+          console.error("NEXTAUTH_SECRET is not set")
+          throw new Error("Authentication service configuration error")
+        }
+
+        if (!process.env.DATABASE_URL) {
+          console.error("DATABASE_URL is not set")
+          throw new Error("Database connection not configured")
+        }
+
         if (!credentials?.email || !credentials?.password) {
           console.log("Missing credentials")
           throw new Error("Email and password are required")
@@ -176,7 +187,6 @@ export const authOptions: NextAuthOptions = {
   },
   pages: {
     signIn: "/auth/login",
-    error: "/auth/login", // Redirect auth errors back to login page
     signOut: "/" // Redirect to home after logout
   }
 }
