@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, Suspense } from "react"
+import { useState, Suspense, useEffect } from "react"
 import { signIn, getSession } from "next-auth/react"
 import { useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
@@ -16,8 +16,21 @@ function LoginForm() {
   const [password, setPassword] = useState("")
   const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [rememberMe, setRememberMe] = useState(false)
   const router = useRouter()
   const searchParams = useSearchParams()
+
+  // Load saved credentials on component mount
+  useEffect(() => {
+    const savedEmail = localStorage.getItem("rememberedEmail")
+    const savedPassword = localStorage.getItem("rememberedPassword")
+
+    if (savedEmail && savedPassword) {
+      setEmail(savedEmail)
+      setPassword(savedPassword)
+      setRememberMe(true)
+    }
+  }, [])
   const message = searchParams.get("message")
   const error = searchParams.get("error")
   const authError = searchParams.get("auth_error")
@@ -26,6 +39,15 @@ function LoginForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
+
+    // Handle remember me functionality
+    if (rememberMe) {
+      localStorage.setItem("rememberedEmail", email)
+      localStorage.setItem("rememberedPassword", password)
+    } else {
+      localStorage.removeItem("rememberedEmail")
+      localStorage.removeItem("rememberedPassword")
+    }
 
     try {
       console.log("Attempting login for:", email)
@@ -288,6 +310,20 @@ function LoginForm() {
               {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
             </button>
           </div>
+        </div>
+
+        {/* Remember me checkbox */}
+        <div className="flex items-center space-x-3">
+          <input
+            id="rememberMe"
+            type="checkbox"
+            checked={rememberMe}
+            onChange={(e) => setRememberMe(e.target.checked)}
+            className="h-4 w-4 text-orange-600 border-gray-300 rounded focus:ring-orange-500"
+          />
+          <label htmlFor="rememberMe" className="text-sm text-gray-600">
+            Remember me for 30 days
+          </label>
         </div>
 
         <Button

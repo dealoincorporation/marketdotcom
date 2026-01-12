@@ -3,9 +3,34 @@ import CredentialsProvider from "next-auth/providers/credentials"
 import bcrypt from "bcryptjs"
 import { getPrismaClient } from "./prisma"
 
+// Validate required environment variables
+const validateEnvironment = () => {
+  const required = ['NEXTAUTH_SECRET', 'NEXTAUTH_URL', 'DATABASE_URL']
+  const missing = required.filter(key => !process.env[key])
+
+  if (missing.length > 0) {
+    console.error('❌ Missing required environment variables:', missing)
+    console.error('Please set these environment variables:')
+    missing.forEach(key => console.error(`  - ${key}`))
+    throw new Error(`Authentication configuration incomplete. Missing: ${missing.join(', ')}`)
+  }
+
+  // Validate NEXTAUTH_SECRET length
+  if (process.env.NEXTAUTH_SECRET && process.env.NEXTAUTH_SECRET.length < 32) {
+    console.warn('⚠️  NEXTAUTH_SECRET is shorter than recommended (32+ characters)')
+  }
+
+  console.log('✅ Authentication environment validated')
+}
+
+// Only validate in production or when explicitly requested
+if (process.env.NODE_ENV === 'production' || process.env.VALIDATE_AUTH_ENV === 'true') {
+  validateEnvironment()
+}
+
 export const authOptions: NextAuthOptions = {
-  // Remove PrismaAdapter to avoid serverless issues - handle manually
-  debug: process.env.NODE_ENV === "development", // Only debug in development
+  // Enable debug logging in production for auth issues
+  debug: process.env.NODE_ENV === "development" || process.env.AUTH_DEBUG === "true",
   secret: process.env.NEXTAUTH_SECRET,
   providers: [
     CredentialsProvider({
@@ -16,6 +41,8 @@ export const authOptions: NextAuthOptions = {
       },
       async authorize(credentials) {
         console.log("Authorize called with email:", credentials?.email)
+        console.log("Environment check - NEXTAUTH_SECRET:", !!process.env.NEXTAUTH_SECRET)
+        console.log("Environment check - DATABASE_URL:", !!process.env.DATABASE_URL)
 
         if (!credentials?.email || !credentials?.password) {
           console.log("Missing credentials")
@@ -26,12 +53,22 @@ export const authOptions: NextAuthOptions = {
         const prisma = await getPrismaClient()
         console.log("Prisma client:", !!prisma, typeof prisma?.user?.findUnique)
 
-        // Check if prisma is available (for development fallback)
+        // Check if prisma is available
         if (!prisma || typeof prisma.user?.findUnique !== 'function') {
-          console.log("Database unavailable, checking demo credentials")
+          console.error("Database client unavailable:", {
+            prisma: !!prisma,
+            hasFindUnique: typeof prisma?.user?.findUnique === 'function',
+            nodeEnv: process.env.NODE_ENV
+          })
+
+          // In production, provide a clear error message
+          if (process.env.NODE_ENV === "production") {
+            throw new Error("Database connection failed. Please contact support or try again later.")
+          }
+
           // Development fallback for demo credentials
           if (credentials.email === "demo@marketdotcom.com" && credentials.password === "demo123") {
-            console.log("Using demo credentials")
+            console.log("Using demo credentials in development")
             return {
               id: "demo-user",
               email: "demo@marketdotcom.com",

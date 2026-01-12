@@ -38,6 +38,10 @@ export function useAuth() {
   const logout = async () => {
     setIsLoading(true)
     try {
+      // Clear remembered credentials on logout
+      localStorage.removeItem("rememberedEmail")
+      localStorage.removeItem("rememberedPassword")
+
       await signOut({ callbackUrl: ROUTES.home })
     } catch (error) {
       console.error('Logout error:', error)

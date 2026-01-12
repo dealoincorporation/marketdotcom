@@ -1,8 +1,10 @@
 // Check NextAuth environment variables
 import { config } from 'dotenv';
+import crypto from 'crypto';
 
 // Load environment variables
-config();
+config({ path: '.env.local' }); // Load .env.local first (takes precedence)
+config({ path: '.env' }); // Then load .env as fallback
 
 console.log('🔐 NextAuth Environment Check');
 console.log('===============================');
@@ -59,3 +61,20 @@ console.log('\n🛠️  To generate a secure NEXTAUTH_SECRET:');
 console.log('openssl rand -base64 32');
 console.log('OR');
 console.log('node -e "console.log(require(\'crypto\').randomBytes(32).toString(\'base64\'))"');
+
+// Generate missing variables
+console.log('\n🔧 Generated Values (add these to your environment):');
+if (!process.env.NEXTAUTH_SECRET) {
+  const secret = crypto.randomBytes(32).toString('base64');
+  console.log(`NEXTAUTH_SECRET=${secret}`);
+}
+
+if (!process.env.NEXTAUTH_URL) {
+  console.log('NEXTAUTH_URL=https://your-production-domain.com');
+  console.log('# Replace with your actual production URL');
+}
+
+if (!process.env.DATABASE_URL) {
+  console.log('DATABASE_URL=mongodb+srv://username:password@cluster.mongodb.net/marketdotcom');
+  console.log('# Replace with your actual MongoDB connection string');
+}
