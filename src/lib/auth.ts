@@ -32,6 +32,8 @@ export const authOptions: NextAuthOptions = {
   // Enable debug logging in production for auth issues
   debug: process.env.NODE_ENV === "development" || process.env.AUTH_DEBUG === "true",
   secret: process.env.NEXTAUTH_SECRET,
+  // Prevent redirects on authentication errors
+  useSecureCookies: process.env.NODE_ENV === "production",
   providers: [
     CredentialsProvider({
       name: "credentials",
@@ -183,6 +185,11 @@ export const authOptions: NextAuthOptions = {
         console.log("Session updated:", { userId: session.user.id, userRole: session.user.role })
       }
       return session
+    },
+    async redirect({ url, baseUrl }) {
+      // Prevent redirects during authentication errors
+      console.log("Redirect callback:", { url, baseUrl })
+      return url.startsWith(baseUrl) ? url : baseUrl
     }
   },
   pages: {
