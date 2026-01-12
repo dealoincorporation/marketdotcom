@@ -146,7 +146,9 @@ export const authOptions: NextAuthOptions = {
     })
   ],
   session: {
-    strategy: "jwt"
+    strategy: "jwt",
+    maxAge: 30 * 24 * 60 * 60, // 30 days
+    updateAge: 24 * 60 * 60, // 24 hours
   },
   callbacks: {
     async signIn({ user, account, profile }) {
@@ -155,21 +157,26 @@ export const authOptions: NextAuthOptions = {
       return true
     },
     async jwt({ token, user }) {
+      console.log("JWT callback:", { hasUser: !!user, hasToken: !!token, userRole: user?.role })
       if (user) {
         token.role = user.role
+        console.log("JWT token updated with role:", token.role)
       }
       return token
     },
     async session({ session, token }) {
+      console.log("Session callback:", { hasSession: !!session, hasToken: !!token, tokenSub: token?.sub, tokenRole: token?.role })
       if (token && token.sub) {
         session.user.id = token.sub
         session.user.role = token.role as string
+        console.log("Session updated:", { userId: session.user.id, userRole: session.user.role })
       }
       return session
     }
   },
   pages: {
     signIn: "/auth/login",
-    error: "/auth/login" // Redirect auth errors back to login page
+    error: "/auth/login", // Redirect auth errors back to login page
+    signOut: "/" // Redirect to home after logout
   }
 }
