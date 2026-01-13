@@ -16,69 +16,85 @@ import {
   MapPin,
   Phone,
   Mail,
-  Clock
+  Clock,
+  ShoppingBag,
+  PiggyBank,
+  Store,
+  CheckCircle,
+  DollarSign,
+  Zap,
+  Calendar,
+  MessageCircle,
+  Instagram,
+  Linkedin
 } from "lucide-react"
 
 export default function AboutPage() {
-  const teamMembers = [
-    {
-      name: "Adebayo Johnson",
-      role: "Founder & CEO",
-      image: "/api/placeholder/150/150",
-      bio: "Passionate about revolutionizing grocery shopping in Nigeria with innovative thrift solutions."
-    },
-    {
-      name: "Funmi Adeolu",
-      role: "Head of Operations",
-      image: "/api/placeholder/150/150",
-      bio: "Expert in supply chain management and customer service excellence."
-    },
-    {
-      name: "Tunde Bakare",
-      role: "Technology Lead",
-      image: "/api/placeholder/150/150",
-      bio: "Driving digital innovation and platform development for seamless user experiences."
-    }
-  ]
-
-  const milestones = [
-    {
-      year: "2023",
-      title: "Company Founded",
-      description: "Marketdotcom was established with a vision to transform grocery shopping in Nigeria."
-    },
-    {
-      year: "2024",
-      title: "Platform Launch",
-      description: "Successfully launched our online marketplace and thrift delivery services."
-    },
-    {
-      year: "2025",
-      title: "Expansion",
-      description: "Growing our customer base and expanding delivery coverage across major cities."
-    }
-  ]
-
-  const values = [
-    {
-      icon: Heart,
-      title: "Customer First",
-      description: "Everything we do is centered around providing exceptional value to our customers."
-    },
-    {
-      icon: Shield,
-      title: "Quality Assurance",
-      description: "We guarantee the freshness and quality of every item in our thrift packages."
-    },
+  const whatWeOffer = [
     {
       icon: Truck,
-      title: "Reliable Delivery",
-      description: "Timely and dependable delivery services that you can count on every day."
+      title: "Doorstep Delivery",
+      description: "Carefully packed under hygienic conditions, your food essentials are delivered straight to your doorstep—stress-free and at fair prices."
     },
     {
-      icon: Users,
-      title: "Community Focus",
-      description: "Building strong relationships with local farmers and vendors in our community."
+      icon: PiggyBank,
+      title: "Daily & Monthly Thrift Plans",
+      description: "Save from as little as ₦450 or ₦950 daily and receive a carefully packaged food essentials bundle—delivered monthly or during festive periods."
+    },
+    {
+      icon: Store,
+      title: "Personal Shopping Services",
+      description: "We shop on your behalf across trusted local markets, carefully sourcing fresh, quality foodstuff at fair and competitive prices."
+    }
+  ]
+
+  const whyChooseUs = [
+    {
+      icon: CheckCircle,
+      title: "Reliable Quality, Delivered On Time",
+      description: "Count on Marketdotcom for fresh, high-quality groceries delivered accurately and on schedule—every order, every time."
+    },
+    {
+      icon: DollarSign,
+      title: "Budget-Smart Food Solutions",
+      description: "Our daily and monthly thrift plans help you save gradually, making quality food more affordable without putting pressure on your finances."
+    },
+    {
+      icon: Zap,
+      title: "Convenient, Streamlined Shopping",
+      description: "Shop fresh groceries and household essentials from anywhere—home or office—without visiting the market, saving time for what truly matters."
+    },
+    {
+      icon: Calendar,
+      title: "Flexible Delivery Options",
+      description: "Choose delivery that fits your schedule—same-day, next-day, or scheduled delivery—and receive your groceries exactly when you need them."
+    }
+  ]
+
+  const socialLinks = [
+    {
+      icon: MessageCircle,
+      name: "WhatsApp Contact",
+      url: "https://wa.link/ig48j8",
+      color: "hover:text-green-600"
+    },
+    {
+      icon: MessageCircle,
+      name: "WhatsApp Community",
+      url: "https://whatsapp.com/channel/0029VbAyTyFIN9ihlQWcnq3u",
+      color: "hover:text-green-600"
+    },
+    {
+      icon: Instagram,
+      name: "Instagram",
+      url: "https://www.instagram.com/marketdotcom.ng?igsh=MWl2MDZ5dDlxbWN4Zw==",
+      color: "hover:text-pink-600"
+    },
+    {
+      icon: Linkedin,
+      name: "LinkedIn",
+      url: "https://www.linkedin.com/in/marketdotcom-1898093a5/",
+      color: "hover:text-blue-600"
     }
   ]
 
@@ -111,39 +127,25 @@ export default function AboutPage() {
         {/* Hero Section */}
         <div className="text-center mb-16">
           <h1 className="text-5xl font-bold text-gray-900 mb-6">
-            Revolutionizing <span className="bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent">Grocery Shopping</span> in Nigeria
+            Welcome to <span className="bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent">Marketdotcom</span>
           </h1>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto mb-8">
-            We're on a mission to make fresh, quality groceries accessible to every Nigerian household through innovative thrift plans and reliable delivery services.
+            Nigeria's most trusted platform for convenient and timely grocery and food essentials shopping, combined with smart savings solutions.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button size="lg" className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600">
-              Start Shopping Today
-            </Button>
+            <Link href="/marketplace">
+              <Button size="lg" className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600">
+                Start Shopping Today
+              </Button>
+            </Link>
             <Button size="lg" variant="outline">
               Learn More
             </Button>
           </div>
         </div>
 
-        {/* Mission & Vision */}
+        {/* Vision & Mission */}
         <div className="grid md:grid-cols-2 gap-8 mb-16">
-          <Card className="hover:shadow-lg transition-shadow duration-300">
-            <CardHeader>
-              <div className="flex items-center space-x-3 mb-4">
-                <div className="p-3 bg-gradient-to-r from-blue-100 to-blue-200 rounded-lg">
-                  <Target className="h-6 w-6 text-blue-600" />
-                </div>
-                <CardTitle className="text-2xl">Our Mission</CardTitle>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <p className="text-gray-700 text-lg leading-relaxed">
-                To democratize access to fresh, quality groceries by providing affordable thrift plans and seamless delivery services that save our customers time and money while supporting local farmers and vendors.
-              </p>
-            </CardContent>
-          </Card>
-
           <Card className="hover:shadow-lg transition-shadow duration-300">
             <CardHeader>
               <div className="flex items-center space-x-3 mb-4">
@@ -155,26 +157,45 @@ export default function AboutPage() {
             </CardHeader>
             <CardContent>
               <p className="text-gray-700 text-lg leading-relaxed">
-                To become Nigeria's leading grocery delivery platform, setting the standard for quality, reliability, and customer satisfaction in the food retail industry.
+                To become Nigeria's most trusted platform for convenient and timely grocery and food essentials shopping, combined with smart savings solutions that help households plan ahead.
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card className="hover:shadow-lg transition-shadow duration-300">
+            <CardHeader>
+              <div className="flex items-center space-x-3 mb-4">
+                <div className="p-3 bg-gradient-to-r from-blue-100 to-blue-200 rounded-lg">
+                  <Target className="h-6 w-6 text-blue-600" />
+                </div>
+                <CardTitle className="text-2xl">Our Mission</CardTitle>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <p className="text-gray-700 text-lg leading-relaxed">
+                To deliver a reliable and convenient platform that enables Nigerian households to purchase groceries and food essentials effortlessly, receive orders on time, and build disciplined savings for their everyday and seasonal food needs—through trusted vendors, efficient logistics, and a mobile-first digital experience.
               </p>
             </CardContent>
           </Card>
         </div>
 
-        {/* Values */}
+        {/* What We Offer */}
         <div className="mb-16">
-          <h2 className="text-3xl font-bold text-center text-gray-900 mb-12">Our Core Values</h2>
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {values.map((value, index) => {
-              const Icon = value.icon
+          <h2 className="text-3xl font-bold text-center text-gray-900 mb-4">What We Offer</h2>
+          <p className="text-center text-gray-600 mb-12 max-w-2xl mx-auto">
+            Comprehensive solutions for all your grocery and food essentials needs
+          </p>
+          <div className="grid md:grid-cols-3 gap-8">
+            {whatWeOffer.map((offer, index) => {
+              const Icon = offer.icon
               return (
                 <Card key={index} className="text-center hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
                   <CardContent className="p-6">
                     <div className="p-4 bg-gradient-to-r from-orange-100 to-red-100 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
                       <Icon className="h-8 w-8 text-orange-600" />
                     </div>
-                    <h3 className="text-xl font-semibold text-gray-900 mb-3">{value.title}</h3>
-                    <p className="text-gray-600">{value.description}</p>
+                    <h3 className="text-xl font-semibold text-gray-900 mb-3">{offer.title}</h3>
+                    <p className="text-gray-600">{offer.description}</p>
                   </CardContent>
                 </Card>
               )
@@ -182,23 +203,17 @@ export default function AboutPage() {
           </div>
         </div>
 
-        {/* Story Section */}
+        {/* About Us */}
         <div className="bg-white rounded-2xl shadow-lg p-8 mb-16">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div>
-              <h2 className="text-3xl font-bold text-gray-900 mb-6">Our Story</h2>
+              <h2 className="text-3xl font-bold text-gray-900 mb-6">About Marketdotcom</h2>
               <div className="space-y-4 text-gray-700">
                 <p>
-                  Founded in 2023, Marketdotcom emerged from a simple observation: Nigerians deserved better access to fresh groceries without the hassle of traditional shopping.
+                  Marketdotcom was founded to solve the common problem of time-consuming, fragmented monthly food shopping. By consolidating all essential items in one place, we aim to provide convenience, affordability and quality experience.
                 </p>
                 <p>
-                  Our founders recognized that busy professionals, families, and individuals needed a reliable solution that would save them time while ensuring they received quality products at competitive prices.
-                </p>
-                <p>
-                  What started as a small delivery service has grown into a comprehensive platform offering daily thrift plans, custom packages, and a marketplace that connects customers directly with local vendors.
-                </p>
-                <p>
-                  Today, we're proud to serve thousands of satisfied customers across Nigeria, supporting local farmers and contributing to the growth of our communities.
+                  Through our thrift savings plans, personal shopping services, and customized food packages, customers can plan ahead, save gradually, and access fresh food without disruption.
                 </p>
               </div>
             </div>
@@ -206,94 +221,104 @@ export default function AboutPage() {
               <div className="aspect-square bg-gradient-to-br from-orange-200 to-red-200 rounded-2xl flex items-center justify-center">
                 <div className="text-center">
                   <Award className="h-16 w-16 text-orange-600 mx-auto mb-4" />
-                  <p className="text-orange-800 font-semibold">Trusted by Thousands</p>
+                  <p className="text-orange-800 font-semibold">Solving Real Problems</p>
                 </div>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Team Section */}
+        {/* Why Marketdotcom? */}
         <div className="mb-16">
-          <h2 className="text-3xl font-bold text-center text-gray-900 mb-12">Meet Our Team</h2>
-          <div className="grid md:grid-cols-3 gap-8">
-            {teamMembers.map((member, index) => (
-              <Card key={index} className="text-center hover:shadow-lg transition-all duration-300">
-                <CardContent className="p-6">
-                  <div className="w-24 h-24 bg-gradient-to-r from-orange-200 to-red-200 rounded-full mx-auto mb-4 flex items-center justify-center">
-                    <Users className="h-12 w-12 text-orange-600" />
-                  </div>
-                  <h3 className="text-xl font-semibold text-gray-900 mb-2">{member.name}</h3>
-                  <Badge variant="secondary" className="mb-4">{member.role}</Badge>
-                  <p className="text-gray-600">{member.bio}</p>
-                </CardContent>
-              </Card>
-            ))}
+          <h2 className="text-3xl font-bold text-center text-gray-900 mb-4">Why Marketdotcom?</h2>
+          <p className="text-center text-gray-600 mb-12 max-w-2xl mx-auto">
+            Discover what makes us Nigeria's most trusted grocery shopping platform
+          </p>
+          <div className="grid md:grid-cols-2 gap-8">
+            {whyChooseUs.map((reason, index) => {
+              const Icon = reason.icon
+              return (
+                <Card key={index} className="hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+                  <CardContent className="p-6">
+                    <div className="flex items-start space-x-4">
+                      <div className="p-3 bg-gradient-to-r from-green-100 to-green-200 rounded-lg flex-shrink-0">
+                        <Icon className="h-6 w-6 text-green-600" />
+                      </div>
+                      <div>
+                        <h3 className="text-xl font-semibold text-gray-900 mb-3">{reason.title}</h3>
+                        <p className="text-gray-600">{reason.description}</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )
+            })}
           </div>
         </div>
 
-        {/* Milestones */}
-        <div className="mb-16">
-          <h2 className="text-3xl font-bold text-center text-gray-900 mb-12">Our Journey</h2>
-          <div className="grid md:grid-cols-3 gap-8">
-            {milestones.map((milestone, index) => (
-              <Card key={index} className="relative hover:shadow-lg transition-all duration-300">
-                <CardContent className="p-6">
-                  <div className="text-center">
-                    <div className="text-4xl font-bold text-orange-600 mb-2">{milestone.year}</div>
-                    <h3 className="text-xl font-semibold text-gray-900 mb-3">{milestone.title}</h3>
-                    <p className="text-gray-600">{milestone.description}</p>
-                  </div>
-                </CardContent>
-                {index < milestones.length - 1 && (
-                  <div className="hidden md:block absolute top-1/2 -right-4 transform -translate-y-1/2">
-                    <div className="w-8 h-0.5 bg-gradient-to-r from-orange-400 to-red-400"></div>
-                  </div>
-                )}
-              </Card>
-            ))}
-          </div>
-        </div>
 
-        {/* Contact Section */}
+        {/* Contact & Social Links */}
         <Card className="bg-gradient-to-r from-orange-50 to-red-50 border-orange-200">
-          <CardContent className="p-8 text-center">
-            <HandHeart className="h-12 w-12 text-orange-600 mx-auto mb-4" />
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">Ready to Join Our Community?</h2>
-            <p className="text-gray-700 mb-6 max-w-2xl mx-auto">
-              Experience the convenience of fresh grocery delivery with our thrift plans. Join thousands of satisfied customers who trust Marketdotcom for their daily needs.
-            </p>
+          <CardContent className="p-8">
+            <div className="text-center mb-8">
+              <HandHeart className="h-12 w-12 text-orange-600 mx-auto mb-4" />
+              <h2 className="text-3xl font-bold text-gray-900 mb-4">Connect With Us</h2>
+              <p className="text-gray-700 max-w-2xl mx-auto">
+                Join our community and experience the convenience of fresh grocery delivery with our smart savings solutions.
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+              {socialLinks.map((social, index) => {
+                const Icon = social.icon
+                return (
+                  <a
+                    key={index}
+                    href={social.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={`flex items-center space-x-3 p-4 bg-white rounded-lg shadow-sm hover:shadow-md transition-all duration-300 ${social.color}`}
+                  >
+                    <Icon className="h-6 w-6" />
+                    <span className="font-medium">{social.name}</span>
+                  </a>
+                )
+              })}
+            </div>
+
             <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
-              <Button size="lg" className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600">
-                Get Started Today
-              </Button>
+              <Link href="/marketplace">
+                <Button size="lg" className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600">
+                  Start Shopping Now
+                </Button>
+              </Link>
               <Link href="/auth/register">
                 <Button size="lg" variant="outline">
-                  Create Account
+                  Join Our Community
                 </Button>
               </Link>
             </div>
 
-            <div className="grid md:grid-cols-3 gap-6 text-left">
-              <div className="flex items-start space-x-3">
-                <MapPin className="h-5 w-5 text-orange-600 mt-0.5" />
+            <div className="grid md:grid-cols-3 gap-6 text-center">
+              <div className="flex flex-col items-center space-y-2">
+                <MapPin className="h-6 w-6 text-orange-600" />
                 <div>
-                  <h4 className="font-semibold text-gray-900">Visit Us</h4>
-                  <p className="text-gray-600 text-sm">38 Agberu Rd, Off Alasoro Street<br />Elebu Oja, Ibadan, Oyo State</p>
+                  <h4 className="font-semibold text-gray-900">Address</h4>
+                  <p className="text-gray-600 text-sm">Road 4, Glorious Estate, Badore Ajah Lagos State.</p>
                 </div>
               </div>
-              <div className="flex items-start space-x-3">
-                <Phone className="h-5 w-5 text-orange-600 mt-0.5" />
+              <div className="flex flex-col items-center space-y-2">
+                <Mail className="h-6 w-6 text-orange-600" />
                 <div>
-                  <h4 className="font-semibold text-gray-900">Call Us</h4>
-                  <p className="text-gray-600 text-sm">+234-903-181-2756</p>
+                  <h4 className="font-semibold text-gray-900">Email</h4>
+                  <p className="text-gray-600 text-sm">marketdotcominfo@gmail.com</p>
                 </div>
               </div>
-              <div className="flex items-start space-x-3">
-                <Mail className="h-5 w-5 text-orange-600 mt-0.5" />
+              <div className="flex flex-col items-center space-y-2">
+                <Phone className="h-6 w-6 text-orange-600" />
                 <div>
-                  <h4 className="font-semibold text-gray-900">Email Us</h4>
-                  <p className="text-gray-600 text-sm">hello@marketdotcom.ng</p>
+                  <h4 className="font-semibold text-gray-900">Phone</h4>
+                  <p className="text-gray-600 text-sm">08138353576</p>
                 </div>
               </div>
             </div>
