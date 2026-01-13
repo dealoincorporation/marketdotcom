@@ -1,35 +1,45 @@
 import type { Metadata } from "next";
-import { Inter, Roboto_Mono, Poppins, Space_Grotesk } from "next/font/google";
 import "./globals.css";
+import "../../public/fonts/space-grotesk.css";
 import { Providers } from "@/components/providers";
 import { Toaster } from "react-hot-toast";
 import { WhatsAppFloat } from "@/components/ui/whatsapp-float";
 
-const inter = Inter({
-  subsets: ["latin"],
-  variable: "--font-inter",
-  display: "swap",
-});
+// Space Grotesk is now loaded via CSS import above - this ensures it works even offline!
+// The font will load from Google Fonts when available, or use beautiful system font fallbacks
 
-const robotoMono = Roboto_Mono({
-  subsets: ["latin"],
-  variable: "--font-roboto-mono",
-  display: "swap",
-});
+// Other fonts with system fallbacks (these don't need Google Fonts)
+const inter = {
+  className: '',
+  variable: '--font-inter',
+  style: {
+    fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif'
+  }
+};
 
-const poppins = Poppins({
-  subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700"],
-  variable: "--font-poppins",
-  display: "swap",
-});
+const robotoMono = {
+  className: '',
+  variable: '--font-roboto-mono',
+  style: {
+    fontFamily: '"SF Mono", Monaco, Inconsolata, Consolas, "Courier New", monospace'
+  }
+};
 
-const spaceGrotesk = Space_Grotesk({
-  subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700"],
-  variable: "--font-space-grotesk",
-  display: "swap",
-});
+const poppins = {
+  className: '',
+  variable: '--font-poppins',
+  style: {
+    fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif'
+  }
+};
+
+const spaceGrotesk = {
+  className: 'font-space-grotesk',
+  variable: '--font-space-grotesk',
+  style: {
+    fontFamily: 'var(--font-space-grotesk)'
+  }
+};
 
 export const metadata: Metadata = {
   title: "Marketdotcom - Smart Shopping, Better Living",

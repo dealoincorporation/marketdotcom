@@ -136,7 +136,14 @@ export default function CheckoutPage() {
 
   const fetchWalletBalance = async () => {
     try {
-      const response = await fetch('/api/wallet')
+      // Get the auth token from localStorage
+      const token = localStorage.getItem('token')
+
+      const response = await fetch('/api/wallet', {
+        headers: {
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        }
+      })
       const data = await response.json()
       setWalletBalance(data.walletBalance || 0)
     } catch (error) {
@@ -188,7 +195,33 @@ export default function CheckoutPage() {
 
     setLoading(true)
     try {
-      // Create order in database first
+      // PAYMENT FIRST, then create order only after successful payment
+      if (paymentMethod === 'wallet') {
+        // For wallet payments, check balance and deduct immediately, then create order
+        await createOrderAfterPayment()
+
+      } else if (paymentMethod === 'paystack') {
+        // For Paystack payments, initialize payment first (modal will open)
+        // Order will be created in the success callback after payment verification
+        await handlePaystackPayment(null, finalTotal)
+
+      } else if (paymentMethod === 'card') {
+        // For card payments, use Paystack payment gateway
+        await handlePaystackPayment(null, finalTotal)
+      }
+    } catch (error) {
+      console.error('Error placing order:', error)
+      toast.error(error instanceof Error ? error.message : 'Failed to place order')
+      setLoading(false)
+    }
+  }
+
+  const createOrderAfterPayment = async () => {
+    try {
+      // Get the auth token from localStorage
+      const token = localStorage.getItem('token')
+
+      // Create order data
       const orderData = {
         items: items.map(item => ({
           productId: item.id,
@@ -213,6 +246,7 @@ export default function CheckoutPage() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
         },
         body: JSON.stringify(orderData),
       })
@@ -221,45 +255,33 @@ export default function CheckoutPage() {
         throw new Error('Failed to create order')
       }
 
-      const orderResult = await response.json()
-      const orderId = orderResult.orderId
-
-      // Handle payment based on method
-      if (paymentMethod === 'wallet') {
-        // Wallet payment is already handled in order creation
-        clearCart()
-        setStep(3)
-        toast.success('Order placed successfully!')
-      } else if (paymentMethod === 'paystack') {
-        // Initialize Paystack payment
-        await handlePaystackPayment(orderId, finalTotal)
-      } else if (paymentMethod === 'card') {
-        // For card payments, we could integrate a payment gateway here
-        // For now, treat as wallet payment
-        clearCart()
-        setStep(3)
-        toast.success('Order placed successfully!')
-      }
+      // Clear cart and show success
+      clearCart()
+      setStep(3)
+      toast.success('Order placed successfully!')
     } catch (error) {
-      console.error('Error placing order:', error)
-      toast.error('Failed to place order. Please try again.')
-    } finally {
-      setLoading(false)
+      console.error('Error creating order:', error)
+      toast.error(error instanceof Error ? error.message : 'Failed to create order')
+      throw error
     }
   }
 
-  const handlePaystackPayment = async (orderId: string, amount: number) => {
+  const handlePaystackPayment = async (orderId: string | null, amount: number) => {
     try {
-      // Initialize payment with Paystack
+      // Get the auth token from localStorage
+      const token = localStorage.getItem('token')
+
+      // Initialize payment with Paystack (orderId can be null - we'll create order after payment)
       const paymentResponse = await fetch('/api/payments/initialize', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
         },
         body: JSON.stringify({
-          orderId,
+          orderId: orderId || undefined, // Don't send null, send undefined
           amount,
-          paymentMethod: 'paystack'
+          paymentMethod: paymentMethod || 'paystack'
         }),
       })
 
@@ -305,10 +327,14 @@ export default function CheckoutPage() {
 
   const verifyPayment = async (reference: string) => {
     try {
+      // Get the auth token from localStorage
+      const token = localStorage.getItem('token')
+
       const response = await fetch('/api/payments/verify', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
         },
         body: JSON.stringify({ reference }),
       })
@@ -316,11 +342,18 @@ export default function CheckoutPage() {
       const result = await response.json()
 
       if (result.success && result.paymentStatus === 'COMPLETED') {
-        clearCart()
-        setStep(3)
-        toast.success('Payment successful! Order placed.')
+        // Payment successful! Now create the order
+        try {
+          await createOrderAfterPayment()
+          // setLoading(false) is handled in createOrderAfterPayment
+        } catch (orderError) {
+          console.error('Error creating order after payment:', orderError)
+          toast.error('Payment successful but order creation failed. Please contact support.')
+          setLoading(false)
+        }
       } else {
         toast.error('Payment verification failed. Please contact support.')
+        setLoading(false)
       }
     } catch (error) {
       console.error('Error verifying payment:', error)
@@ -349,10 +382,62 @@ export default function CheckoutPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
-      {/* Modern Header */}
+      {/* Modern Responsive Header */}
       <header className="bg-white/80 backdrop-blur-lg shadow-lg border-b border-white/20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-20">
+          {/* Mobile Layout */}
+          <div className="md:hidden py-4 space-y-4">
+            <div className="flex items-center justify-between">
+              <Link href="/cart" className="group flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-gray-50 transition-all duration-200">
+                <ArrowLeft className="h-4 w-4 text-gray-600 group-hover:text-orange-600 transition-colors" />
+                <span className="text-sm font-medium text-gray-700 group-hover:text-orange-600 transition-colors">Back to Cart</span>
+              </Link>
+              <div className="flex items-center space-x-2 px-3 py-2 bg-gradient-to-r from-orange-50 to-red-50 rounded-lg border border-orange-100">
+                <div className="text-xs font-semibold text-gray-800">
+                  {totalItems} items
+                </div>
+                <div className="w-px h-3 bg-orange-200"></div>
+                <div className="text-xs font-bold bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent">
+                  ₦{subtotal.toLocaleString()}
+                </div>
+              </div>
+            </div>
+
+            <div className="text-center">
+              <h1 className="text-xl font-bold bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent">Secure Checkout</h1>
+              <div className="flex items-center justify-center space-x-4 mt-3">
+                <div className={`flex flex-col items-center space-y-1 transition-all duration-300 ${step >= 1 ? 'text-orange-600' : 'text-gray-400'}`}>
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shadow-md transition-all duration-300 ${
+                    step >= 1 ? 'bg-gradient-to-r from-orange-500 to-red-500 text-white shadow-orange-200' : 'bg-gray-100 shadow-gray-200'
+                  }`}>
+                    1
+                  </div>
+                  <span className="text-xs font-medium">Delivery</span>
+                </div>
+                <div className={`w-6 h-0.5 transition-all duration-300 ${step >= 2 ? 'bg-gradient-to-r from-orange-400 to-red-400' : 'bg-gray-300'}`}></div>
+                <div className={`flex flex-col items-center space-y-1 transition-all duration-300 ${step >= 2 ? 'text-orange-600' : 'text-gray-400'}`}>
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shadow-md transition-all duration-300 ${
+                    step >= 2 ? 'bg-gradient-to-r from-orange-500 to-red-500 text-white shadow-orange-200' : 'bg-gray-100 shadow-gray-200'
+                  }`}>
+                    2
+                  </div>
+                  <span className="text-xs font-medium">Payment</span>
+                </div>
+                <div className={`w-6 h-0.5 transition-all duration-300 ${step >= 3 ? 'bg-gradient-to-r from-orange-400 to-red-400' : 'bg-gray-300'}`}></div>
+                <div className={`flex flex-col items-center space-y-1 transition-all duration-300 ${step >= 3 ? 'text-orange-600' : 'text-gray-400'}`}>
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shadow-md transition-all duration-300 ${
+                    step >= 3 ? 'bg-gradient-to-r from-orange-500 to-red-500 text-white shadow-orange-200' : 'bg-gray-100 shadow-gray-200'
+                  }`}>
+                    3
+                  </div>
+                  <span className="text-xs font-medium">Confirm</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Desktop Layout */}
+          <div className="hidden md:flex items-center justify-between h-20">
             <Link href="/cart" className="group flex items-center space-x-3 px-4 py-2 rounded-xl hover:bg-gray-50 transition-all duration-200">
               <ArrowLeft className="h-5 w-5 text-gray-600 group-hover:text-orange-600 transition-colors" />
               <span className="text-gray-700 font-medium group-hover:text-orange-600 transition-colors">Back to Cart</span>
@@ -583,30 +668,30 @@ export default function CheckoutPage() {
                 </div>
               </div>
 
-              {/* Delivery Schedule */}
+              {/* Delivery Schedule - Responsive */}
               <div className="bg-white/70 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 overflow-hidden">
-                <div className="bg-gradient-to-r from-green-500 to-emerald-500 p-6">
-                  <h2 className="text-xl font-bold text-white flex items-center">
-                    <Calendar className="h-6 w-6 mr-3" />
-                    Schedule Your Delivery
+                <div className="bg-gradient-to-r from-green-500 to-emerald-500 p-4 sm:p-6">
+                  <h2 className="text-lg sm:text-xl font-bold text-white flex items-center">
+                    <Calendar className="h-5 w-5 sm:h-6 sm:w-6 mr-2 sm:mr-3" />
+                    <span className="text-sm sm:text-base">Schedule Your Delivery</span>
                   </h2>
-                  <p className="text-green-100 mt-1">Choose when you'd like your order delivered</p>
+                  <p className="text-green-100 mt-1 text-sm sm:text-base">Choose when you'd like your order delivered</p>
                 </div>
-                <div className="p-6 space-y-6">
+                <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
                   <div className="space-y-3">
                     <Label className="text-sm font-semibold text-gray-700 flex items-center">
                       <Calendar className="h-4 w-4 mr-2 text-green-600" />
                       Preferred Delivery Date
                     </Label>
                     <Select value={deliveryDate} onValueChange={setDeliveryDate}>
-                      <SelectTrigger className="h-12 border-2 focus:border-green-500 bg-white">
+                      <SelectTrigger className="h-12 border-2 focus:border-green-500 bg-white text-sm sm:text-base">
                         <SelectValue placeholder="Select delivery date" />
                       </SelectTrigger>
-                      <SelectContent>
+                      <SelectContent className="bg-white border-2 border-gray-200 shadow-xl">
                         {[...new Set(deliverySlots.map(slot => slot.date))].map(date => (
-                          <SelectItem key={date} value={date} className="h-12">
-                            <div className="flex flex-col items-start">
-                              <span className="font-medium">
+                          <SelectItem key={date} value={date} className="h-12 hover:bg-green-50 focus:bg-green-50 cursor-pointer">
+                            <div className="flex flex-col items-start py-1">
+                              <span className="font-medium text-gray-900">
                                 {new Date(date).toLocaleDateString('en-US', { weekday: 'long' })}
                               </span>
                               <span className="text-sm text-gray-500">
@@ -625,11 +710,11 @@ export default function CheckoutPage() {
                         <Clock className="h-4 w-4 mr-2 text-green-600" />
                         Preferred Time Slot
                       </Label>
-                      <RadioGroup value={deliveryTime} onValueChange={setDeliveryTime} className="space-y-3">
+                      <RadioGroup value={deliveryTime} onValueChange={setDeliveryTime} className="space-y-2 sm:space-y-3">
                         {deliverySlots
                           .filter(slot => slot.date === deliveryDate && slot.available)
                           .map(slot => (
-                            <div key={slot.id} className={`p-4 rounded-xl border-2 transition-all duration-300 cursor-pointer ${
+                            <div key={slot.id} className={`p-3 sm:p-4 rounded-xl border-2 transition-all duration-300 cursor-pointer ${
                               deliveryTime === slot.timeSlot
                                 ? 'border-green-500 bg-gradient-to-r from-green-50 to-emerald-50 shadow-lg'
                                 : 'border-gray-200 hover:border-green-300 hover:shadow-md'
@@ -638,12 +723,12 @@ export default function CheckoutPage() {
                                 <RadioGroupItem value={slot.timeSlot} id={slot.id} />
                                 <Label htmlFor={slot.id} className="flex-1 cursor-pointer">
                                   <div className="flex items-center space-x-3">
-                                    <div className="p-2 bg-green-100 rounded-lg">
-                                      <Clock className="h-5 w-5 text-green-600" />
+                                    <div className="p-2 bg-green-100 rounded-lg flex-shrink-0">
+                                      <Clock className="h-4 w-4 sm:h-5 sm:w-5 text-green-600" />
                                     </div>
-                                    <div>
-                                      <span className="font-semibold text-gray-900">{slot.timeSlot}</span>
-                                      <p className="text-sm text-gray-600">Fast & reliable delivery</p>
+                                    <div className="min-w-0 flex-1">
+                                      <span className="font-semibold text-gray-900 text-sm sm:text-base block truncate">{slot.timeSlot}</span>
+                                      <p className="text-xs sm:text-sm text-gray-600">Fast & reliable delivery</p>
                                     </div>
                                   </div>
                                 </Label>
@@ -664,33 +749,33 @@ export default function CheckoutPage() {
                       onChange={(e) => setDeliveryNotes(e.target.value)}
                       placeholder="Any special instructions for delivery..."
                       rows={3}
-                      className="border-2 focus:border-green-500 resize-none bg-white"
+                      className="border-2 focus:border-green-500 resize-none bg-white text-sm sm:text-base"
                     />
                   </div>
 
-                  <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-5">
-                    <div className="flex items-start space-x-4">
-                      <div className="p-3 bg-blue-100 rounded-xl">
-                        <Truck className="h-6 w-6 text-blue-600" />
+                  <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-4 sm:p-5">
+                    <div className="flex items-start space-x-3 sm:space-x-4">
+                      <div className="p-2 sm:p-3 bg-blue-100 rounded-xl flex-shrink-0">
+                        <Truck className="h-5 w-5 sm:h-6 sm:w-6 text-blue-600" />
                       </div>
-                      <div className="flex-1">
-                        <h3 className="font-bold text-blue-900 mb-2">🚚 Delivery Information</h3>
-                        <ul className="text-sm text-blue-800 space-y-1.5">
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-bold text-blue-900 mb-2 text-sm sm:text-base">🚚 Delivery Information</h3>
+                        <ul className="text-xs sm:text-sm text-blue-800 space-y-1 sm:space-y-1.5">
                           <li className="flex items-center">
-                            <Check className="h-4 w-4 mr-2 text-green-600" />
-                            Orders delivered within 4 hours of scheduled time
+                            <Check className="h-3 w-3 sm:h-4 sm:w-4 mr-2 text-green-600 flex-shrink-0" />
+                            <span className="truncate">Orders delivered within 4 hours of scheduled time</span>
                           </li>
                           <li className="flex items-center">
-                            <Check className="h-4 w-4 mr-2 text-green-600" />
-                            Place orders before 10 AM for same-day delivery
+                            <Check className="h-3 w-3 sm:h-4 sm:w-4 mr-2 text-green-600 flex-shrink-0" />
+                            <span className="truncate">Place orders before 10 AM for same-day delivery</span>
                           </li>
                           <li className="flex items-center">
-                            <Check className="h-4 w-4 mr-2 text-green-600" />
-                            Orders after 3 PM delivered next day
+                            <Check className="h-3 w-3 sm:h-4 sm:w-4 mr-2 text-green-600 flex-shrink-0" />
+                            <span className="truncate">Orders after 3 PM delivered next day</span>
                           </li>
                           <li className="flex items-center">
-                            <Check className="h-4 w-4 mr-2 text-green-600" />
-                            SMS & email updates on delivery status
+                            <Check className="h-3 w-3 sm:h-4 sm:w-4 mr-2 text-green-600 flex-shrink-0" />
+                            <span className="truncate">SMS & email updates on delivery status</span>
                           </li>
                         </ul>
                       </div>

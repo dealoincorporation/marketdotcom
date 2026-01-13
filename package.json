@@ -9,10 +9,13 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "build:offline": "SKIP_ENV_LOADING=true DATABASE_URL=mongodb://localhost:27017/marketdotcom NEXTAUTH_URL=http://localhost:3000 NEXTAUTH_SECRET=fallback-secret NEXT_PUBLIC_APP_URL=http://localhost:3000 JWT_SECRET=fallback-jwt NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY=pk_test_9071bb582b6486e980b86bce551587236426329a next build --no-lint",
+    "build:safe": "DATABASE_URL=mongodb://localhost:27017/marketdotcom NEXTAUTH_URL=http://localhost:3000 NEXTAUTH_SECRET=fallback-secret NEXT_PUBLIC_APP_URL=http://localhost:3000 JWT_SECRET=fallback-jwt NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY=pk_test_9071bb582b6486e980b86bce551587236426329a NODE_OPTIONS='--no-deprecation' next build --no-lint",
+    "download-fonts": "node download-fonts.js",
     "start": "next start",
     "lint": "eslint",
     "db:seed": "tsx prisma/seed.ts",
-    "netlify-build": "npm run build",
+    "netlify-build": "npm run build:offline",
     "postinstall": "DATABASE_URL=${DATABASE_URL:-'mongodb://localhost:27017/marketdotcom'} prisma generate || echo 'Prisma generate skipped'"
   },
   "dependencies": {

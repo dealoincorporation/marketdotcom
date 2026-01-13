@@ -17,40 +17,54 @@ export async function POST(request: Request) {
 
     const { orderId, amount, paymentMethod } = await request.json()
 
-    if (!orderId || !amount || amount <= 0) {
+    if (!amount || amount <= 0) {
       return NextResponse.json(
-        { error: "Order ID and valid amount are required" },
+        { error: "Valid amount is required" },
         { status: 400 }
       )
     }
 
-    // Verify the order exists and belongs to the user
-    const order = await prisma.order.findFirst({
-      where: {
-        id: orderId,
-        userId: user.userId,
-        paymentStatus: "PENDING"
-      }
-    })
+    let order = null
 
-    if (!order) {
+    // For Paystack payments, orderId is optional (we create order after payment)
+    // For other payment methods, orderId is required
+    if (orderId) {
+      // Verify the order exists and belongs to the user
+      order = await prisma.order.findFirst({
+        where: {
+          id: orderId,
+          userId: user.userId,
+          paymentStatus: "PENDING"
+        }
+      })
+
+      if (!order) {
+        return NextResponse.json(
+          { error: "Order not found or already paid" },
+          { status: 404 }
+        )
+      }
+    } else if (paymentMethod !== 'paystack' && paymentMethod !== 'card') {
+      // For non-Paystack payments, orderId is required
       return NextResponse.json(
-        { error: "Order not found or already paid" },
-        { status: 404 }
+        { error: "Order ID is required for this payment method" },
+        { status: 400 }
       )
     }
 
     // Generate unique reference
     const reference = generateReference()
 
-    // Update order with transaction reference
-    await prisma.order.update({
-      where: { id: orderId },
-      data: {
-        transactionId: reference,
-        paymentMethod: paymentMethod || "paystack"
-      }
-    })
+    // Update order with transaction reference (only if order exists)
+    if (orderId && order) {
+      await prisma.order.update({
+        where: { id: orderId },
+        data: {
+          transactionId: reference,
+          paymentMethod: paymentMethod || "paystack"
+        }
+      })
+    }
 
     // Initialize Paystack transaction
     const paystackResponse = await PaystackService.initializeTransaction({
@@ -59,15 +73,15 @@ export async function POST(request: Request) {
       reference: reference,
       callback_url: `${process.env.NEXTAUTH_URL}/checkout?reference=${reference}`,
       metadata: {
-        orderId: orderId,
+        orderId: orderId || null,
         userId: user.userId,
-        custom_fields: [
+        custom_fields: orderId ? [
           {
             display_name: "Order ID",
             variable_name: "order_id",
             value: orderId
           }
-        ]
+        ] : []
       }
     })
 
