@@ -160,6 +160,32 @@ export default function CheckoutPage() {
   }
 
   const handlePlaceOrder = async () => {
+    // Validate required fields
+    if (!selectedAddress) {
+      toast.error('Please select a delivery address')
+      return
+    }
+
+    if (!deliveryDate) {
+      toast.error('Please select a delivery date')
+      return
+    }
+
+    if (!deliveryTime) {
+      toast.error('Please select a delivery time')
+      return
+    }
+
+    if (!paymentMethod) {
+      toast.error('Please select a payment method')
+      return
+    }
+
+    if (paymentMethod === 'wallet' && walletBalance < finalTotal) {
+      toast.error('Insufficient wallet balance')
+      return
+    }
+
     setLoading(true)
     try {
       // Create order in database first
@@ -923,35 +949,6 @@ export default function CheckoutPage() {
                 </div>
               </div>
 
-              {/* Payment Security & Trust */}
-              <div className="bg-gradient-to-r from-slate-50 to-gray-50 border border-gray-200 rounded-2xl p-6 shadow-lg">
-                <div className="flex items-center space-x-6">
-                  <div className="p-4 bg-gradient-to-r from-green-100 to-emerald-100 rounded-2xl">
-                    <Shield className="h-10 w-10 text-green-600" />
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="font-bold text-gray-900 text-lg mb-2">🔒 Secure Payment Guarantee</h3>
-                    <p className="text-sm text-gray-600 leading-relaxed mb-3">
-                      Your payment information is encrypted and processed securely.
-                      We never store your card details and use bank-level security.
-                    </p>
-                    <div className="flex items-center space-x-4 text-sm">
-                      <div className="flex items-center space-x-2">
-                        <Check className="h-4 w-4 text-green-600" />
-                        <span className="text-gray-700">SSL Encrypted</span>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <Check className="h-4 w-4 text-green-600" />
-                        <span className="text-gray-700">PCI Compliant</span>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <Check className="h-4 w-4 text-green-600" />
-                        <span className="text-gray-700">Bank-Level Security</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
             </div>
 
             {/* Enhanced Payment Summary */}
@@ -1004,51 +1001,42 @@ export default function CheckoutPage() {
                       </Button>
                       <Button
                         onClick={handlePlaceOrder}
-                        className="flex-1 h-12 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-300"
+                        className="flex-1 h-14 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-bold text-lg shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50"
                         disabled={loading}
                       >
                         {loading ? (
                           <>
                             <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-                            Processing...
+                            Processing Payment...
                           </>
                         ) : (
                           <>
-                            Place Order →
+                            💳 Complete Order • ₦{finalTotal.toLocaleString()}
                           </>
                         )}
                       </Button>
                     </div>
 
-                    {/* Payment Method Confirmation */}
-                    <div className="mt-4 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-xl">
-                      <div className="flex items-center justify-center space-x-3">
-                        <div className="p-2 bg-blue-100 rounded-lg">
-                          {paymentMethod === 'card' && <CreditCard className="h-5 w-5 text-blue-600" />}
-                          {paymentMethod === 'wallet' && <span className="text-lg">💰</span>}
-                          {paymentMethod === 'paystack' && <span className="text-lg">🏦</span>}
-                        </div>
-                        <div className="text-center">
-                          <p className="text-sm text-blue-800 font-medium">
-                            💳 Paying with <strong className="text-blue-900">
-                              {paymentMethod === 'card' ? 'Credit/Debit Card' :
-                               paymentMethod === 'wallet' ? 'Wallet Balance' : 'Bank Transfer'}
-                            </strong>
-                            {useWallet && paymentMethod === 'card' && (
-                              <span className="block text-xs text-green-700 mt-1">
-                                + ₦{walletDeduction.toLocaleString()} from wallet
-                              </span>
-                            )}
-                          </p>
-                        </div>
+                  {/* Order Summary Preview */}
+                  <div className="mt-6 p-4 bg-gradient-to-r from-gray-50 to-gray-100 border border-gray-200 rounded-xl">
+                    <div className="text-center">
+                      <div className="text-sm text-gray-600 mb-2">Payment Method</div>
+                      <div className="flex items-center justify-center space-x-2">
+                        {paymentMethod === 'card' && <CreditCard className="h-5 w-5 text-gray-600" />}
+                        {paymentMethod === 'wallet' && <span className="text-lg">💰</span>}
+                        {paymentMethod === 'paystack' && <span className="text-lg">🏦</span>}
+                        <span className="text-sm font-medium text-gray-800">
+                          {paymentMethod === 'card' ? 'Credit/Debit Card' :
+                           paymentMethod === 'wallet' ? 'Wallet Balance' : 'Bank Transfer'}
+                        </span>
+                        {useWallet && paymentMethod === 'card' && (
+                          <span className="text-xs text-green-600 font-medium">
+                            (+₦{walletDeduction.toLocaleString()} from wallet)
+                          </span>
+                        )}
                       </div>
                     </div>
-
-                    {/* Security Badge */}
-                    <div className="flex items-center justify-center space-x-2 text-xs text-gray-600 bg-gray-50 rounded-lg py-2">
-                      <Shield className="h-4 w-4 text-green-600" />
-                      <span>Secured by SSL encryption</span>
-                    </div>
+                  </div>
                   </div>
                 </div>
               </div>
@@ -1075,7 +1063,7 @@ export default function CheckoutPage() {
                   {/* Order Details */}
                   <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6 border border-blue-200">
                     <h3 className="font-bold text-xl text-blue-900 mb-4 flex items-center">
-                      📋 Order Details
+                      📋 Order Confirmed
                     </h3>
                     <div className="space-y-3">
                       <div className="flex justify-between items-center py-2 border-b border-blue-200">
@@ -1091,9 +1079,16 @@ export default function CheckoutPage() {
                           day: 'numeric'
                         })}</span>
                       </div>
-                      <div className="flex justify-between items-center py-2">
+                      <div className="flex justify-between items-center py-2 border-b border-blue-200">
                         <span className="text-blue-700 font-medium">Delivery Time:</span>
                         <span className="text-blue-900">{deliveryTime}</span>
+                      </div>
+                      <div className="flex justify-between items-center py-2">
+                        <span className="text-blue-700 font-medium">Payment Method:</span>
+                        <span className="text-blue-900 font-medium">
+                          {paymentMethod === 'card' ? 'Credit/Debit Card' :
+                           paymentMethod === 'wallet' ? 'Wallet Balance' : 'Bank Transfer'}
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -1154,6 +1149,23 @@ export default function CheckoutPage() {
                     </div>
                   </div>
                 </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex flex-col sm:flex-row gap-4 justify-center mt-8">
+                <Button
+                  onClick={() => router.push('/dashboard')}
+                  className="flex-1 h-12 bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white font-semibold"
+                >
+                  📊 View Orders
+                </Button>
+                <Button
+                  onClick={() => router.push('/marketplace')}
+                  variant="outline"
+                  className="flex-1 h-12 border-2 hover:bg-gray-50 font-semibold"
+                >
+                  🛒 Continue Shopping
+                </Button>
               </div>
             </div>
           </div>
