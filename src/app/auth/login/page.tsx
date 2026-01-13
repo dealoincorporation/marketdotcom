@@ -19,7 +19,7 @@ function LoginForm() {
   const [rememberMe, setRememberMe] = useState(false)
   const router = useRouter()
   const searchParams = useSearchParams()
-  const { login } = useAuth()
+  const { login, user } = useAuth()
 
   // Load saved credentials on component mount
   useEffect(() => {
@@ -32,6 +32,13 @@ function LoginForm() {
       setRememberMe(true)
     }
   }, [])
+
+  // Redirect authenticated users away from login page
+  useEffect(() => {
+    if (user) {
+      router.push('/dashboard')
+    }
+  }, [user, router])
   const message = searchParams.get("message")
   const error = searchParams.get("error")
   const authError = searchParams.get("auth_error")

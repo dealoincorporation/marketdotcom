@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Loader2, Lock, CheckCircle, XCircle, Eye, EyeOff } from "lucide-react"
 import { AuthLayout } from "@/components/auth-layout"
+import { useAuth } from "@/contexts/AuthContext"
 
 function ResetPasswordForm() {
   const [password, setPassword] = useState("")
@@ -22,6 +23,14 @@ function ResetPasswordForm() {
 
   const router = useRouter()
   const searchParams = useSearchParams()
+  const { user } = useAuth()
+
+  // Redirect authenticated users away from reset password page
+  useEffect(() => {
+    if (user) {
+      router.push('/dashboard')
+    }
+  }, [user, router])
 
   useEffect(() => {
     const tokenParam = searchParams.get("token")

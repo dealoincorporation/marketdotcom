@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Loader2, Mail, CheckCircle, RefreshCw, Shield, Clock } from "lucide-react"
 import { AuthLayout } from "@/components/auth-layout"
+import { useAuth } from "@/contexts/AuthContext"
 
 function VerifyEmailForm() {
   const [email, setEmail] = useState("")
@@ -18,7 +19,15 @@ function VerifyEmailForm() {
   const [message, setMessage] = useState("")
   const router = useRouter()
   const searchParams = useSearchParams()
+  const { user } = useAuth()
   const inputRefs = useRef<(HTMLInputElement | null)[]>([])
+
+  // Redirect authenticated users away from verify email page
+  useEffect(() => {
+    if (user) {
+      router.push('/dashboard')
+    }
+  }, [user, router])
 
   useEffect(() => {
     const emailParam = searchParams.get("email")
