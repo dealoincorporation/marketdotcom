@@ -1,6 +1,7 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { useRouter, useSearchParams } from "next/navigation"
 import { motion } from "framer-motion"
 import {
   Wallet,
@@ -30,6 +31,9 @@ interface WalletTabProps {
 }
 
 export default function WalletTab({ walletInfo }: WalletTabProps) {
+  const router = useRouter()
+  const searchParams = useSearchParams()
+
   const formatPrice = (price: number) => {
     return `₦${price.toLocaleString()}`
   }
@@ -60,6 +64,46 @@ export default function WalletTab({ walletInfo }: WalletTabProps) {
   const convertiblePoints = Math.min(walletInfo.points, maxConvertibleAmount)
   const cashValue = Math.floor(convertiblePoints / pointsSettings.nairaPerPoint) * pointsSettings.nairaPerPoint
 
+  // Check for payment verification on component mount
+  useEffect(() => {
+    const reference = searchParams.get('reference')
+    if (reference && reference.startsWith('txn_')) {
+      // This is a wallet funding payment reference
+      verifyWalletFunding(reference)
+    }
+  }, [searchParams])
+
+  const verifyWalletFunding = async (reference: string) => {
+    try {
+      const response = await fetch('/api/wallet/fund/verify', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ reference }),
+      })
+
+      const data = await response.json()
+
+      if (response.ok && data.success) {
+        if (data.status === 'COMPLETED') {
+          alert(`Wallet funded successfully! ₦${data.amount.toLocaleString()} has been added to your balance.`)
+        } else {
+          alert("Payment verification failed. Please contact support if you were charged.")
+        }
+        // Clean up URL
+        router.replace('/dashboard?tab=wallet', { scroll: false })
+        // Refresh the page to update wallet balance
+        window.location.reload()
+      } else {
+        alert("Failed to verify payment. Please contact support.")
+      }
+    } catch (error) {
+      console.error('Error verifying wallet funding:', error)
+      alert("Failed to verify payment. Please contact support.")
+    }
+  }
+
   const handleFundWallet = async () => {
     if (!fundingAmount || parseFloat(fundingAmount) <= 0) {
       alert("Please enter a valid amount")
@@ -79,19 +123,17 @@ export default function WalletTab({ walletInfo }: WalletTabProps) {
         }),
       })
 
-      if (response.ok) {
-        alert("Wallet funded successfully!")
-        setShowFundModal(false)
-        setFundingAmount("")
-        // You would typically refresh the wallet data here
-        window.location.reload()
+      const data = await response.json()
+
+      if (response.ok && data.success) {
+        // Redirect to Paystack payment page
+        window.location.href = data.authorization_url
       } else {
-        const error = await response.json()
-        alert(error.error || "Failed to fund wallet")
+        alert(data.error || "Failed to initialize payment")
       }
     } catch (error) {
       console.error('Error funding wallet:', error)
-      alert("Failed to fund wallet. Please try again.")
+      alert("Failed to initialize payment. Please try again.")
     } finally {
       setIsFunding(false)
     }
@@ -342,7 +384,7 @@ export default function WalletTab({ walletInfo }: WalletTabProps) {
             animate={{ opacity: 1, scale: 1 }}
             className="w-full max-w-md"
           >
-            <Card className="shadow-2xl">
+            <Card className="shadow-2xl bg-white">
               <CardHeader>
                 <CardTitle className="text-xl font-bold flex items-center space-x-2">
                   <Wallet className="h-6 w-6 text-green-600" />
@@ -452,7 +494,7 @@ export default function WalletTab({ walletInfo }: WalletTabProps) {
             animate={{ opacity: 1, scale: 1 }}
             className="w-full max-w-md"
           >
-            <Card className="shadow-2xl">
+            <Card className="shadow-2xl bg-white">
               <CardHeader>
                 <CardTitle className="text-xl font-bold flex items-center space-x-2">
                   <Star className="h-6 w-6 text-orange-600" />

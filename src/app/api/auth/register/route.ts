@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import bcrypt from "bcryptjs"
 import { getPrismaClient } from "@/lib/prisma"
-import { sendEmailVerificationEmail } from "@/lib/email"
+import { sendEmailVerificationEmail, sendAdminUserRegistrationNotification } from "@/lib/email"
 import crypto from "crypto"
 
 // Force dynamic rendering to avoid Edge Runtime issues
@@ -76,6 +76,20 @@ export async function POST(request: NextRequest) {
     } catch (emailError) {
       console.error("Failed to send verification email:", emailError)
       // Don't fail registration if email fails, but log it
+    }
+
+    // Send admin notification
+    try {
+      await sendAdminUserRegistrationNotification({
+        userId: user.id,
+        name: user.name || 'Unknown User',
+        email: user.email || 'No email provided',
+        phone: user.phone || 'No phone provided',
+        registrationDate: user.createdAt.toISOString()
+      })
+    } catch (adminEmailError) {
+      console.error("Failed to send admin registration notification:", adminEmailError)
+      // Don't fail registration if admin email fails
     }
 
     // Remove sensitive data from response

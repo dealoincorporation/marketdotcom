@@ -338,8 +338,8 @@ export async function sendAdminOrderNotification(data: OrderEmailData) {
       </html>
     `
 
-    // Send to admin email (you should configure this in environment variables)
-    const adminEmail = process.env.ADMIN_EMAIL || 'admin@marketdotcom.com'
+    // Send to admin email
+    const adminEmail = 'marketdotcominfo@gmail.com'
 
     // Try Resend first (if API key is available)
     if (resend && process.env.RESEND_API_KEY) {
@@ -653,6 +653,212 @@ export async function sendOrderStatusUpdateEmail(
     throw new Error('No email service configured. Please set RESEND_API_KEY or GMAIL_USER/GMAIL_APP_PASSWORD')
   } catch (error) {
     console.error('Error sending order status update email:', error)
+    throw error
+  }
+}
+
+// Admin user registration notification
+export async function sendAdminUserRegistrationNotification(data: {
+  userId: string
+  name: string
+  email: string
+  phone: string
+  registrationDate: string
+}) {
+  const emailHtml = `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <meta charset="utf-8">
+        <title>New User Registration</title>
+        <style>
+          body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+          .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+          .header { background: linear-gradient(135deg, #f97316, #dc2626); color: white; padding: 20px; border-radius: 8px 8px 0 0; }
+          .content { background: white; padding: 20px; border: 1px solid #ddd; border-radius: 0 0 8px 8px; }
+          .highlight { background: #f9f9f9; padding: 15px; border-radius: 5px; margin: 10px 0; }
+          .footer { margin-top: 20px; padding-top: 20px; border-top: 1px solid #eee; font-size: 12px; color: #666; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1>🎉 New User Registration</h1>
+            <p>A new user has joined Marketdotcom!</p>
+          </div>
+          <div class="content">
+            <div class="highlight">
+              <h3>User Details:</h3>
+              <p><strong>Name:</strong> ${data.name}</p>
+              <p><strong>Email:</strong> ${data.email}</p>
+              <p><strong>Phone:</strong> ${data.phone}</p>
+              <p><strong>User ID:</strong> ${data.userId}</p>
+              <p><strong>Registration Date:</strong> ${new Date(data.registrationDate).toLocaleString()}</p>
+            </div>
+            <p>Please welcome this new member to our community!</p>
+          </div>
+          <div class="footer">
+            <p>This is an automated notification from Marketdotcom Admin System.</p>
+          </div>
+        </div>
+      </body>
+    </html>
+  `
+
+  const adminEmail = 'marketdotcominfo@gmail.com'
+
+  try {
+    // Try Resend first
+    if (resend && process.env.RESEND_API_KEY) {
+      try {
+        console.log('📧 Sending admin user registration notification via Resend...')
+
+        const result = await resend.emails.send({
+          from: 'Marketdotcom Admin <onboarding@resend.dev>',
+          to: adminEmail,
+          subject: `New User Registration - ${data.name}`,
+          html: emailHtml,
+        })
+
+        console.log('✅ Admin notification sent successfully via Resend')
+        return result
+      } catch (resendError) {
+        console.warn('⚠️  Resend failed, falling back to Nodemailer:', resendError instanceof Error ? resendError.message : String(resendError))
+      }
+    }
+
+    // Fallback to Nodemailer with Gmail
+    if (process.env.GMAIL_USER && process.env.GMAIL_APP_PASSWORD) {
+      try {
+        console.log('📧 Sending admin user registration notification via Gmail...')
+
+        const mailOptions = {
+          from: `"Marketdotcom Admin" <${process.env.GMAIL_USER}>`,
+          to: adminEmail,
+          subject: `New User Registration - ${data.name}`,
+          html: emailHtml,
+        }
+
+        const result = await nodemailerTransporter.sendMail(mailOptions)
+        console.log('✅ Admin notification sent successfully via Gmail')
+        return result
+      } catch (nodemailerError) {
+        console.error('❌ Nodemailer failed:', nodemailerError instanceof Error ? nodemailerError.message : String(nodemailerError))
+        throw nodemailerError
+      }
+    }
+
+    throw new Error('No email service configured for admin notifications')
+  } catch (error) {
+    console.error('Error sending admin user registration notification:', error)
+    throw error
+  }
+}
+
+// Admin payment notification
+export async function sendAdminPaymentNotification(data: {
+  orderId: string
+  userId: string
+  customerName: string
+  customerEmail: string
+  amount: number
+  paymentMethod: string
+  transactionId: string
+  paymentDate: string
+  status: string
+}) {
+  const emailHtml = `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <meta charset="utf-8">
+        <title>Payment Received</title>
+        <style>
+          body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+          .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+          .header { background: linear-gradient(135deg, #3b82f6, #1d4ed8); color: white; padding: 20px; border-radius: 8px 8px 0 0; }
+          .content { background: white; padding: 20px; border: 1px solid #ddd; border-radius: 0 0 8px 8px; }
+          .highlight { background: #eff6ff; padding: 15px; border-radius: 5px; margin: 10px 0; border-left: 4px solid #3b82f6; }
+          .status { display: inline-block; padding: 4px 8px; border-radius: 12px; font-size: 12px; font-weight: bold; text-transform: uppercase; }
+          .status-success { background: #dcfce7; color: #166534; }
+          .footer { margin-top: 20px; padding-top: 20px; border-top: 1px solid #eee; font-size: 12px; color: #666; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1>💰 Payment Received!</h1>
+            <p>Payment confirmed for Order #${data.orderId}</p>
+          </div>
+          <div class="content">
+            <div class="highlight">
+              <h3>Payment Details:</h3>
+              <p><strong>Order ID:</strong> ${data.orderId}</p>
+              <p><strong>Customer:</strong> ${data.customerName}</p>
+              <p><strong>Email:</strong> ${data.customerEmail}</p>
+              <p><strong>Amount:</strong> ₦${data.amount.toLocaleString()}</p>
+              <p><strong>Payment Method:</strong> ${data.paymentMethod}</p>
+              <p><strong>Transaction ID:</strong> ${data.transactionId}</p>
+              <p><strong>Payment Date:</strong> ${new Date(data.paymentDate).toLocaleString()}</p>
+              <p><strong>Status:</strong> <span class="status status-success">${data.status}</span></p>
+            </div>
+
+            <p>The payment has been successfully processed. Please prepare the order for delivery.</p>
+          </div>
+          <div class="footer">
+            <p>This is an automated notification from Marketdotcom Admin System.</p>
+          </div>
+        </div>
+      </body>
+    </html>
+  `
+
+  const adminEmail = 'marketdotcominfo@gmail.com'
+
+  try {
+    // Try Resend first
+    if (resend && process.env.RESEND_API_KEY) {
+      try {
+        console.log('📧 Sending admin payment notification via Resend...')
+
+        const result = await resend.emails.send({
+          from: 'Marketdotcom Admin <onboarding@resend.dev>',
+          to: adminEmail,
+          subject: `Payment Received - Order ${data.orderId}`,
+          html: emailHtml,
+        })
+
+        console.log('✅ Admin payment notification sent successfully via Resend')
+        return result
+      } catch (resendError) {
+        console.warn('⚠️  Resend failed, falling back to Nodemailer:', resendError instanceof Error ? resendError.message : String(resendError))
+      }
+    }
+
+    // Fallback to Nodemailer with Gmail
+    if (process.env.GMAIL_USER && process.env.GMAIL_APP_PASSWORD) {
+      try {
+        console.log('📧 Sending admin payment notification via Gmail...')
+
+        const mailOptions = {
+          from: `"Marketdotcom Admin" <${process.env.GMAIL_USER}>`,
+          to: adminEmail,
+          subject: `Payment Received - Order ${data.orderId}`,
+          html: emailHtml,
+        }
+
+        const result = await nodemailerTransporter.sendMail(mailOptions)
+        console.log('✅ Admin payment notification sent successfully via Gmail')
+        return result
+      } catch (nodemailerError) {
+        console.error('❌ Nodemailer failed:', nodemailerError instanceof Error ? nodemailerError.message : String(nodemailerError))
+        throw nodemailerError
+      }
+    }
+
+    throw new Error('No email service configured for admin notifications')
+  } catch (error) {
+    console.error('Error sending admin payment notification:', error)
     throw error
   }
 }

@@ -3,6 +3,7 @@ import { Inter, Roboto_Mono, Poppins, Space_Grotesk } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/components/providers";
 import { Toaster } from "react-hot-toast";
+import { WhatsAppFloat } from "@/components/ui/whatsapp-float";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -47,6 +48,7 @@ export default function RootLayout({
       >
         <Providers>
           {children}
+          <WhatsAppFloat />
           <Toaster
             position="top-right"
             toastOptions={{

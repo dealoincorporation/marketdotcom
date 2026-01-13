@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 import { getUserFromRequest } from "@/lib/auth"
 import { getPrismaClient } from "@/lib/prisma"
+import { PaystackService, generateReference } from "@/lib/paystack"
 
 export async function POST(request: Request) {
   try {
@@ -23,45 +24,64 @@ export async function POST(request: Request) {
       )
     }
 
-    // In a real implementation, you would integrate with a payment gateway here
-    // For now, we'll simulate successful payment and credit the wallet
+    // Generate unique reference for the wallet funding
+    const reference = generateReference()
 
-    // Update wallet balance
-    const updatedUser = await prisma.user.update({
-      where: { id: user.userId },
-      data: {
-        walletBalance: {
-          increment: amount
-        }
-      }
-    })
-
-    // Create wallet transaction record
+    // Create a pending wallet transaction record
     await prisma.walletTransaction.create({
       data: {
         userId: user.userId,
         type: "CREDIT",
         amount,
         method,
-        description: `Wallet funded via ${method}`,
-        status: "COMPLETED",
-        reference: `WF${Date.now()}${Math.random().toString(36).substr(2, 9)}`
+        description: `Wallet funding via ${method}`,
+        status: "PENDING",
+        reference
       }
     })
 
-    // Create notification
-    await prisma.notification.create({
-      data: {
+    // Initialize Paystack transaction
+    const paystackResponse = await PaystackService.initializeTransaction({
+      amount: amount,
+      email: user.email || "",
+      reference: reference,
+      callback_url: `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/dashboard?tab=wallet&reference=${reference}`,
+      metadata: {
         userId: user.userId,
-        title: "Wallet Funded Successfully",
-        message: `Your wallet has been credited with ₦${amount.toLocaleString()}`,
-        type: "WALLET"
+        type: "wallet_funding",
+        custom_fields: [
+          {
+            display_name: "Funding Type",
+            variable_name: "funding_type",
+            value: "wallet"
+          },
+          {
+            display_name: "Amount",
+            variable_name: "amount",
+            value: amount.toString()
+          }
+        ]
       }
     })
+
+    if (!paystackResponse.status) {
+      // Update transaction status to failed
+      await prisma.walletTransaction.updateMany({
+        where: { reference },
+        data: { status: "FAILED" }
+      })
+
+      return NextResponse.json(
+        { error: "Failed to initialize payment" },
+        { status: 500 }
+      )
+    }
 
     return NextResponse.json({
-      message: "Wallet funded successfully",
-      newBalance: updatedUser.walletBalance
+      success: true,
+      reference: reference,
+      authorization_url: paystackResponse.data.authorization_url,
+      access_code: paystackResponse.data.access_code
     })
 
   } catch (error) {

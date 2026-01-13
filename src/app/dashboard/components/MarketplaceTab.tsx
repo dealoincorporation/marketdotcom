@@ -142,7 +142,7 @@ export default function MarketplaceTab({
                 <SelectTrigger className="w-full">
                   <SelectValue placeholder="All Categories" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-white border-gray-300 shadow-lg">
                   <SelectItem value="all">All Categories</SelectItem>
                   {categories.map(category => (
                     <SelectItem key={category.id} value={category.id}>
@@ -173,7 +173,7 @@ export default function MarketplaceTab({
                 <SelectTrigger className="w-full">
                   <SelectValue placeholder={selectedCategory === "all" ? "Select category first" : "All Products"} />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-white border-gray-300 shadow-lg">
                   <SelectItem value="all">All Products</SelectItem>
                   {products
                     .filter(product => selectedCategory === "all" || product.categoryId === selectedCategory)
@@ -206,7 +206,7 @@ export default function MarketplaceTab({
                 <SelectTrigger className="w-full">
                   <SelectValue placeholder={selectedProduct === "all" ? "Select product first" : "All Variations"} />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-white border-gray-300 shadow-lg">
                   <SelectItem value="all">All Variations</SelectItem>
                   {(() => {
                     const selectedProd = products.find(p => p.id === selectedProduct)
@@ -334,7 +334,7 @@ export default function MarketplaceTab({
                       <SelectTrigger className="w-full">
                         <SelectValue placeholder="Select variation" />
                       </SelectTrigger>
-                      <SelectContent>
+                      <SelectContent className="bg-white border-gray-300 shadow-lg">
                         {product.variations.map(variation => (
                           <SelectItem key={variation.id} value={variation.id}>
                             {variation.name} - {formatPrice(variation.price)}

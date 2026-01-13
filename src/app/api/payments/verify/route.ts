@@ -2,6 +2,7 @@ import { NextResponse } from "next/server"
 import { getUserFromRequest } from "@/lib/auth"
 import { getPrismaClient } from "@/lib/prisma"
 import { PaystackService } from "@/lib/paystack"
+import { sendAdminPaymentNotification } from "@/lib/email"
 
 export async function POST(request: Request) {
   try {
@@ -81,6 +82,35 @@ export async function POST(request: Request) {
         gatewayResponse: transactionData
       }
     })
+
+    // Send admin payment notification if payment was successful
+    if (paymentStatus === 'COMPLETED') {
+      try {
+        // Get user data from database for email
+        const userData = await prisma.user.findUnique({
+          where: { id: user.userId },
+          select: {
+            name: true,
+            email: true
+          }
+        })
+
+        await sendAdminPaymentNotification({
+          orderId: order.id,
+          userId: user.userId,
+          customerName: userData?.name || 'Valued Customer',
+          customerEmail: userData?.email || 'No email provided',
+          amount: transactionData.amount / 100,
+          paymentMethod: 'Paystack',
+          transactionId: reference,
+          paymentDate: transactionData.paid_at || new Date().toISOString(),
+          status: 'COMPLETED'
+        })
+      } catch (adminEmailError) {
+        console.error("Failed to send admin payment notification:", adminEmailError)
+        // Don't fail the payment verification if admin email fails
+      }
+    }
 
     return NextResponse.json({
       success: true,
