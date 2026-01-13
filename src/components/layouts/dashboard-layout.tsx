@@ -2,6 +2,7 @@
 
 import { useState, ReactNode } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import {
   ShoppingBag,
@@ -14,6 +15,7 @@ import {
   Menu,
   X,
   Box,
+  LogOut,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useCartStore } from '@/lib/cart-store'
@@ -54,8 +56,9 @@ export function DashboardLayout({
   isMobileMenuOpen,
   setIsMobileMenuOpen,
 }: DashboardLayoutProps) {
-  const { user } = useAuth()
+  const { user, logout } = useAuth()
   const { items, getTotalItems, getTotalPrice } = useCartStore()
+  const router = useRouter()
   const totalItems = getTotalItems()
 
   return (
@@ -216,6 +219,20 @@ export function DashboardLayout({
                   </button>
                 </>
               )}
+            </div>
+
+            {/* Sign Out Section */}
+            <div className="border-t border-gray-200 pt-4 px-4">
+              <button
+                onClick={() => {
+                  logout()
+                  router.push('/')
+                }}
+                className="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-left transition-all duration-200 text-red-600 hover:bg-red-50 hover:text-red-700"
+              >
+                <LogOut className="h-5 w-5" />
+                <span>Sign Out</span>
+              </button>
             </div>
           </nav>
         </motion.div>
