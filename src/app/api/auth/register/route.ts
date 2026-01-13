@@ -84,8 +84,10 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       {
         message: "User created successfully. Please check your email to verify your account.",
-        user: userWithoutSensitiveData,
-        requiresVerification: true
+        data: {
+          user: userWithoutSensitiveData,
+          requiresVerification: true
+        }
       },
       { status: 201 }
     )

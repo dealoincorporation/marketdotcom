@@ -141,17 +141,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const data = await response.json()
 
     if (!response.ok) {
-      throw new Error(data.error || 'Registration failed')
+      throw new Error(data.message || data.error || 'Registration failed')
     }
 
-    const { user: userData, token: userToken } = data.data
-
-    setUser(userData)
-    setToken(userToken)
-
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('token', userToken)
-      localStorage.setItem('user', JSON.stringify(userData))
+    // Registration doesn't return a token - user needs to verify email first
+    // Just validate the response, don't set user/token or return data
+    const userData = data.user || data.data?.user
+    if (!userData) {
+      throw new Error('Registration failed: Invalid response from server')
     }
   }
 
