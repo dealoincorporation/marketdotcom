@@ -68,6 +68,57 @@ export async function POST(request: NextRequest) {
       }
     })
 
+    // Check if user was referred and give referrer bonus
+    if (user.referredById) {
+      const referrer = await prisma.user.findUnique({
+        where: { id: user.referredById }
+      })
+
+      if (referrer) {
+        // Give referrer ₦100 bonus
+        await prisma.user.update({
+          where: { id: referrer.id },
+          data: {
+            walletBalance: {
+              increment: 100
+            }
+          }
+        })
+
+        // Update referral record with reward amount
+        await prisma.referral.updateMany({
+          where: {
+            referrerId: referrer.id,
+            referredEmail: user.email,
+            isUsed: true
+          },
+          data: {
+            rewardAmount: 100
+          }
+        })
+
+        // Create notification for referrer
+        await prisma.notification.create({
+          data: {
+            userId: referrer.id,
+            title: "Referral Bonus Earned!",
+            message: `Congratulations! You've earned ₦100 for successfully referring ${user.name || user.email}.`,
+            type: "REFERRAL"
+          }
+        })
+
+        // Create notification for referee (successful referral completion)
+        await prisma.notification.create({
+          data: {
+            userId: user.id,
+            title: "Referral Program Complete!",
+            message: `Your referral has been activated! Your referrer has received their bonus.`,
+            type: "REFERRAL"
+          }
+        })
+      }
+    }
+
     return NextResponse.json(
       { message: "Email verified successfully. You can now sign in to your account." },
       { status: 200 }
@@ -130,6 +181,57 @@ export async function GET(request: NextRequest) {
         emailVerificationToken: null // Clear the token
       }
     })
+
+    // Check if user was referred and give referrer bonus
+    if (user.referredById) {
+      const referrer = await prisma.user.findUnique({
+        where: { id: user.referredById }
+      })
+
+      if (referrer) {
+        // Give referrer ₦100 bonus
+        await prisma.user.update({
+          where: { id: referrer.id },
+          data: {
+            walletBalance: {
+              increment: 100
+            }
+          }
+        })
+
+        // Update referral record with reward amount
+        await prisma.referral.updateMany({
+          where: {
+            referrerId: referrer.id,
+            referredEmail: user.email,
+            isUsed: true
+          },
+          data: {
+            rewardAmount: 100
+          }
+        })
+
+        // Create notification for referrer
+        await prisma.notification.create({
+          data: {
+            userId: referrer.id,
+            title: "Referral Bonus Earned!",
+            message: `Congratulations! You've earned ₦100 for successfully referring ${user.name || user.email}.`,
+            type: "REFERRAL"
+          }
+        })
+
+        // Create notification for referee (successful referral completion)
+        await prisma.notification.create({
+          data: {
+            userId: user.id,
+            title: "Referral Program Complete!",
+            message: `Your referral has been activated! Your referrer has received their bonus.`,
+            type: "REFERRAL"
+          }
+        })
+      }
+    }
 
     return NextResponse.redirect(new URL("/auth/verify-email?success=verified", request.url))
   } catch (error: any) {

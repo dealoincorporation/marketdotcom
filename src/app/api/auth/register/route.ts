@@ -9,7 +9,7 @@ export const dynamic = 'force-dynamic'
 
 export async function POST(request: NextRequest) {
   try {
-    const { name, email, phone, password } = await request.json()
+    const { name, email, phone, password, referralCode } = await request.json()
 
     // Validate input
     if (!name || !email || !phone || !password) {
@@ -35,6 +35,21 @@ export async function POST(request: NextRequest) {
         { message: "Registration temporarily unavailable. Please try again later." },
         { status: 503 }
       )
+    }
+
+    // Check if referral code is provided and find referrer
+    let referrer = null
+    if (referralCode) {
+      referrer = await prisma.user.findFirst({
+        where: { referralCode: referralCode }
+      })
+
+      if (!referrer) {
+        return NextResponse.json(
+          { message: "Invalid referral code" },
+          { status: 400 }
+        )
+      }
     }
 
     // Check if user already exists
@@ -64,11 +79,48 @@ export async function POST(request: NextRequest) {
         phone,
         password: hashedPassword,
         referralCode: Math.random().toString(36).substring(2, 15),
+        referredById: referrer?.id || null,
         emailVerificationToken: emailVerificationCode,
         resetTokenExpiry: codeExpiry, // Reuse this field for code expiry
         emailVerified: null, // Explicitly set to null to indicate not verified
       }
     })
+
+    // Create referral record if referrer exists
+    if (referrer) {
+      await prisma.referral.create({
+        data: {
+          referrerId: referrer.id,
+          referredEmail: user.email,
+          code: referralCode,
+          isUsed: true,
+          usedAt: new Date()
+        }
+      })
+
+      // Give referee bonus immediately (₦50)
+      await prisma.user.update({
+        where: { id: user.id },
+        data: {
+          walletBalance: {
+            increment: 50
+          }
+        }
+      })
+
+      // Create notification for referee
+      await prisma.notification.create({
+        data: {
+          userId: user.id,
+          title: "Welcome Bonus!",
+          message: "Congratulations! You've received ₦50 bonus for joining through a referral.",
+          type: "REFERRAL"
+        }
+      })
+
+      // Note: Referrer bonus (₦100) will be given after email verification
+      // This is handled in the email verification API
+    }
 
     // Send verification email
     try {

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server"
 import { getUserFromRequest } from "@/lib/auth"
 import { getPrismaClient } from "@/lib/prisma"
 import { PaystackService } from "@/lib/paystack"
+import { sendAdminWalletDepositNotification } from "@/lib/email"
 
 export async function POST(request: Request) {
   try {
@@ -56,6 +57,15 @@ export async function POST(request: Request) {
     const transactionStatus = transactionData.status === 'success' ? 'COMPLETED' : 'FAILED'
 
     if (transactionStatus === 'COMPLETED') {
+      // Get user data for notifications
+      const userData = await prisma.user.findUnique({
+        where: { id: user.userId },
+        select: {
+          name: true,
+          email: true
+        }
+      })
+
       // Update wallet balance
       await prisma.user.update({
         where: { id: user.userId },
@@ -66,7 +76,7 @@ export async function POST(request: Request) {
         }
       })
 
-      // Create notification
+      // Create notification for user
       await prisma.notification.create({
         data: {
           userId: user.userId,
@@ -75,6 +85,22 @@ export async function POST(request: Request) {
           type: "WALLET"
         }
       })
+
+      // Send admin notification
+      try {
+        await sendAdminWalletDepositNotification({
+          userId: user.userId,
+          customerName: userData?.name || 'Valued Customer',
+          customerEmail: userData?.email || 'No email provided',
+          amount: walletTransaction.amount,
+          paymentMethod: walletTransaction.method,
+          transactionId: reference,
+          depositDate: new Date().toISOString()
+        })
+      } catch (adminEmailError) {
+        console.error("Failed to send admin wallet deposit notification:", adminEmailError)
+        // Don't fail the deposit verification if admin email fails
+      }
     }
 
     // Update wallet transaction status

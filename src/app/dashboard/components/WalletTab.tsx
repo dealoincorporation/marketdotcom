@@ -45,13 +45,14 @@ export default function WalletTab({ walletInfo }: WalletTabProps) {
   const [showConvertModal, setShowConvertModal] = useState(false)
   const [pointsToConvert, setPointsToConvert] = useState("")
 
-  // Mock referral data - in real app, fetch from API
-  const referralData = {
-    code: "ABC123",
-    totalReferrals: 3,
-    successfulReferrals: 2,
-    totalEarned: 200
-  }
+  // Referral data state
+  const [referralData, setReferralData] = useState({
+    code: "",
+    totalReferrals: 0,
+    successfulReferrals: 0,
+    totalEarned: 0
+  })
+  const [referralLoading, setReferralLoading] = useState(true)
 
   // Mock points settings
   const pointsSettings = {
@@ -73,12 +74,41 @@ export default function WalletTab({ walletInfo }: WalletTabProps) {
     }
   }, [searchParams])
 
+  // Fetch referral data
+  useEffect(() => {
+    const fetchReferralData = async () => {
+      try {
+        const token = localStorage.getItem('token')
+        const response = await fetch('/api/referrals', {
+          headers: {
+            ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+          }
+        })
+
+        if (response.ok) {
+          const data = await response.json()
+          setReferralData(data)
+        }
+      } catch (error) {
+        console.error('Error fetching referral data:', error)
+      } finally {
+        setReferralLoading(false)
+      }
+    }
+
+    fetchReferralData()
+  }, [])
+
   const verifyWalletFunding = async (reference: string) => {
     try {
+      // Get the auth token from localStorage
+      const token = localStorage.getItem('token')
+
       const response = await fetch('/api/wallet/fund/verify', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
         },
         body: JSON.stringify({ reference }),
       })
@@ -112,10 +142,14 @@ export default function WalletTab({ walletInfo }: WalletTabProps) {
 
     setIsFunding(true)
     try {
+      // Get the auth token from localStorage
+      const token = localStorage.getItem('token')
+
       const response = await fetch('/api/wallet/fund', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
         },
         body: JSON.stringify({
           amount: parseFloat(fundingAmount),
@@ -267,25 +301,25 @@ export default function WalletTab({ walletInfo }: WalletTabProps) {
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
                 <div className="text-center">
                   <div className="text-2xl font-bold text-blue-600 mb-2">
-                    {referralData.totalReferrals}
+                    {referralLoading ? "..." : referralData.totalReferrals}
                   </div>
                   <div className="text-gray-600 text-xs md:text-sm">Total Referrals</div>
                 </div>
                 <div className="text-center">
                   <div className="text-2xl font-bold text-green-600 mb-2">
-                    {referralData.successfulReferrals}
+                    {referralLoading ? "..." : referralData.successfulReferrals}
                   </div>
                   <div className="text-gray-600 text-xs md:text-sm">Successful</div>
                 </div>
                 <div className="text-center">
                   <div className="text-2xl font-bold text-purple-600 mb-2">
-                    {formatPrice(referralData.totalEarned)}
+                    {referralLoading ? "..." : formatPrice(referralData.totalEarned)}
                   </div>
                   <div className="text-gray-600 text-xs md:text-sm">Total Earned</div>
                 </div>
                 <div className="text-center col-span-2 md:col-span-1">
                   <div className="text-sm md:text-lg font-mono bg-gray-100 px-2 md:px-3 py-2 rounded-md mb-2 break-all">
-                    {referralData.code}
+                    {referralLoading ? "..." : referralData.code || "Loading..."}
                   </div>
                   <div className="text-gray-600 text-xs md:text-sm">Your Code</div>
                 </div>

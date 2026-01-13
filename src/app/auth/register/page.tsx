@@ -18,6 +18,7 @@ export default function RegisterPage() {
     phone: "",
     password: "",
     confirmPassword: "",
+    referralCode: "",
   })
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
@@ -100,6 +101,7 @@ export default function RegisterPage() {
         email: formData.email,
         phone: formData.phone,
         password: formData.password,
+        referralCode: formData.referralCode || undefined,
       })
 
       toast.success("Account created successfully!")
@@ -170,6 +172,24 @@ export default function RegisterPage() {
             className="h-12 text-base border-2 focus:border-orange-500"
             required
           />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="referralCode" className="text-gray-700 font-medium">
+            Referral Code (Optional)
+          </Label>
+          <Input
+            id="referralCode"
+            name="referralCode"
+            type="text"
+            placeholder="Enter referral code for bonus"
+            value={formData.referralCode}
+            onChange={handleChange}
+            className="h-12 text-base border-2 focus:border-orange-500"
+          />
+          <p className="text-xs text-gray-500">
+            Have a referral code? Enter it here to get ₦50 bonus after registration!
+          </p>
         </div>
 
         <div className="space-y-2">

@@ -670,35 +670,167 @@ export async function sendAdminUserRegistrationNotification(data: {
     <html>
       <head>
         <meta charset="utf-8">
-        <title>New User Registration</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>New User Registration - Marketdotcom</title>
         <style>
-          body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-          .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-          .header { background: linear-gradient(135deg, #f97316, #dc2626); color: white; padding: 20px; border-radius: 8px 8px 0 0; }
-          .content { background: white; padding: 20px; border: 1px solid #ddd; border-radius: 0 0 8px 8px; }
-          .highlight { background: #f9f9f9; padding: 15px; border-radius: 5px; margin: 10px 0; }
-          .footer { margin-top: 20px; padding-top: 20px; border-top: 1px solid #eee; font-size: 12px; color: #666; }
+          body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            background-color: #f8f9fa;
+          }
+          .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+          }
+          .header {
+            background: linear-gradient(135deg, #f97316, #dc2626);
+            color: white;
+            padding: 40px 30px;
+            text-align: center;
+          }
+          .logo {
+            width: 60px;
+            height: 60px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 16px;
+          }
+          .header h1 {
+            margin: 0;
+            font-size: 28px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+          }
+          .header p {
+            margin: 8px 0 0 0;
+            opacity: 0.9;
+            font-size: 16px;
+          }
+          .content {
+            padding: 40px 30px;
+          }
+          .user-card {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 24px;
+            margin: 20px 0;
+          }
+          .user-detail {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid #e9ecef;
+          }
+          .user-detail:last-child {
+            border-bottom: none;
+          }
+          .label {
+            font-weight: 600;
+            color: #495057;
+            font-size: 14px;
+          }
+          .value {
+            color: #212529;
+            font-size: 14px;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+          }
+          .welcome-message {
+            background: linear-gradient(135deg, #e3f2fd, #f3e5f5);
+            border-left: 4px solid #2196f3;
+            padding: 16px 20px;
+            margin: 24px 0;
+            border-radius: 0 8px 8px 0;
+          }
+          .footer {
+            background: #f8f9fa;
+            padding: 24px 30px;
+            border-top: 1px solid #e9ecef;
+            text-align: center;
+          }
+          .footer-text {
+            color: #6c757d;
+            font-size: 12px;
+            margin: 0;
+          }
+          .highlight {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 6px;
+            padding: 12px 16px;
+            margin: 16px 0;
+          }
+          .highlight strong {
+            color: #856404;
+          }
         </style>
       </head>
       <body>
         <div class="container">
           <div class="header">
-            <h1>🎉 New User Registration</h1>
-            <p>A new user has joined Marketdotcom!</p>
-          </div>
-          <div class="content">
-            <div class="highlight">
-              <h3>User Details:</h3>
-              <p><strong>Name:</strong> ${data.name}</p>
-              <p><strong>Email:</strong> ${data.email}</p>
-              <p><strong>Phone:</strong> ${data.phone}</p>
-              <p><strong>User ID:</strong> ${data.userId}</p>
-              <p><strong>Registration Date:</strong> ${new Date(data.registrationDate).toLocaleString()}</p>
+            <div class="logo">
+              <img src="${process.env.NEXT_PUBLIC_APP_URL || 'https://marketdotcom.vercel.app'}/mrktdotcom-logo.png" alt="Marketdotcom" style="width: 40px; height: 40px; border-radius: 8px;">
             </div>
-            <p>Please welcome this new member to our community!</p>
+            <h1>New User Registration</h1>
+            <p>A new member has joined Marketdotcom</p>
           </div>
+
+          <div class="content">
+            <div class="user-card">
+              <h3 style="margin: 0 0 16px 0; color: #495057;">User Information</h3>
+              <div class="user-detail">
+                <span class="label">Name</span>
+                <span class="value">${data.name}</span>
+              </div>
+              <div class="user-detail">
+                <span class="label">Email</span>
+                <span class="value">${data.email}</span>
+              </div>
+              <div class="user-detail">
+                <span class="label">Phone</span>
+                <span class="value">${data.phone}</span>
+              </div>
+              <div class="user-detail">
+                <span class="label">User ID</span>
+                <span class="value">${data.userId}</span>
+              </div>
+              <div class="user-detail">
+                <span class="label">Joined</span>
+                <span class="value">${new Date(data.registrationDate).toLocaleDateString('en-US', {
+                  year: 'numeric',
+                  month: 'short',
+                  day: 'numeric',
+                  hour: '2-digit',
+                  minute: '2-digit'
+                })}</span>
+              </div>
+            </div>
+
+            <div class="welcome-message">
+              <strong>Welcome aboard!</strong> A new user has successfully registered and is ready to start shopping. Please ensure their account is properly set up for a great experience.
+            </div>
+
+            <div class="highlight">
+              <strong>Next Steps:</strong> Monitor the user's first orders and provide excellent customer support to ensure they become a loyal customer.
+            </div>
+          </div>
+
           <div class="footer">
-            <p>This is an automated notification from Marketdotcom Admin System.</p>
+            <p class="footer-text">
+              This is an automated notification from the Marketdotcom Admin System.<br>
+              Please do not reply to this email.
+            </p>
           </div>
         </div>
       </body>
@@ -772,41 +904,180 @@ export async function sendAdminPaymentNotification(data: {
     <html>
       <head>
         <meta charset="utf-8">
-        <title>Payment Received</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Payment Received - Marketdotcom</title>
         <style>
-          body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-          .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-          .header { background: linear-gradient(135deg, #3b82f6, #1d4ed8); color: white; padding: 20px; border-radius: 8px 8px 0 0; }
-          .content { background: white; padding: 20px; border: 1px solid #ddd; border-radius: 0 0 8px 8px; }
-          .highlight { background: #eff6ff; padding: 15px; border-radius: 5px; margin: 10px 0; border-left: 4px solid #3b82f6; }
-          .status { display: inline-block; padding: 4px 8px; border-radius: 12px; font-size: 12px; font-weight: bold; text-transform: uppercase; }
-          .status-success { background: #dcfce7; color: #166534; }
-          .footer { margin-top: 20px; padding-top: 20px; border-top: 1px solid #eee; font-size: 12px; color: #666; }
+          body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            background-color: #f8f9fa;
+          }
+          .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+          }
+          .header {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            padding: 40px 30px;
+            text-align: center;
+          }
+          .logo {
+            width: 60px;
+            height: 60px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 16px;
+          }
+          .header h1 {
+            margin: 0;
+            font-size: 28px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+          }
+          .header p {
+            margin: 8px 0 0 0;
+            opacity: 0.9;
+            font-size: 16px;
+          }
+          .content {
+            padding: 40px 30px;
+          }
+          .payment-card {
+            background: linear-gradient(135deg, #f0fdf4, #ecfdf5);
+            border: 1px solid #d1fae5;
+            border-radius: 8px;
+            padding: 24px;
+            margin: 20px 0;
+          }
+          .status-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            background: #dcfce7;
+            color: #166534;
+          }
+          .payment-detail {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid #e5e7eb;
+          }
+          .payment-detail:last-child {
+            border-bottom: none;
+          }
+          .label {
+            font-weight: 600;
+            color: #374151;
+            font-size: 14px;
+          }
+          .value {
+            color: #111827;
+            font-size: 14px;
+          }
+          .amount {
+            font-size: 18px;
+            font-weight: 700;
+            color: #059669;
+          }
+          .action-message {
+            background: linear-gradient(135deg, #dbeafe, #e0e7ff);
+            border-left: 4px solid #3b82f6;
+            padding: 16px 20px;
+            margin: 24px 0;
+            border-radius: 0 8px 8px 0;
+          }
+          .footer {
+            background: #f8f9fa;
+            padding: 24px 30px;
+            border-top: 1px solid #e9ecef;
+            text-align: center;
+          }
+          .footer-text {
+            color: #6c757d;
+            font-size: 12px;
+            margin: 0;
+          }
         </style>
       </head>
       <body>
         <div class="container">
           <div class="header">
-            <h1>💰 Payment Received!</h1>
-            <p>Payment confirmed for Order #${data.orderId}</p>
+            <div class="logo">
+              <img src="${process.env.NEXT_PUBLIC_APP_URL || 'https://marketdotcom.vercel.app'}/mrktdotcom-logo.png" alt="Marketdotcom" style="width: 40px; height: 40px; border-radius: 8px;">
+            </div>
+            <h1>Payment Received</h1>
+            <p>Order #${data.orderId} payment confirmed</p>
           </div>
+
           <div class="content">
-            <div class="highlight">
-              <h3>Payment Details:</h3>
-              <p><strong>Order ID:</strong> ${data.orderId}</p>
-              <p><strong>Customer:</strong> ${data.customerName}</p>
-              <p><strong>Email:</strong> ${data.customerEmail}</p>
-              <p><strong>Amount:</strong> ₦${data.amount.toLocaleString()}</p>
-              <p><strong>Payment Method:</strong> ${data.paymentMethod}</p>
-              <p><strong>Transaction ID:</strong> ${data.transactionId}</p>
-              <p><strong>Payment Date:</strong> ${new Date(data.paymentDate).toLocaleString()}</p>
-              <p><strong>Status:</strong> <span class="status status-success">${data.status}</span></p>
+            <div class="payment-card">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                <h3 style="margin: 0; color: #065f46;">Payment Information</h3>
+                <span class="status-badge">${data.status}</span>
+              </div>
+
+              <div class="payment-detail">
+                <span class="label">Order ID</span>
+                <span class="value">#${data.orderId}</span>
+              </div>
+              <div class="payment-detail">
+                <span class="label">Customer</span>
+                <span class="value">${data.customerName}</span>
+              </div>
+              <div class="payment-detail">
+                <span class="label">Email</span>
+                <span class="value">${data.customerEmail}</span>
+              </div>
+              <div class="payment-detail">
+                <span class="label">Payment Method</span>
+                <span class="value">${data.paymentMethod}</span>
+              </div>
+              <div class="payment-detail">
+                <span class="label">Transaction ID</span>
+                <span class="value">${data.transactionId}</span>
+              </div>
+              <div class="payment-detail">
+                <span class="label">Amount</span>
+                <span class="amount">₦${data.amount.toLocaleString()}</span>
+              </div>
+              <div class="payment-detail">
+                <span class="label">Payment Date</span>
+                <span class="value">${new Date(data.paymentDate).toLocaleDateString('en-US', {
+                  year: 'numeric',
+                  month: 'short',
+                  day: 'numeric',
+                  hour: '2-digit',
+                  minute: '2-digit'
+                })}</span>
+              </div>
             </div>
 
-            <p>The payment has been successfully processed. Please prepare the order for delivery.</p>
+            <div class="action-message">
+              <strong>Action Required:</strong> Payment has been successfully processed. Please prepare the order for delivery and update the order status accordingly.
+            </div>
           </div>
+
           <div class="footer">
-            <p>This is an automated notification from Marketdotcom Admin System.</p>
+            <p class="footer-text">
+              This is an automated notification from the Marketdotcom Admin System.<br>
+              Please do not reply to this email.
+            </p>
           </div>
         </div>
       </body>
@@ -859,6 +1130,233 @@ export async function sendAdminPaymentNotification(data: {
     throw new Error('No email service configured for admin notifications')
   } catch (error) {
     console.error('Error sending admin payment notification:', error)
+    throw error
+  }
+}
+
+// Admin wallet deposit notification
+export async function sendAdminWalletDepositNotification(data: {
+  userId: string
+  customerName: string
+  customerEmail: string
+  amount: number
+  paymentMethod: string
+  transactionId: string
+  depositDate: string
+}) {
+  const emailHtml = `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Wallet Deposit - Marketdotcom</title>
+        <style>
+          body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            background-color: #f8f9fa;
+          }
+          .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+          }
+          .header {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: white;
+            padding: 40px 30px;
+            text-align: center;
+          }
+          .logo {
+            width: 60px;
+            height: 60px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 16px;
+          }
+          .header h1 {
+            margin: 0;
+            font-size: 28px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+          }
+          .header p {
+            margin: 8px 0 0 0;
+            opacity: 0.9;
+            font-size: 16px;
+          }
+          .content {
+            padding: 40px 30px;
+          }
+          .deposit-card {
+            background: linear-gradient(135deg, #fef3c7, #fde68a);
+            border: 1px solid #fcd34d;
+            border-radius: 8px;
+            padding: 24px;
+            margin: 20px 0;
+          }
+          .deposit-detail {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid #f59e0b;
+          }
+          .deposit-detail:last-child {
+            border-bottom: none;
+          }
+          .label {
+            font-weight: 600;
+            color: #92400e;
+            font-size: 14px;
+          }
+          .value {
+            color: #78350f;
+            font-size: 14px;
+          }
+          .amount {
+            font-size: 20px;
+            font-weight: 700;
+            color: #d97706;
+          }
+          .success-message {
+            background: linear-gradient(135deg, #ecfdf5, #d1fae5);
+            border-left: 4px solid #10b981;
+            padding: 16px 20px;
+            margin: 24px 0;
+            border-radius: 0 8px 8px 0;
+          }
+          .footer {
+            background: #f8f9fa;
+            padding: 24px 30px;
+            border-top: 1px solid #e9ecef;
+            text-align: center;
+          }
+          .footer-text {
+            color: #6c757d;
+            font-size: 12px;
+            margin: 0;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <div class="logo">
+              <img src="${process.env.NEXT_PUBLIC_APP_URL || 'https://marketdotcom.vercel.app'}/mrktdotcom-logo.png" alt="Marketdotcom" style="width: 40px; height: 40px; border-radius: 8px;">
+            </div>
+            <h1>Wallet Deposit</h1>
+            <p>Customer has funded their wallet</p>
+          </div>
+
+          <div class="content">
+            <div class="deposit-card">
+              <h3 style="margin: 0 0 16px 0; color: #92400e;">Deposit Details</h3>
+
+              <div class="deposit-detail">
+                <span class="label">Customer</span>
+                <span class="value">${data.customerName}</span>
+              </div>
+              <div class="deposit-detail">
+                <span class="label">Email</span>
+                <span class="value">${data.customerEmail}</span>
+              </div>
+              <div class="deposit-detail">
+                <span class="label">Payment Method</span>
+                <span class="value">${data.paymentMethod}</span>
+              </div>
+              <div class="deposit-detail">
+                <span class="label">Transaction ID</span>
+                <span class="value">${data.transactionId}</span>
+              </div>
+              <div class="deposit-detail">
+                <span class="label">Amount</span>
+                <span class="amount">₦${data.amount.toLocaleString()}</span>
+              </div>
+              <div class="deposit-detail">
+                <span class="label">Deposit Date</span>
+                <span class="value">${new Date(data.depositDate).toLocaleDateString('en-US', {
+                  year: 'numeric',
+                  month: 'short',
+                  day: 'numeric',
+                  hour: '2-digit',
+                  minute: '2-digit'
+                })}</span>
+              </div>
+            </div>
+
+            <div class="success-message">
+              <strong>Deposit Successful!</strong> The customer's wallet has been credited with ₦${data.amount.toLocaleString()}. The funds are now available for purchases.
+            </div>
+          </div>
+
+          <div class="footer">
+            <p class="footer-text">
+              This is an automated notification from the Marketdotcom Admin System.<br>
+              Please do not reply to this email.
+            </p>
+          </div>
+        </div>
+      </body>
+    </html>
+  `
+
+  const adminEmail = 'marketdotcominfo@gmail.com'
+
+  try {
+    // Try Resend first
+    if (resend && process.env.RESEND_API_KEY) {
+      try {
+        console.log('📧 Sending admin wallet deposit notification via Resend...')
+
+        const result = await resend.emails.send({
+          from: 'Marketdotcom Admin <onboarding@resend.dev>',
+          to: adminEmail,
+          subject: `Wallet Deposit - ₦${data.amount.toLocaleString()}`,
+          html: emailHtml,
+        })
+
+        console.log('✅ Admin wallet deposit notification sent successfully via Resend')
+        return result
+      } catch (resendError) {
+        console.warn('⚠️  Resend failed, falling back to Nodemailer:', resendError instanceof Error ? resendError.message : String(resendError))
+      }
+    }
+
+    // Fallback to Nodemailer with Gmail
+    if (process.env.GMAIL_USER && process.env.GMAIL_APP_PASSWORD) {
+      try {
+        console.log('📧 Sending admin wallet deposit notification via Gmail...')
+
+        const mailOptions = {
+          from: `"Marketdotcom Admin" <${process.env.GMAIL_USER}>`,
+          to: adminEmail,
+          subject: `Wallet Deposit - ₦${data.amount.toLocaleString()}`,
+          html: emailHtml,
+        }
+
+        const result = await nodemailerTransporter.sendMail(mailOptions)
+        console.log('✅ Admin wallet deposit notification sent successfully via Gmail')
+        return result
+      } catch (nodemailerError) {
+        console.error('❌ Nodemailer failed:', nodemailerError instanceof Error ? nodemailerError.message : String(nodemailerError))
+        throw nodemailerError
+      }
+    }
+
+    throw new Error('No email service configured for admin notifications')
+  } catch (error) {
+    console.error('Error sending admin wallet deposit notification:', error)
     throw error
   }
 }
