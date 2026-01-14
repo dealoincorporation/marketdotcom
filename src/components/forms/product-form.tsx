@@ -20,6 +20,7 @@ interface ProductFormType {
   stock: number
   unit: string
   inStock: boolean
+  image?: string
   variations: Array<{
     id?: string
     name: string
@@ -58,6 +59,7 @@ export function ProductForm({
     stock: initialData?.stock || 0,
     unit: initialData?.unit || '',
     inStock: initialData?.inStock ?? true,
+    image: initialData?.image || '',
     variations: initialData?.variations?.map((v: any) => ({
       id: v.id,
       name: v.name,
@@ -67,7 +69,8 @@ export function ProductForm({
   })
 
   const [selectedImage, setSelectedImage] = useState<File | null>(null)
-  const [imagePreview, setImagePreview] = useState<string | null>(initialData?.image || null)
+  const [imagePreview, setImagePreview] = useState<string | null>(formData.image || null)
+  const [uploadingImage, setUploadingImage] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
 
   const handleInputChange = (field: keyof ProductFormType, value: any) => {
@@ -77,21 +80,56 @@ export function ProductForm({
     }
   }
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
-    if (file) {
-      setSelectedImage(file)
-      const reader = new FileReader()
-      reader.onload = (e) => {
-        setImagePreview(e.target?.result as string)
+    if (!file) return
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      setErrors(prev => ({ ...prev, image: 'Please select a valid image file' }))
+      return
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      setErrors(prev => ({ ...prev, image: 'Image size must be less than 5MB' }))
+      return
+    }
+
+    setUploadingImage(true)
+    setErrors(prev => ({ ...prev, image: '' }))
+
+    try {
+      const formData = new FormData()
+      formData.append('file', file)
+      formData.append('folder', 'marketdotcom/products')
+
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      })
+
+      const data = await response.json()
+
+      if (response.ok) {
+        setImagePreview(data.url)
+        setFormData(prev => ({ ...prev, image: data.url }))
+        setSelectedImage(file) // Keep file reference for display
+      } else {
+        setErrors(prev => ({ ...prev, image: data.error || 'Failed to upload image' }))
       }
-      reader.readAsDataURL(file)
+    } catch (error) {
+      console.error('Image upload error:', error)
+      setErrors(prev => ({ ...prev, image: 'Network error. Please try again.' }))
+    } finally {
+      setUploadingImage(false)
     }
   }
 
   const removeImage = () => {
     setSelectedImage(null)
     setImagePreview(null)
+    setFormData(prev => ({ ...prev, image: '' }))
   }
 
   const addVariation = () => {
@@ -182,7 +220,8 @@ export function ProductForm({
                       type="file"
                       accept="image/*"
                       onChange={handleImageUpload}
-                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                      disabled={uploadingImage}
+                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed"
                     />
                   </div>
                 </div>
@@ -191,11 +230,22 @@ export function ProductForm({
                     Upload a high-quality image of your product
                   </p>
                   <p className="text-xs text-gray-500">
-                    Recommended size: 800x800px. Supported formats: JPG, PNG, WebP
+                    Recommended size: 800x800px. Max: 5MB. Formats: JPG, PNG, WebP
                   </p>
-                  {selectedImage && (
+                  {uploadingImage && (
+                    <div className="flex items-center space-x-2 mt-2">
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-orange-600"></div>
+                      <p className="text-sm text-orange-600">Uploading to Cloudinary...</p>
+                    </div>
+                  )}
+                  {selectedImage && !uploadingImage && (
                     <p className="text-sm text-green-600 mt-2">
-                      Selected: {selectedImage.name}
+                      ✓ Image uploaded successfully
+                    </p>
+                  )}
+                  {errors.image && (
+                    <p className="text-sm text-red-600 mt-2">
+                      ✗ {errors.image}
                     </p>
                   )}
                 </div>

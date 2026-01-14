@@ -1,19 +1,109 @@
 "use client"
 
-import { MessageCircle } from "lucide-react"
-import { motion } from "framer-motion"
+import { MessageCircle, X } from "lucide-react"
+import { motion, AnimatePresence } from "framer-motion"
+import { useState, useEffect } from "react"
 
 export function WhatsAppFloat() {
   const whatsappNumber = "08138353576"
   const whatsappUrl = `https://wa.me/${whatsappNumber.replace(/^0/, '234')}`
 
+  const [showModal, setShowModal] = useState(false)
+
+  // Modal appears every 30 seconds for 8 seconds, then disappears for 30 seconds
+  useEffect(() => {
+    const showInterval = setInterval(() => {
+      setShowModal(true)
+      setTimeout(() => setShowModal(false), 8000) // Show for 8 seconds
+    }, 30000) // Every 30 seconds
+
+    // Show modal initially after 5 seconds
+    const initialTimer = setTimeout(() => {
+      setShowModal(true)
+      setTimeout(() => setShowModal(false), 8000)
+    }, 5000)
+
+    return () => {
+      clearInterval(showInterval)
+      clearTimeout(initialTimer)
+    }
+  }, [])
+
   return (
-    <motion.div
-      initial={{ scale: 0 }}
-      animate={{ scale: 1 }}
-      transition={{ delay: 1, type: "spring", stiffness: 260, damping: 20 }}
-      className="fixed bottom-6 right-6 z-50"
-    >
+    <>
+      {/* WhatsApp Modal */}
+      <AnimatePresence>
+        {showModal && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.8, y: 20 }}
+            transition={{
+              type: "spring",
+              stiffness: 300,
+              damping: 25,
+              duration: 0.4
+            }}
+            className="fixed bottom-24 right-6 z-50 max-w-xs"
+          >
+            <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-2xl shadow-2xl border border-green-400/20 p-4 relative">
+              {/* Close button */}
+              <button
+                onClick={() => setShowModal(false)}
+                className="absolute top-2 right-2 w-6 h-6 flex items-center justify-center bg-white/20 hover:bg-white/30 rounded-full transition-colors duration-200"
+              >
+                <X className="w-3 h-3 text-white" />
+              </button>
+
+              {/* Content */}
+              <div className="flex items-start space-x-3">
+                <div className="flex-shrink-0">
+                  <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
+                    <MessageCircle className="w-5 h-5 text-white" />
+                  </div>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-white font-semibold text-sm mb-1">
+                    Need help? Chat with us! 💬
+                  </h3>
+                  <p className="text-green-100 text-xs leading-relaxed">
+                    We're here to help you with your shopping experience
+                  </p>
+                </div>
+              </div>
+
+              {/* Action Button */}
+              <motion.a
+                href={whatsappUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-3 w-full bg-white text-green-600 font-medium text-sm py-2 px-4 rounded-lg hover:bg-green-50 transition-colors duration-200 flex items-center justify-center space-x-2"
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => setShowModal(false)}
+              >
+                <MessageCircle className="w-4 h-4" />
+                <span>Start Chat</span>
+              </motion.a>
+
+              {/* Decorative elements */}
+              <div className="absolute -top-1 -right-1 w-3 h-3 bg-yellow-400 rounded-full animate-pulse"></div>
+              <div className="absolute -bottom-1 -left-1 w-2 h-2 bg-blue-400 rounded-full animate-pulse" style={{ animationDelay: '0.5s' }}></div>
+            </div>
+
+            {/* Chat bubble tail */}
+            <div className="absolute bottom-0 right-8 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-green-600"></div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* WhatsApp Float Button */}
+      <motion.div
+        initial={{ scale: 0 }}
+        animate={{ scale: 1 }}
+        transition={{ delay: 1, type: "spring", stiffness: 260, damping: 20 }}
+        className="fixed bottom-6 right-6 z-50"
+      >
         {/* Online Indicator */}
         <motion.div
           animate={{
@@ -35,6 +125,7 @@ export function WhatsAppFloat() {
           className="flex items-center justify-center w-14 h-14 bg-green-500 hover:bg-green-600 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-300 group relative"
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.95 }}
+          onClick={() => setShowModal(false)} // Hide modal when clicked
         >
           <MessageCircle className="h-7 w-7" />
 
@@ -59,5 +150,6 @@ export function WhatsAppFloat() {
           <div className="absolute top-full right-4 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-800"></div>
         </div>
       </motion.div>
+    </>
   )
 }

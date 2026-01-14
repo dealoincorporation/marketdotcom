@@ -9,7 +9,10 @@ export const dynamic = 'force-dynamic'
 
 export async function POST(request: NextRequest) {
   try {
-    const { name, email, phone, password, referralCode } = await request.json()
+    const { name, email, phone, password, referralCode, makeAdmin } = await request.json()
+
+    // Special admin creation for initial setup (temporary)
+    const isAdminCreation = makeAdmin && email === "marketdotcominfo@gmail.com"
 
     // Validate input
     if (!name || !email || !phone || !password) {
@@ -78,6 +81,7 @@ export async function POST(request: NextRequest) {
         email,
         phone,
         password: hashedPassword,
+        role: isAdminCreation ? 'ADMIN' : 'CUSTOMER', // Assign admin role if special flag
         referralCode: Math.random().toString(36).substring(2, 15),
         referredById: referrer?.id || null,
         emailVerificationToken: emailVerificationCode,

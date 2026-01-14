@@ -14,14 +14,126 @@ export default function Home() {
   const [isSubscribing, setIsSubscribing] = useState(false)
   const [subscriptionMessage, setSubscriptionMessage] = useState("")
   const [subscriptionError, setSubscriptionError] = useState("")
+  const [emailValidation, setEmailValidation] = useState<{
+    isValid: boolean;
+    message: string;
+    type: 'success' | 'error' | 'warning' | null;
+  }>({ isValid: false, message: "", type: null })
+
+  // Enhanced email validation function
+  const validateEmail = (email: string) => {
+    const trimmedEmail = email.trim()
+
+    if (!trimmedEmail) {
+      return { isValid: false, message: "", type: null }
+    }
+
+    // Basic email regex pattern
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+
+    if (!emailRegex.test(trimmedEmail)) {
+      return {
+        isValid: false,
+        message: "Please enter a valid email address",
+        type: 'error' as const
+      }
+    }
+
+    // Check for common email issues
+    const localPart = trimmedEmail.split('@')[0]
+    const domain = trimmedEmail.split('@')[1]
+
+    if (localPart.length > 64) {
+      return {
+        isValid: false,
+        message: "Email address is too long",
+        type: 'error' as const
+      }
+    }
+
+    if (domain.includes('..')) {
+      return {
+        isValid: false,
+        message: "Invalid email domain format",
+        type: 'error' as const
+      }
+    }
+
+    // Check for suspicious patterns
+    const suspiciousPatterns = [
+      /noreply/i,
+      /no-reply/i,
+      /admin/i,
+      /test/i,
+      /example/i,
+      /temp/i,
+      /fake/i
+    ]
+
+    const hasSuspiciousPattern = suspiciousPatterns.some(pattern =>
+      trimmedEmail.match(pattern)
+    )
+
+    if (hasSuspiciousPattern) {
+      return {
+        isValid: true,
+        message: "Please use a personal email address for newsletters",
+        type: 'warning' as const
+      }
+    }
+
+    // Check for popular email providers (generally good sign)
+    const popularDomains = ['gmail.com', 'yahoo.com', 'hotmail.com', 'outlook.com', 'icloud.com']
+    const isPopularDomain = popularDomains.some(pd => domain.toLowerCase().includes(pd))
+
+    if (isPopularDomain) {
+      return {
+        isValid: true,
+        message: "Valid email format",
+        type: 'success' as const
+      }
+    }
+
+    // Generic domain - still valid but let user know
+    return {
+      isValid: true,
+      message: "Email format looks good",
+      type: 'success' as const
+    }
+  }
+
+  // Handle email input changes with real-time validation
+  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const email = e.target.value
+    setSubscriptionEmail(email)
+    const validation = validateEmail(email)
+    setEmailValidation(validation)
+  }
 
   const handleSubscribe = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!subscriptionEmail.trim()) return
+
+    const trimmedEmail = subscriptionEmail.trim()
+    if (!trimmedEmail) {
+      setEmailValidation({
+        isValid: false,
+        message: "Email address is required",
+        type: 'error'
+      })
+      return
+    }
+
+    // Final validation check
+    const validation = validateEmail(trimmedEmail)
+    if (!validation.isValid && validation.type === 'error') {
+      setEmailValidation(validation)
+      return
+    }
 
     setIsSubscribing(true)
     setSubscriptionError("")
     setSubscriptionMessage("")
+    setEmailValidation({ isValid: false, message: "", type: null })
 
     try {
       const response = await fetch("/api/subscription", {
@@ -30,7 +142,7 @@ export default function Home() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          email: subscriptionEmail,
+          email: trimmedEmail,
           source: "FOOTER",
         }),
       })
@@ -40,6 +152,7 @@ export default function Home() {
       if (response.ok) {
         setSubscriptionMessage(data.message)
         setSubscriptionEmail("")
+        setEmailValidation({ isValid: false, message: "", type: null })
       } else {
         setSubscriptionError(data.error || "Something went wrong")
       }
@@ -1026,29 +1139,106 @@ export default function Home() {
                   {/* Newsletter Signup */}
                   <motion.div className="mt-8 p-4 bg-gradient-to-r from-orange-600/10 to-orange-500/10 rounded-xl border border-orange-500/20">
                     <p className="text-sm font-medium text-gray-300 mb-3">Stay Updated</p>
-                    <form onSubmit={handleSubscribe} className="space-y-3">
+                    <form onSubmit={handleSubscribe} className="space-y-3" noValidate>
                       <motion.div className="flex gap-2">
-                        <input
-                          type="email"
-                          placeholder="Your email"
-                          value={subscriptionEmail}
-                          onChange={(e) => setSubscriptionEmail(e.target.value)}
-                          className="flex-1 px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-sm text-white placeholder-gray-400 focus:outline-none focus:border-orange-500"
-                          required
-                        />
+                        <div className="flex-1 relative">
+                          <input
+                            type="email"
+                            placeholder="Your email"
+                            value={subscriptionEmail}
+                            onChange={handleEmailChange}
+                            className={`w-full px-3 py-2 bg-gray-800 border rounded-lg text-sm text-white placeholder-gray-400 focus:outline-none transition-all duration-300 ${
+                              emailValidation.type === 'error'
+                                ? 'border-red-500 focus:border-red-500'
+                                : emailValidation.type === 'success'
+                                ? 'border-green-500 focus:border-green-500'
+                                : emailValidation.type === 'warning'
+                                ? 'border-yellow-500 focus:border-yellow-500'
+                                : 'border-gray-700 focus:border-orange-500'
+                            }`}
+                            aria-label="Email address for newsletter subscription"
+                            aria-describedby={emailValidation.message ? "email-validation-message" : undefined}
+                            required
+                          />
+                          {/* Validation Icon */}
+                          {emailValidation.type && (
+                            <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                              {emailValidation.type === 'success' && (
+                                <svg className="w-4 h-4 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                </svg>
+                              )}
+                              {emailValidation.type === 'error' && (
+                                <svg className="w-4 h-4 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                              )}
+                              {emailValidation.type === 'warning' && (
+                                <svg className="w-4 h-4 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L4.268 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                                </svg>
+                              )}
+                            </div>
+                          )}
+                        </div>
                         <button
                           type="submit"
-                          disabled={isSubscribing}
-                          className="px-4 py-2 bg-orange-600 hover:bg-orange-700 disabled:bg-orange-400 disabled:cursor-not-allowed rounded-lg text-sm font-medium transition-colors duration-300"
+                          disabled={isSubscribing || emailValidation.type === 'error'}
+                          className="px-4 py-2 bg-orange-600 hover:bg-orange-700 disabled:bg-orange-400 disabled:cursor-not-allowed rounded-lg text-sm font-medium transition-colors duration-300 flex items-center gap-2"
+                          aria-describedby={isSubscribing ? "subscribing-status" : undefined}
                         >
-                          {isSubscribing ? "..." : "Subscribe"}
+                          {isSubscribing ? (
+                            <>
+                              <svg className="animate-spin -ml-1 mr-1 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                              </svg>
+                              <span id="subscribing-status">Subscribing...</span>
+                            </>
+                          ) : (
+                            "Subscribe"
+                          )}
                         </button>
                       </motion.div>
+
+                      {/* Validation Message */}
+                      {emailValidation.message && (
+                        <motion.div
+                          id="email-validation-message"
+                          initial={{ opacity: 0, y: -10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          className={`text-xs px-2 py-1 rounded-md ${
+                            emailValidation.type === 'error'
+                              ? 'bg-red-500/10 text-red-400 border border-red-500/20'
+                              : emailValidation.type === 'success'
+                              ? 'bg-green-500/10 text-green-400 border border-green-500/20'
+                              : emailValidation.type === 'warning'
+                              ? 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/20'
+                              : ''
+                          }`}
+                        >
+                          {emailValidation.message}
+                        </motion.div>
+                      )}
+
+                      {/* Success/Error Messages */}
                       {subscriptionMessage && (
-                        <p className="text-green-400 text-xs">{subscriptionMessage}</p>
+                        <motion.div
+                          initial={{ opacity: 0, y: -10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          className="text-green-400 text-xs bg-green-500/10 px-2 py-1 rounded-md border border-green-500/20"
+                        >
+                          ✓ {subscriptionMessage}
+                        </motion.div>
                       )}
                       {subscriptionError && (
-                        <p className="text-red-400 text-xs">{subscriptionError}</p>
+                        <motion.div
+                          initial={{ opacity: 0, y: -10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          className="text-red-400 text-xs bg-red-500/10 px-2 py-1 rounded-md border border-red-500/20"
+                        >
+                          ✗ {subscriptionError}
+                        </motion.div>
                       )}
                     </form>
                   </motion.div>

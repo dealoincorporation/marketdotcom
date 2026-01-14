@@ -789,12 +789,12 @@ export default function CheckoutPage() {
             <div className="lg:col-span-1">
               <div className="sticky top-8 space-y-6">
                 {/* Order Items */}
-                <div className="bg-white/70 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 overflow-hidden">
-                  <div className="bg-gradient-to-r from-purple-500 to-pink-500 p-6">
+                <div className="bg-gradient-to-br from-orange-50 to-white rounded-2xl shadow-xl border border-orange-200 overflow-hidden">
+                  <div className="bg-gradient-to-r from-orange-500 to-orange-600 p-6">
                     <h2 className="text-xl font-bold text-white flex items-center">
                       🛒 Order Summary
                     </h2>
-                    <p className="text-purple-100 mt-1">{totalItems} items in your cart</p>
+                    <p className="text-orange-100 mt-1">{totalItems} items in your cart</p>
                   </div>
                   <div className="p-6">
                     <div className="space-y-4 mb-6">
@@ -811,30 +811,32 @@ export default function CheckoutPage() {
                       ))}
                     </div>
 
-                    <div className="space-y-3 border-t border-gray-200 pt-4">
-                      <div className="flex justify-between items-center">
-                        <span className="text-gray-600">Subtotal</span>
-                        <span className="font-semibold text-gray-900">₦{subtotal.toLocaleString()}</span>
+                    <div className="space-y-3 border-t border-orange-200 pt-4">
+                      <div className="flex justify-between items-center bg-orange-50 p-3 rounded-lg">
+                        <span className="text-gray-700">Subtotal</span>
+                        <span className="font-semibold text-orange-700">₦{subtotal.toLocaleString()}</span>
                       </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-gray-600">Delivery Fee</span>
-                        <span className={`font-semibold ${deliveryFee === 0 ? 'text-green-600' : 'text-gray-900'}`}>
+                      <div className="flex justify-between items-center bg-gray-50 p-3 rounded-lg">
+                        <span className="text-gray-700">Delivery Fee</span>
+                        <span className={`font-semibold ${deliveryFee === 0 ? 'text-green-600' : 'text-orange-700'}`}>
                           {deliveryFee === 0 ? 'Free' : `₦${deliveryFee.toLocaleString()}`}
                         </span>
                       </div>
-                      <div className="border-t border-gray-300 pt-3">
-                        <div className="flex justify-between items-center">
-                          <span className="text-lg font-bold text-gray-900">Total</span>
-                          <span className="text-lg font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
-                            ₦{finalTotal.toLocaleString()}
-                          </span>
+                      <div className="relative">
+                        <div className="border-t border-orange-300 pt-3">
+                          <div className="flex justify-between items-center bg-gradient-to-r from-orange-500 to-orange-600 text-white p-4 rounded-lg">
+                            <span className="text-lg font-bold">Total</span>
+                            <span className="text-lg font-bold">
+                              ₦{finalTotal.toLocaleString()}
+                            </span>
+                          </div>
                         </div>
                       </div>
                     </div>
 
                     <Button
                       onClick={() => setStep(2)}
-                      className="w-full h-12 mt-6 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-300"
+                      className="w-full h-12 mt-6 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-300 border-0"
                       disabled={!selectedAddress || !deliveryDate || !deliveryTime}
                     >
                       Continue to Payment →

@@ -14,6 +14,12 @@ const nextConfig = {
         port: '',
         pathname: '/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'res.cloudinary.com',
+        port: '',
+        pathname: '/**',
+      },
     ],
     unoptimized: process.env.NODE_ENV === 'development',
   },
@@ -27,15 +33,14 @@ const nextConfig = {
     DATABASE_URL: process.env.DATABASE_URL || 'mongodb://localhost:27017/marketdotcom',
     JWT_SECRET: process.env.JWT_SECRET || 'fallback-jwt-secret',
   },
+}
 
-  // Disable dotenv loading to avoid permission errors
-  ...(process.env.SKIP_ENV_LOADING && {
-    experimental: {
-      ...nextConfig.experimental,
-      // This prevents Next.js from trying to load .env files
-      env: {},
-    },
-  }),
+// Disable dotenv loading to avoid permission errors if SKIP_ENV_LOADING is set
+if (process.env.SKIP_ENV_LOADING) {
+  nextConfig.experimental = {
+    ...nextConfig.experimental,
+    // This prevents Next.js from trying to load .env files
+  }
 }
 
 export default nextConfig;

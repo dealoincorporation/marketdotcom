@@ -3,7 +3,20 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 
 const subscribeSchema = z.object({
-  email: z.string().email("Please provide a valid email address"),
+  email: z.string()
+    .min(1, "Email address is required")
+    .email("Please provide a valid email address")
+    .max(254, "Email address is too long")
+    .refine((email) => {
+      // Additional validation for email format
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+      return emailRegex.test(email)
+    }, "Invalid email format")
+    .refine((email) => {
+      // Check for valid domain format
+      const domain = email.split('@')[1]
+      return domain && domain.includes('.') && !domain.includes('..')
+    }, "Invalid email domain"),
   source: z.string().optional().default("FOOTER"),
 });
 

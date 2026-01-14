@@ -306,35 +306,44 @@ export default function CartPage() {
 
           {/* Order Summary */}
           <div className="lg:col-span-1">
-            <Card className="sticky top-4 lg:top-8">
-              <CardHeader className="pb-3">
+            <Card className="sticky top-4 lg:top-8 bg-gradient-to-br from-orange-50 to-white border-orange-200 shadow-lg">
+              <CardHeader className="pb-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-t-lg">
                 <CardTitle className="flex items-center space-x-2 text-base sm:text-lg">
                   <CreditCard className="h-4 w-4 sm:h-5 sm:w-5" />
                   <span>Order Summary</span>
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-3 sm:space-y-4">
-                <div className="flex justify-between text-sm sm:text-base">
-                  <span>Subtotal ({totalItems} items)</span>
-                  <span className="font-medium">₦{totalPrice.toLocaleString()}</span>
+              <CardContent className="space-y-3 sm:space-y-4 p-4 sm:p-6">
+                <div className="flex justify-between text-sm sm:text-base bg-orange-50 p-3 rounded-lg border border-orange-100">
+                  <span className="text-gray-700">Subtotal ({totalItems} items)</span>
+                  <span className="font-semibold text-orange-700">₦{totalPrice.toLocaleString()}</span>
                 </div>
 
-                <div className="flex justify-between text-sm sm:text-base">
-                  <span>Delivery Fee</span>
-                  <span className={`font-medium ${deliveryFee === 0 ? "text-green-600" : ""}`}>
+                <div className="flex justify-between text-sm sm:text-base bg-gray-50 p-3 rounded-lg border border-gray-100">
+                  <span className="text-gray-700">Delivery Fee</span>
+                  <span className={`font-medium ${deliveryFee === 0 ? "text-green-600" : "text-orange-700"}`}>
                     {deliveryFee === 0 ? "Free" : `₦${deliveryFee.toLocaleString()}`}
                   </span>
                 </div>
 
                 {deliveryFee === 0 && (
-                  <p className="text-xs text-green-600">
-                    Free delivery on orders over ₦10,000
-                  </p>
+                  <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+                    <p className="text-xs text-green-700 font-medium">
+                      🎉 Free delivery on orders over ₦10,000
+                    </p>
+                  </div>
                 )}
 
-                <Separator />
+                <div className="relative">
+                  <Separator className="bg-orange-200" />
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="bg-white px-4">
+                      <div className="w-2 h-2 bg-orange-400 rounded-full"></div>
+                    </div>
+                  </div>
+                </div>
 
-                <div className="flex justify-between text-base sm:text-lg font-semibold">
+                <div className="flex justify-between text-base sm:text-lg font-bold bg-gradient-to-r from-orange-500 to-orange-600 text-white p-4 rounded-lg">
                   <span>Total</span>
                   <span>₦{finalTotal.toLocaleString()}</span>
                 </div>
@@ -351,7 +360,7 @@ export default function CartPage() {
 
                   <Button
                     onClick={handleCheckout}
-                    className="w-full bg-orange-600 hover:bg-orange-700 text-sm sm:text-base"
+                    className="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white text-sm sm:text-base font-semibold shadow-lg hover:shadow-xl transition-all duration-300 border-0"
                     size="lg"
                   >
                     <CreditCard className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
@@ -371,28 +380,42 @@ export default function CartPage() {
                 </div>
 
                 {/* Delivery Info */}
-                <div className="pt-3 sm:pt-4 border-t">
-                  <div className="flex items-center space-x-2 text-xs sm:text-sm text-gray-600 mb-2">
-                    <Truck className="h-3 w-3 sm:h-4 sm:w-4" />
-                    <span>Delivery Information</span>
+                <div className="pt-3 sm:pt-4 border-t border-orange-200">
+                  <div className="flex items-center space-x-2 text-xs sm:text-sm text-orange-700 mb-3 bg-orange-50 p-2 rounded-lg">
+                    <Truck className="h-3 w-3 sm:h-4 sm:w-4 text-orange-600" />
+                    <span className="font-medium">Delivery Information</span>
                   </div>
-                  <ul className="text-xs text-gray-600 space-y-1">
-                    <li>• Orders delivered within 4 hours</li>
-                    <li>• Place orders by 10 AM for same-day delivery</li>
-                    <li>• Orders after 3 PM delivered next day</li>
-                    <li>• Free delivery on orders over ₦10,000</li>
+                  <ul className="text-xs text-gray-600 space-y-1 bg-white p-3 rounded-lg border border-orange-100">
+                    <li className="flex items-center space-x-2">
+                      <div className="w-1.5 h-1.5 bg-orange-400 rounded-full"></div>
+                      <span>Orders delivered within 4 hours</span>
+                    </li>
+                    <li className="flex items-center space-x-2">
+                      <div className="w-1.5 h-1.5 bg-orange-400 rounded-full"></div>
+                      <span>Place orders by 10 AM for same-day delivery</span>
+                    </li>
+                    <li className="flex items-center space-x-2">
+                      <div className="w-1.5 h-1.5 bg-orange-400 rounded-full"></div>
+                      <span>Orders after 3 PM delivered next day</span>
+                    </li>
+                    <li className="flex items-center space-x-2">
+                      <div className="w-1.5 h-1.5 bg-green-400 rounded-full"></div>
+                      <span className="text-green-700 font-medium">Free delivery on orders over ₦10,000</span>
+                    </li>
                   </ul>
                 </div>
 
                 {/* Security */}
-                <div className="pt-3 sm:pt-4 border-t">
-                  <div className="flex items-center space-x-2 text-xs sm:text-sm text-gray-600">
-                    <Shield className="h-3 w-3 sm:h-4 sm:w-4" />
-                    <span>Secure Checkout</span>
+                <div className="pt-3 sm:pt-4 border-t border-orange-200">
+                  <div className="flex items-center space-x-2 text-xs sm:text-sm text-orange-700 bg-gradient-to-r from-orange-50 to-white p-2 rounded-lg">
+                    <Shield className="h-3 w-3 sm:h-4 sm:w-4 text-orange-600" />
+                    <span className="font-medium">Secure Checkout</span>
                   </div>
-                  <p className="text-xs text-gray-600 mt-1">
-                    Your payment information is encrypted and secure.
-                  </p>
+                  <div className="bg-white p-3 rounded-lg border border-orange-100 mt-2">
+                    <p className="text-xs text-gray-600">
+                      🔒 Your payment information is encrypted and secure with bank-level security.
+                    </p>
+                  </div>
                 </div>
               </CardContent>
             </Card>

@@ -103,7 +103,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { name, description, basePrice, categoryId, stock, unit, inStock, variations } = body
+    const { name, description, basePrice, categoryId, stock, unit, inStock, image, variations } = body
 
     if (!name || !categoryId || basePrice === undefined) {
       return NextResponse.json(
@@ -121,6 +121,7 @@ export async function POST(request: NextRequest) {
         stock: parseInt(stock) || 0,
         unit: unit || "piece",
         inStock: inStock !== undefined ? inStock : true,
+        image: image || null,
       },
       include: {
         category: true

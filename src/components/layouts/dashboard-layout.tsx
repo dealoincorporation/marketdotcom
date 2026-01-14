@@ -21,7 +21,7 @@ import { Button } from '@/components/ui/button'
 import { useCartStore } from '@/lib/cart-store'
 import { useAuth } from '@/contexts/AuthContext'
 import { formatCurrency, getInitials } from '@/lib/helpers'
-type DashboardTab = "marketplace" | "orders" | "manage-products" | "wallet" | "admin"
+type DashboardTab = "marketplace" | "orders" | "manage-products" | "manage-categories" | "wallet" | "admin"
 
 interface DashboardLayoutProps {
   children: ReactNode
@@ -216,6 +216,21 @@ export function DashboardLayout({
                   >
                     <Box className="h-5 w-5" />
                     <span>Manage Products</span>
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      onTabChange('manage-categories')
+                      setIsMobileMenuOpen(false)
+                    }}
+                    className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-left transition-all duration-200 ${
+                      activeTab === 'manage-categories'
+                        ? 'bg-gradient-to-r from-orange-50 to-red-50 text-orange-600 border-r-4 border-orange-600 shadow-sm'
+                        : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                    }`}
+                  >
+                    <Package className="h-5 w-5" />
+                    <span>Manage Categories</span>
                   </button>
                 </>
               )}

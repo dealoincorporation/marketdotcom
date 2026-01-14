@@ -18,6 +18,7 @@ import OrdersTab from "./components/OrdersTab"
 import WalletTab from "./components/WalletTab"
 import AdminTab from "./components/AdminTab"
 import ManageProductsTab from "./components/ManageProductsTab"
+import ManageCategoriesTab from "./components/ManageCategoriesTab"
 import { ProductForm } from "@/components/forms/product-form"
 
 // Import hooks
@@ -27,7 +28,7 @@ import { useCartStore } from "@/lib/cart-store"
 // Import types
 import { Product } from "@prisma/client"
 
-type DashboardTab = "marketplace" | "orders" | "manage-products" | "wallet" | "admin"
+type DashboardTab = "marketplace" | "orders" | "manage-products" | "manage-categories" | "wallet" | "admin"
 
 function DashboardContent() {
   // Custom hooks
@@ -56,7 +57,7 @@ function DashboardContent() {
   // Handle URL tab parameter
   useEffect(() => {
     const tabParam = searchParams.get('tab')
-    if (tabParam && ['marketplace', 'orders', 'wallet', 'admin', 'manage-products'].includes(tabParam)) {
+    if (tabParam && ['marketplace', 'orders', 'wallet', 'admin', 'manage-products', 'manage-categories'].includes(tabParam)) {
       setActiveTab(tabParam as DashboardTab)
     }
   }, [searchParams])
@@ -228,6 +229,13 @@ function DashboardContent() {
             categories={categories}
             onDeleteProduct={handleDeleteProduct}
             onToggleStockStatus={handleToggleStockStatus}
+          />
+        )}
+
+        {isAdmin && activeTab === "manage-categories" && (
+          <ManageCategoriesTab
+            categories={categories}
+            onRefresh={refreshAll}
           />
         )}
       </DashboardLayout>
