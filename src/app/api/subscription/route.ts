@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { prisma } from "@/lib/prisma";
+import { getPrismaClient } from "@/lib/prisma";
 
 const subscribeSchema = z.object({
   email: z.string()
@@ -24,6 +24,17 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const { email, source } = subscribeSchema.parse(body);
+
+    // Get Prisma client lazily to avoid build-time initialization
+    const prisma = await getPrismaClient();
+
+    // Check if database is available
+    if (!prisma || typeof prisma.subscription?.findUnique !== 'function') {
+      return NextResponse.json(
+        { error: "Service temporarily unavailable. Please try again later." },
+        { status: 503 }
+      );
+    }
 
     // Check if email is already subscribed
     const existingSubscription = await prisma.subscription.findUnique({
@@ -81,6 +92,18 @@ export async function POST(request: NextRequest) {
 
 export async function GET() {
   try {
+    // Get Prisma client lazily to avoid build-time initialization
+    const prisma = await getPrismaClient()
+
+    // Check if database is available
+    if (!prisma || typeof prisma.subscription?.count !== 'function') {
+      // Return mock data during build time
+      return NextResponse.json({
+        totalSubscribers: 0,
+        message: "Database temporarily unavailable"
+      })
+    }
+
     const totalSubscribers = await prisma.subscription.count({
       where: { isActive: true },
     });
@@ -90,6 +113,15 @@ export async function GET() {
     });
   } catch (error) {
     console.error("Get subscribers error:", error);
+
+    // If it's a database connection error, return fallback data
+    if (error instanceof Error && (error.message.includes('server selection') || (error as any).code === 'P2010')) {
+      return NextResponse.json({
+        totalSubscribers: 0,
+        message: "Database temporarily unavailable"
+      })
+    }
+
     return NextResponse.json(
       { error: "Failed to fetch subscriber count" },
       { status: 500 }

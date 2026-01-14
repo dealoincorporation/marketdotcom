@@ -1,5 +1,14 @@
-// Mock Cloudinary implementation for build compatibility
-// Replace with actual Cloudinary SDK once package is installed
+// Real Cloudinary implementation
+// Make sure to run: npm install cloudinary
+
+import { v2 as cloudinary } from 'cloudinary'
+
+// Cloudinary configuration using environment variables
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+})
 
 export interface CloudinaryUploadResult {
   public_id: string
@@ -9,58 +18,100 @@ export interface CloudinaryUploadResult {
   width: number
   height: number
   bytes: number
+  created_at?: string
+  resource_type?: string
 }
 
-// Mock Cloudinary configuration (will be replaced with real SDK)
-const mockCloudinary = {
-  config: () => {},
-  uploader: {
-    upload: async () => {
-      throw new Error('Cloudinary SDK not installed. Please run: npm install cloudinary')
-    },
-    destroy: async () => {
-      throw new Error('Cloudinary SDK not installed. Please run: npm install cloudinary')
-    }
-  },
-  url: () => {
-    throw new Error('Cloudinary SDK not installed. Please run: npm install cloudinary')
-  }
-}
-
+// Upload file to Cloudinary with optimizations
 export async function uploadToCloudinary(
   file: Buffer | string,
   options: {
     folder?: string
     public_id?: string
     transformation?: any[]
+    resource_type?: string
   } = {}
 ): Promise<CloudinaryUploadResult> {
-  // For now, return a mock result to prevent build failures
-  // Replace with actual Cloudinary upload once SDK is installed
-  console.warn('Cloudinary SDK not installed. Using mock implementation.')
+  try {
+    // Validate environment variables
+    if (!process.env.CLOUDINARY_CLOUD_NAME || !process.env.CLOUDINARY_API_KEY || !process.env.CLOUDINARY_API_SECRET) {
+      throw new Error('Cloudinary environment variables not configured. Please check CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, and CLOUDINARY_API_SECRET.')
+    }
 
-  // Generate mock result
-  const mockResult: CloudinaryUploadResult = {
-    public_id: `mock_${Date.now()}`,
-    secure_url: `https://via.placeholder.com/400x400?text=Mock+Image`,
-    url: `https://via.placeholder.com/400x400?text=Mock+Image`,
-    format: 'jpg',
-    width: 400,
-    height: 400,
-    bytes: 1024
+    const uploadOptions = {
+      folder: options.folder || 'marketdotcom/products',
+      resource_type: options.resource_type || 'auto',
+      ...options,
+    }
+
+    // Add image optimizations for better performance
+    if (!options.transformation) {
+      uploadOptions.transformation = [
+        { width: 800, height: 800, crop: "limit", quality: "auto" },
+        { fetch_format: "auto" }
+      ]
+    }
+
+    console.log('Uploading to Cloudinary with options:', uploadOptions)
+    const result = await cloudinary.uploader.upload(file, uploadOptions)
+    console.log('Cloudinary upload successful:', result.public_id)
+
+    return result
+  } catch (error) {
+    console.error('Cloudinary upload error:', error)
+    throw new Error(`Failed to upload image to Cloudinary: ${error instanceof Error ? error.message : 'Unknown error'}`)
   }
-
-  return mockResult
 }
 
+// Delete file from Cloudinary
 export async function deleteFromCloudinary(publicId: string): Promise<void> {
-  console.warn('Cloudinary SDK not installed. Mock delete operation.')
-  // Mock delete - do nothing
+  try {
+    if (!process.env.CLOUDINARY_CLOUD_NAME || !process.env.CLOUDINARY_API_KEY || !process.env.CLOUDINARY_API_SECRET) {
+      throw new Error('Cloudinary environment variables not configured.')
+    }
+
+    console.log('Deleting from Cloudinary:', publicId)
+    const result = await cloudinary.uploader.destroy(publicId)
+    console.log('Cloudinary delete result:', result)
+
+    if (result.result !== 'ok') {
+      throw new Error(`Failed to delete image: ${result.result}`)
+    }
+  } catch (error) {
+    console.error('Cloudinary delete error:', error)
+    throw new Error(`Failed to delete image from Cloudinary: ${error instanceof Error ? error.message : 'Unknown error'}`)
+  }
 }
 
+// Generate Cloudinary URL with transformations
 export function getCloudinaryUrl(publicId: string, options: any = {}): string {
-  console.warn('Cloudinary SDK not installed. Returning placeholder URL.')
-  return `https://via.placeholder.com/400x400?text=Mock+Image+${publicId}`
+  try {
+    return cloudinary.url(publicId, {
+      secure: true,
+      quality: 'auto',
+      fetch_format: 'auto',
+      ...options
+    })
+  } catch (error) {
+    console.error('Cloudinary URL generation error:', error)
+    return `https://via.placeholder.com/400x400?text=Error+Loading+Image`
+  }
 }
 
-export default mockCloudinary
+// Get Cloudinary configuration status
+export function getCloudinaryStatus(): {
+  configured: boolean
+  cloudName?: string
+  missingVars: string[]
+} {
+  const requiredVars = ['CLOUDINARY_CLOUD_NAME', 'CLOUDINARY_API_KEY', 'CLOUDINARY_API_SECRET']
+  const missingVars = requiredVars.filter(varName => !process.env[varName])
+
+  return {
+    configured: missingVars.length === 0,
+    cloudName: process.env.CLOUDINARY_CLOUD_NAME,
+    missingVars
+  }
+}
+
+export default cloudinary
