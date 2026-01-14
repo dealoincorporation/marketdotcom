@@ -89,10 +89,13 @@ export function useDashboard(): UseDashboardReturn {
     try {
       const response = await fetch('/api/categories')
       if (response.ok) {
-        const data = await response.json()
+        const result = await response.json()
+        // Handle both new format { success: true, data: [] } and legacy format []
+        const data = result.data || result
+
         // If API returns empty array, use default categories
         // Otherwise merge with defaults, avoiding duplicates
-        if (data.length === 0) {
+        if (!data || data.length === 0) {
           setCategories(defaultCategories)
         } else {
           // Create a map to avoid duplicates by name
