@@ -100,13 +100,22 @@ export function ProductForm({
     setErrors(prev => ({ ...prev, image: '' }))
 
     try {
-      const formData = new FormData()
-      formData.append('file', file)
-      formData.append('folder', 'marketdotcom/products')
+      const formDataObj = new FormData()
+      formDataObj.append('file', file)
+      formDataObj.append('folder', 'marketdotcom/products')
+
+      // Get auth token from localStorage
+      const token = localStorage.getItem('token')
+      const headers: Record<string, string> = {}
+
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`
+      }
 
       const response = await fetch('/api/upload', {
         method: 'POST',
-        body: formData,
+        headers,
+        body: formDataObj,
       })
 
       const data = await response.json()

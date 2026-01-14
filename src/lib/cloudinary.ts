@@ -38,9 +38,20 @@ export async function uploadToCloudinary(
       throw new Error('Cloudinary environment variables not configured. Please check CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, and CLOUDINARY_API_SECRET.')
     }
 
-    const uploadOptions = {
+    let fileToUpload: string
+
+    // Convert Buffer to base64 data URI if needed
+    if (Buffer.isBuffer(file)) {
+      const base64 = file.toString('base64')
+      const mimeType = 'image/jpeg' // Default, will be auto-detected by Cloudinary
+      fileToUpload = `data:${mimeType};base64,${base64}`
+    } else {
+      fileToUpload = file
+    }
+
+    const uploadOptions: any = {
       folder: options.folder || 'marketdotcom/products',
-      resource_type: options.resource_type || 'auto',
+      resource_type: (options.resource_type as 'auto' | 'image' | 'raw' | 'video') || 'auto',
       ...options,
     }
 
@@ -53,7 +64,7 @@ export async function uploadToCloudinary(
     }
 
     console.log('Uploading to Cloudinary with options:', uploadOptions)
-    const result = await cloudinary.uploader.upload(file, uploadOptions)
+    const result = await cloudinary.uploader.upload(fileToUpload, uploadOptions)
     console.log('Cloudinary upload successful:', result.public_id)
 
     return result
