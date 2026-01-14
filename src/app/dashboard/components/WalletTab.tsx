@@ -1,8 +1,8 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { useAuth } from "@/contexts/AuthContext"
 import { useRouter, useSearchParams } from "next/navigation"
-import { motion } from "framer-motion"
 import {
   Wallet,
   DollarSign,
@@ -54,6 +54,16 @@ export default function WalletTab({ walletInfo }: WalletTabProps) {
   })
   const [referralLoading, setReferralLoading] = useState(true)
 
+  // Transactions state
+  const [recentTransactions, setRecentTransactions] = useState<{
+    id: string;
+    type: string;
+    amount: number;
+    description: string;
+    date: string;
+  }[]>([])
+  const [transactionsLoading, setTransactionsLoading] = useState(true)
+
   // Mock points settings
   const pointsSettings = {
     pointsPerNaira: 0.1,
@@ -97,6 +107,32 @@ export default function WalletTab({ walletInfo }: WalletTabProps) {
     }
 
     fetchReferralData()
+  }, [])
+
+  // Fetch recent transactions
+  useEffect(() => {
+    const fetchTransactions = async () => {
+      try {
+        const token = localStorage.getItem('token')
+        const response = await fetch('/api/wallet/transactions', {
+          headers: {
+            ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+          }
+        })
+
+        if (response.ok) {
+          const data = await response.json()
+          setRecentTransactions(data.transactions || [])
+        }
+      } catch (error) {
+        console.error('Error fetching transactions:', error)
+        setRecentTransactions([])
+      } finally {
+        setTransactionsLoading(false)
+      }
+    }
+
+    fetchTransactions()
   }, [])
 
   const verifyWalletFunding = async (reference: string) => {
@@ -177,19 +213,8 @@ export default function WalletTab({ walletInfo }: WalletTabProps) {
   const currentTier = Math.floor(walletInfo.points / 1000) + 1
   const tierName = currentTier === 1 ? 'Bronze' : currentTier === 2 ? 'Silver' : currentTier === 3 ? 'Gold' : 'Platinum'
 
-  const recentTransactions = [
-    { id: '1', type: 'credit', amount: 500, description: 'Order refund', date: '2024-01-15' },
-    { id: '2', type: 'debit', amount: -2500, description: 'Purchase - Fresh Tomatoes', date: '2024-01-14' },
-    { id: '3', type: 'credit', amount: 100, description: 'Referral bonus', date: '2024-01-13' },
-    { id: '4', type: 'credit', amount: 50, description: 'Points converted', date: '2024-01-12' },
-  ]
-
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
-    >
+    <div>
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900 mb-2">Wallet & Points</h1>
         <p className="text-gray-600">Manage your balance, earn points, and track your rewards</p>
@@ -197,11 +222,7 @@ export default function WalletTab({ walletInfo }: WalletTabProps) {
 
       {/* Wallet Balance & Points Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-        <motion.div
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.5, delay: 0.1 }}
-        >
+        <div>
           <Card className="bg-gradient-to-br from-green-50 to-emerald-100 border-green-200 shadow-lg">
             <CardHeader className="pb-4">
               <CardTitle className="flex items-center space-x-2 text-green-800">
@@ -234,13 +255,9 @@ export default function WalletTab({ walletInfo }: WalletTabProps) {
               </div>
             </CardContent>
           </Card>
-        </motion.div>
+        </div>
 
-        <motion.div
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.5, delay: 0.2 }}
-        >
+        <div>
           <Card className="bg-gradient-to-br from-orange-50 to-red-100 border-orange-200 shadow-lg">
             <CardHeader className="pb-4">
               <CardTitle className="flex items-center space-x-2 text-orange-800">
@@ -281,15 +298,11 @@ export default function WalletTab({ walletInfo }: WalletTabProps) {
               </div>
             </CardContent>
           </Card>
-        </motion.div>
+        </div>
       </div>
 
       {/* Referral Program */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.3 }}
-      >
+      <div>
         <Card className="mb-8 shadow-md">
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
@@ -353,14 +366,10 @@ export default function WalletTab({ walletInfo }: WalletTabProps) {
               </div>
           </CardContent>
         </Card>
-      </motion.div>
+      </div>
 
       {/* Recent Transactions */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.4 }}
-      >
+      <div>
         <Card className="shadow-md">
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
@@ -369,55 +378,65 @@ export default function WalletTab({ walletInfo }: WalletTabProps) {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              {recentTransactions.map((transaction) => (
-                <div key={transaction.id} className="flex items-center justify-between py-3 border-b border-gray-100 last:border-b-0">
-                  <div className="flex items-center space-x-3">
-                    <div className={`p-2 rounded-full ${
-                      transaction.type === 'credit'
-                        ? 'bg-green-100 text-green-600'
-                        : 'bg-red-100 text-red-600'
-                    }`}>
-                      {transaction.type === 'credit' ? (
-                        <TrendingUp className="h-4 w-4" />
-                      ) : (
-                        <CreditCard className="h-4 w-4" />
-                      )}
-                    </div>
-                    <div>
-                      <div className="font-medium text-gray-900">
-                        {transaction.description}
+            {transactionsLoading ? (
+              <div className="flex items-center justify-center py-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600"></div>
+              </div>
+            ) : recentTransactions.length === 0 ? (
+              <div className="text-center py-8">
+                <History className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                <h3 className="text-lg font-medium text-gray-900 mb-2">No Recent Transactions</h3>
+                <p className="text-gray-600 text-sm">Your transaction history will appear here once you make purchases or receive payments.</p>
+              </div>
+            ) : (
+              <>
+                <div className="space-y-4">
+                  {recentTransactions.map((transaction) => (
+                    <div key={transaction.id} className="flex items-center justify-between py-3 border-b border-gray-100 last:border-b-0">
+                      <div className="flex items-center space-x-3">
+                        <div className={`p-2 rounded-full ${
+                          transaction.type === 'credit'
+                            ? 'bg-green-100 text-green-600'
+                            : 'bg-red-100 text-red-600'
+                        }`}>
+                          {transaction.type === 'credit' ? (
+                            <TrendingUp className="h-4 w-4" />
+                          ) : (
+                            <CreditCard className="h-4 w-4" />
+                          )}
+                        </div>
+                        <div>
+                          <div className="font-medium text-gray-900">
+                            {transaction.description}
+                          </div>
+                          <div className="text-sm text-gray-500">
+                            {new Date(transaction.date).toLocaleDateString()}
+                          </div>
+                        </div>
                       </div>
-                      <div className="text-sm text-gray-500">
-                        {new Date(transaction.date).toLocaleDateString()}
+                      <div className={`font-medium ${
+                        transaction.type === 'credit' ? 'text-green-600' : 'text-red-600'
+                      }`}>
+                        {transaction.type === 'credit' ? '+' : ''}{formatPrice(transaction.amount)}
                       </div>
                     </div>
-                  </div>
-                  <div className={`font-medium ${
-                    transaction.type === 'credit' ? 'text-green-600' : 'text-red-600'
-                  }`}>
-                    {transaction.type === 'credit' ? '+' : ''}{formatPrice(transaction.amount)}
-                  </div>
+                  ))}
                 </div>
-              ))}
-            </div>
-            <div className="mt-6 text-center">
-              <button className="text-orange-600 hover:text-orange-700 font-medium text-sm">
-                View All Transactions →
-              </button>
-            </div>
+                <div className="mt-6 text-center">
+                  <button className="text-orange-600 hover:text-orange-700 font-medium text-sm">
+                    View All Transactions →
+                  </button>
+                </div>
+              </>
+            )}
           </CardContent>
         </Card>
-      </motion.div>
+      </div>
 
       {/* Fund Wallet Modal */}
       {showFundModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="w-full max-w-md"
-          >
+          <div className="w-full max-w-md">
             <Card className="shadow-2xl bg-white">
               <CardHeader>
                 <CardTitle className="text-xl font-bold flex items-center space-x-2">
@@ -516,18 +535,14 @@ export default function WalletTab({ walletInfo }: WalletTabProps) {
                 </div>
               </CardContent>
             </Card>
-          </motion.div>
+          </div>
         </div>
       )}
 
       {/* Points Conversion Modal */}
       {showConvertModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="w-full max-w-md"
-          >
+          <div className="w-full max-w-md">
             <Card className="shadow-2xl bg-white">
               <CardHeader>
                 <CardTitle className="text-xl font-bold flex items-center space-x-2">
@@ -605,9 +620,9 @@ export default function WalletTab({ walletInfo }: WalletTabProps) {
                 </div>
               </CardContent>
             </Card>
-          </motion.div>
+          </div>
         </div>
       )}
-    </motion.div>
+    </div>
   )
 }

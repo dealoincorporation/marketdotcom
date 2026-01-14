@@ -3,6 +3,7 @@
 import { motion } from "framer-motion"
 import { ShoppingBag, Star, Truck, Shield, Heart, ArrowLeft, Home } from "lucide-react"
 import Link from "next/link"
+import { ImageSlider } from "./image-slider"
 
 interface AuthLayoutProps {
   children: React.ReactNode
@@ -15,7 +16,16 @@ export function AuthLayout({ children, title, subtitle }: AuthLayoutProps) {
     <div className="h-screen flex overflow-hidden">
       {/* Completely Fixed Promotional Panel - No Scrolling */}
       <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-gray-800 via-gray-900 to-black text-white relative">
-        <div className="absolute inset-0 bg-gradient-to-r from-orange-600/10 to-orange-500/5" />
+        {/* Background Image Slider */}
+        <div className="absolute inset-0">
+          <ImageSlider
+            images={["/market_image.jpeg", "/cart_image.jpeg", "/vegetables.webp"]}
+            className="h-full w-full"
+          />
+        </div>
+        {/* Overlay for better text visibility while keeping images visible */}
+        <div className="absolute inset-0 bg-gradient-to-br from-black/40 via-gray-900/35 to-black/45" />
+        <div className="absolute inset-0 bg-gradient-to-r from-orange-900/20 via-transparent to-orange-900/15" />
         <div className="relative z-10 p-12 flex flex-col justify-center max-w-lg h-full">
           <motion.div
             initial={{ opacity: 0, x: -30 }}
@@ -34,7 +44,7 @@ export function AuthLayout({ children, title, subtitle }: AuthLayoutProps) {
               <span className="text-3xl font-bold text-orange-400">Marketdotcom</span>
             </div>
 
-            <h1 className="text-4xl font-bold mb-3 leading-tight">
+            <h1 className="text-4xl font-black mb-3 leading-tight">
               Shop Smarter, Save More
             </h1>
 

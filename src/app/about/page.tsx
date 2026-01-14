@@ -39,12 +39,12 @@ export default function AboutPage() {
     {
       icon: PiggyBank,
       title: "Daily & Monthly Thrift Plans",
-      description: "Save from as little as ₦450 or ₦950 daily and receive a carefully packaged food essentials bundle—delivered monthly or during festive periods."
+      description: "Save gradually and receive a well-packaged bundle of food and grocery essentials—delivered monthly or during festive periods. Designed to help you plan ahead, beat price hikes, and shop without stress."
     },
     {
       icon: Store,
       title: "Personal Shopping Services",
-      description: "We shop on your behalf across trusted local markets, carefully sourcing fresh, quality foodstuff at fair and competitive prices."
+      description: "We shop on your behalf—so you don't have to. From trusted local markets and suppliers, we carefully source fresh produce, packaged, and processed food items—ensuring quality, fair pricing, and reliable delivery."
     }
   ]
 

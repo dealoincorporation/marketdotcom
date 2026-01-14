@@ -1,0 +1,64 @@
+/* 🔥 ULTRA BOLD FONTS - Space Grotesk */
+/* 2024's coolest typography for premium marketplace - LOADED FROM GOOGLE FONTS */
+
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800;900&display=swap');
+
+/* Font variables with premium fallbacks */
+:root {
+  --font-space-grotesk: 'Space Grotesk', 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
+/* Main font - Space Grotesk (ultra modern, geometric) */
+.font-space-grotesk {
+  font-family: var(--font-space-grotesk);
+  font-weight: 600 !important; /* Force bold by default */
+}
+
+/* FORCE ALL TEXT TO BE BOLDER */
+* {
+  font-family: var(--font-space-grotesk) !important;
+  font-feature-settings: 'kern' 1, 'liga' 1, 'calt' 1, 'ss01' 1;
+  font-variant-numeric: tabular-nums;
+  text-rendering: optimizeLegibility;
+  font-weight: 500 !important; /* Medium bold by default */
+}
+
+/* All text uses Space Grotesk - ultra modern and sleek */
+h1, h2, h3, h4, h5, h6, body, p, span, div, article, section, button, .btn, input, textarea, select {
+  font-family: var(--font-space-grotesk) !important;
+}
+
+/* Headings - SUPER BOLD */
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 900 !important; /* Force black weight */
+  letter-spacing: -0.025em;
+  line-height: 1.05;
+}
+
+/* Body text - BOLD */
+body, p, span, div, article, section {
+  font-weight: 600 !important; /* Force semi-bold */
+  line-height: 1.65;
+}
+
+/* Buttons and form elements - BOLD */
+button, .btn, input, textarea, select {
+  font-weight: 700 !important; /* Force bold */
+  letter-spacing: 0.01em;
+}
+
+/* Special styling for key elements */
+.hero-title {
+  font-weight: 900 !important; /* Force black */
+  letter-spacing: -0.04em;
+}
+
+.card-title {
+  font-weight: 800 !important; /* Force extra bold */
+}
+
+/* FORCE SPECIFIC ELEMENTS TO BE SUPER BOLD */
+.font-black,
+.font-black * {
+  font-weight: 900 !important;
+}

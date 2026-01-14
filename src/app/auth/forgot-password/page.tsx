@@ -62,8 +62,8 @@ export default function ForgotPasswordPage() {
       >
         <div className="text-center space-y-6">
           <div className="flex justify-center">
-            <div className="bg-green-100 rounded-full p-4">
-              <Mail className="h-8 w-8 text-green-600" />
+            <div className="bg-orange-100 rounded-full p-4">
+              <Mail className="h-8 w-8 text-orange-600" />
             </div>
           </div>
 
@@ -78,7 +78,7 @@ export default function ForgotPasswordPage() {
               Didn't receive the email? Check your spam folder or{" "}
               <button
                 onClick={() => setSuccess(false)}
-                className="text-green-600 hover:text-green-500 font-medium"
+                className="text-orange-600 hover:text-orange-500 font-medium"
               >
                 try again
               </button>
@@ -86,7 +86,7 @@ export default function ForgotPasswordPage() {
           </div>
 
           <Link href="/auth/login">
-            <Button className="w-full bg-green-600 hover:bg-green-700">
+            <Button className="w-full bg-orange-600 hover:bg-orange-700">
               <ArrowLeft className="mr-2 h-4 w-4" />
               Back to Sign In
             </Button>
@@ -125,7 +125,7 @@ export default function ForgotPasswordPage() {
 
         <Button
           type="submit"
-          className="w-full h-12 text-base font-semibold bg-green-600 hover:bg-green-700"
+          className="w-full h-12 text-base font-semibold bg-orange-600 hover:bg-orange-700"
           disabled={loading}
         >
           {loading ? (
@@ -145,14 +145,14 @@ export default function ForgotPasswordPage() {
       <div className="mt-8 text-center">
         <p className="text-gray-600">
           Remember your password?{" "}
-          <Link href="/auth/login" className="text-green-600 hover:text-green-500 font-semibold">
+          <Link href="/auth/login" className="text-orange-600 hover:text-orange-500 font-semibold">
             Sign in here
           </Link>
         </p>
       </div>
 
-      <div className="mt-6 p-4 bg-blue-50 rounded-lg">
-        <p className="text-sm text-blue-800 text-center">
+      <div className="mt-6 p-4 bg-orange-50 rounded-lg border border-orange-200">
+        <p className="text-sm text-orange-800 text-center">
           <strong>Note:</strong> Password reset functionality will be implemented with email service integration.
           Contact support if you need immediate assistance.
         </p>

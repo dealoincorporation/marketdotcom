@@ -1,14 +1,14 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import "../../public/fonts/space-grotesk.css";
+import "../../public/fonts/modern-fonts.css";
 import { Providers } from "@/components/providers";
 import { Toaster } from "react-hot-toast";
 import { WhatsAppFloat } from "@/components/ui/whatsapp-float";
 
-// Space Grotesk is now loaded via CSS import above - this ensures it works even offline!
-// The font will load from Google Fonts when available, or use beautiful system font fallbacks
+// 🔥 ULTRA MODERN FONTS: Space Grotesk
+// 2024's coolest typography for premium marketplace - loads from Google Fonts
 
-// Other fonts with system fallbacks (these don't need Google Fonts)
+// System fonts as fallbacks (these don't need Google Fonts)
 const inter = {
   className: '',
   variable: '--font-inter',
@@ -25,14 +25,7 @@ const robotoMono = {
   }
 };
 
-const poppins = {
-  className: '',
-  variable: '--font-poppins',
-  style: {
-    fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif'
-  }
-};
-
+// Ultra modern font - Space Grotesk for everything
 const spaceGrotesk = {
   className: 'font-space-grotesk',
   variable: '--font-space-grotesk',
@@ -46,6 +39,17 @@ export const metadata: Metadata = {
   description: "Quality foodstuff, daily savings, and convenient delivery—all in one place. Nigeria's premier online marketplace for fresh, affordable groceries.",
 };
 
+const fontLink = {
+  rel: 'preconnect',
+  href: 'https://fonts.googleapis.com',
+};
+
+const fontLink2 = {
+  rel: 'preconnect',
+  href: 'https://fonts.gstatic.com',
+  crossOrigin: 'anonymous' as const,
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -53,8 +57,16 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800;900&display=swap"
+          rel="stylesheet"
+        />
+      </head>
       <body
-        className={`${inter.variable} ${robotoMono.variable} ${poppins.variable} ${spaceGrotesk.variable} font-space-grotesk antialiased`}
+        className={`${inter.variable} ${robotoMono.variable} ${spaceGrotesk.variable} font-space-grotesk font-semibold antialiased`}
       >
         <Providers>
           {children}

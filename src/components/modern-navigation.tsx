@@ -50,15 +50,15 @@ export function ModernNavigation() {
       transition={{ duration: 0.6 }}
       className={`fixed top-0 w-full z-50 transition-all duration-500 ${
         isScrolled
-          ? "bg-white/80 backdrop-blur-xl shadow-2xl border-b border-white/30"
-          : "bg-white/60 backdrop-blur-2xl shadow-xl"
+          ? "bg-white/90 backdrop-blur-xl shadow-2xl border-b border-white/30"
+          : "bg-transparent backdrop-blur-sm"
       }`}
       style={{
         background: isScrolled
-          ? 'rgba(255, 255, 255, 0.8)'
-          : 'rgba(255, 255, 255, 0.6)',
-        backdropFilter: isScrolled ? 'blur(20px)' : 'blur(16px)',
-        WebkitBackdropFilter: isScrolled ? 'blur(20px)' : 'blur(16px)',
+          ? 'rgba(255, 255, 255, 0.9)'
+          : 'transparent',
+        backdropFilter: isScrolled ? 'blur(20px)' : 'blur(4px)',
+        WebkitBackdropFilter: isScrolled ? 'blur(20px)' : 'blur(4px)',
       }}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -76,10 +76,14 @@ export function ModernNavigation() {
                 className="h-24 w-24 object-contain"
               />
               <div>
-                <span className="text-xl lg:text-2xl font-bold text-gray-900 group-hover:text-orange-600 transition-colors">
+                <span className={`text-xl lg:text-2xl font-bold transition-colors ${
+                isScrolled ? 'text-gray-900 group-hover:text-orange-600' : 'text-gray-900 group-hover:text-orange-600'
+              }`}>
                   Marketdotcom
                 </span>
-                <div className="text-xs text-gray-500 -mt-1 hidden sm:block">
+                <div className={`text-xs -mt-1 hidden sm:block ${
+                  isScrolled ? 'text-gray-500' : 'text-gray-600'
+                }`}>
                   Smart Shopping Solutions
                 </div>
               </div>
@@ -98,7 +102,9 @@ export function ModernNavigation() {
                 {item.external ? (
                   <Link
                     href={item.href}
-                    className="relative px-4 py-2 text-gray-700 hover:text-orange-600 font-medium transition-colors group"
+                    className={`relative px-4 py-2 font-medium transition-colors group ${
+                      isScrolled ? 'text-gray-700 hover:text-orange-600' : 'text-gray-700 hover:text-orange-600'
+                    }`}
                   >
                     {item.name}
                     <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-orange-600 group-hover:w-full transition-all duration-300"></span>
@@ -106,7 +112,9 @@ export function ModernNavigation() {
                 ) : (
                   <button
                     onClick={() => handleNavClick(item.href, item.external)}
-                    className="relative px-4 py-2 text-gray-700 hover:text-orange-600 font-medium transition-colors group"
+                    className={`relative px-4 py-2 font-medium transition-colors group ${
+                      isScrolled ? 'text-gray-700 hover:text-orange-600' : 'text-gray-700 hover:text-orange-600'
+                    }`}
                   >
                     {item.name}
                     <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-orange-600 group-hover:w-full transition-all duration-300"></span>
@@ -192,7 +200,11 @@ export function ModernNavigation() {
             animate={{ opacity: 1 }}
             transition={{ duration: 0.6, delay: 0.6 }}
             onClick={() => setIsOpen(!isOpen)}
-            className="lg:hidden p-2 rounded-lg text-gray-700 hover:text-orange-600 hover:bg-orange-50 transition-colors"
+            className={`lg:hidden p-2 rounded-lg transition-colors ${
+              isScrolled
+                ? 'text-gray-700 hover:text-orange-600 hover:bg-orange-50'
+                : 'text-gray-700 hover:text-orange-600 hover:bg-orange-50'
+            }`}
             aria-label="Toggle menu"
           >
             {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}

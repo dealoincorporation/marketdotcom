@@ -23,7 +23,7 @@ export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [loading, setLoading] = useState(false)
-  const [acceptTerms, setAcceptTerms] = useState(false)
+  // const [acceptTerms, setAcceptTerms] = useState(false) // Commented out - terms agreement removed
   const router = useRouter()
   const { register, user } = useAuth()
 
@@ -81,19 +81,20 @@ export default function RegisterPage() {
       return
     }
 
-    if (!acceptTerms) {
-      toast.error("Please accept the Terms of Service and Privacy Policy to continue.", {
-        duration: 4000,
-        style: {
-          background: 'rgba(239, 68, 68, 0.95)',
-          backdropFilter: 'blur(10px)',
-          color: 'white',
-          border: '1px solid rgba(239, 68, 68, 0.3)',
-        }
-      })
-      setLoading(false)
-      return
-    }
+    // Terms agreement validation removed - button is now always enabled
+    // if (!acceptTerms) {
+    //   toast.error("Please accept the Terms of Service and Privacy Policy to continue.", {
+    //     duration: 4000,
+    //     style: {
+    //       background: 'rgba(239, 68, 68, 0.95)',
+    //       backdropFilter: 'blur(10px)',
+    //       color: 'white',
+    //       border: '1px solid rgba(239, 68, 68, 0.3)',
+    //     }
+    //   })
+    //   setLoading(false)
+    //   return
+    // }
 
     try {
       await register({
@@ -280,7 +281,8 @@ export default function RegisterPage() {
           </div>
         </div>
 
-        {/* Terms and Conditions */}
+        {/* Terms and Conditions - COMMENTED OUT */}
+        {/*
         <div className="flex items-start space-x-3">
           <input
             id="terms"
@@ -300,11 +302,12 @@ export default function RegisterPage() {
             </Link>
           </label>
         </div>
+        */}
 
         <Button
           type="submit"
           className="w-full h-12 text-base font-semibold bg-orange-600 hover:bg-orange-700"
-          disabled={loading || !acceptTerms}
+          disabled={loading}
         >
           {loading ? (
             <>

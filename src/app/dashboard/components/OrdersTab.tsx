@@ -127,9 +127,9 @@ export default function OrdersTab({ orders, isAdmin, onOrderStatusChange }: Orde
               <SelectTrigger>
                 <SelectValue placeholder="All Orders" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="bg-white border border-gray-200 shadow-lg">
                 {orderStatuses.map(status => (
-                  <SelectItem key={status} value={status}>
+                  <SelectItem key={status} value={status} className="hover:bg-orange-50 focus:bg-orange-50">
                     {status === 'all' ? 'All Orders' : status.charAt(0).toUpperCase() + status.slice(1)}
                   </SelectItem>
                 ))}

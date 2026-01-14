@@ -16,6 +16,20 @@ export async function GET() {
     return NextResponse.json(categories)
   } catch (error) {
     console.error("Error fetching categories:", error)
+
+    // Check if it's a database connection error
+    if (error instanceof Error && (error.message.includes('server selection') || (error as any).code === 'P2010')) {
+      // Return fallback categories for better UX
+      const fallbackCategories = [
+        { id: '1', name: 'All', description: 'All products' },
+        { id: '2', name: 'Vegetables', description: 'Fresh vegetables' },
+        { id: '3', name: 'Fruits', description: 'Fresh fruits' },
+        { id: '4', name: 'Grains', description: 'Rice, beans, and grains' },
+        { id: '5', name: 'Proteins', description: 'Meat, fish, and eggs' }
+      ]
+      return NextResponse.json(fallbackCategories)
+    }
+
     return NextResponse.json(
       { error: "Failed to fetch categories" },
       { status: 500 }

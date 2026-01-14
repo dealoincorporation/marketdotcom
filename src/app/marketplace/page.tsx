@@ -147,7 +147,7 @@ export default function MarketplacePage() {
               <img
                 src="/mrktdotcom-logo.png"
                 alt="Marketdotcom Logo"
-                className="h-8 w-8 sm:h-10 sm:w-10 object-contain"
+                className="h-16 w-16 sm:h-20 sm:w-20 lg:h-24 lg:w-24 object-contain"
               />
               <span className="text-lg font-bold text-gray-900 hidden sm:block">Marketplace</span>
             </Link>
