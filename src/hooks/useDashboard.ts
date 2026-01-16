@@ -126,7 +126,13 @@ export function useDashboard(): UseDashboardReturn {
   const fetchOrders = async () => {
     setOrdersLoading(true)
     try {
-      const response = await fetch('/api/orders')
+      const token = localStorage.getItem('token')
+      const headers: Record<string, string> = {}
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`
+      }
+
+      const response = await fetch('/api/orders', { headers })
       if (response.ok) {
         const data = await response.json()
         setOrders(data)
@@ -141,7 +147,13 @@ export function useDashboard(): UseDashboardReturn {
   const fetchWallet = async () => {
     setWalletLoading(true)
     try {
-      const response = await fetch('/api/wallet')
+      const token = localStorage.getItem('token')
+      const headers: Record<string, string> = {}
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`
+      }
+
+      const response = await fetch('/api/wallet', { headers })
       if (response.ok) {
         const data = await response.json()
         setWalletInfo(data)

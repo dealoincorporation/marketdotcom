@@ -106,8 +106,15 @@ export default function ManageCategoriesTab({ categories, onRefresh }: ManageCat
 
     setIsLoading(true)
     try {
+      const token = localStorage.getItem('token')
+      const headers: Record<string, string> = {}
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`
+      }
+
       const response = await fetch(`/api/categories/${deletingCategory.id}`, {
         method: 'DELETE',
+        headers,
       })
 
       const data = await response.json()

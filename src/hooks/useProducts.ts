@@ -11,6 +11,7 @@ interface ProductForm {
   stock: number
   unit: string
   inStock: boolean
+  images: string[]
   variations: Array<{
     id?: string
     name: string
@@ -42,11 +43,19 @@ export function useProducts(initialProducts: Product[] = []): UseProductsReturn 
     setError(null)
 
     try {
+      // Get auth token from localStorage (same logic as image upload)
+      const token = localStorage.getItem('token')
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+      }
+
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`
+      }
+
       const response = await fetch('/api/products', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers,
         body: JSON.stringify(formData),
       })
 
@@ -72,11 +81,19 @@ export function useProducts(initialProducts: Product[] = []): UseProductsReturn 
     setError(null)
 
     try {
+      // Get auth token from localStorage (same logic as image upload)
+      const token = localStorage.getItem('token')
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+      }
+
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`
+      }
+
       const response = await fetch(`/api/products/${id}`, {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers,
         body: JSON.stringify(formData),
       })
 
@@ -104,8 +121,17 @@ export function useProducts(initialProducts: Product[] = []): UseProductsReturn 
     setError(null)
 
     try {
+      // Get auth token from localStorage (same logic as image upload)
+      const token = localStorage.getItem('token')
+      const headers: Record<string, string> = {}
+
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`
+      }
+
       const response = await fetch(`/api/products/${id}`, {
         method: 'DELETE',
+        headers,
       })
 
       if (!response.ok) {

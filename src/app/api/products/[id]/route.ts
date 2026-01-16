@@ -25,7 +25,13 @@ export async function GET(
       )
     }
 
-    return NextResponse.json(product)
+    // Transform product to handle images array
+    const transformedProduct = {
+      ...product,
+      images: product.image ? JSON.parse(product.image) : []
+    }
+
+    return NextResponse.json(transformedProduct)
   } catch (error) {
     console.error("Error fetching product:", error)
     return NextResponse.json(
@@ -53,7 +59,7 @@ export async function PUT(
 
     const { id } = await params
     const body = await request.json()
-    const { name, description, basePrice, categoryId, stock, unit, inStock, variations } = body
+    const { name, description, basePrice, categoryId, stock, unit, inStock, images, variations } = body
 
     const product = await prisma.product.update({
       where: { id },
@@ -65,6 +71,7 @@ export async function PUT(
         stock: parseInt(stock),
         unit,
         inStock,
+        image: images && images.length > 0 ? JSON.stringify(images) : null,
       },
       include: {
         category: true,

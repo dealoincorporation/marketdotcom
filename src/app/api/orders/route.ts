@@ -36,6 +36,7 @@ export async function GET(request: NextRequest) {
       where.status = status
     }
 
+    // First, get orders without product relations to avoid null errors
     const orders = await prisma.order.findMany({
       where,
       include: {
@@ -44,16 +45,59 @@ export async function GET(request: NextRequest) {
         },
         items: {
           include: {
-            product: true,
-            variation: true
-          }
+            variation: {
+              select: {
+                id: true,
+                name: true,
+                type: true,
+                price: true
+              }
+            }
+          },
         },
         delivery: true
       },
       orderBy: { createdAt: "desc" }
     })
 
-    return NextResponse.json(orders)
+    // Now fetch product data separately to handle missing products gracefully
+    const productIds = orders.flatMap(order =>
+      order.items.map(item => item.productId).filter(Boolean)
+    )
+
+    const products = await prisma.product.findMany({
+      where: {
+        id: {
+          in: productIds
+        }
+      },
+      select: {
+        id: true,
+        name: true,
+        description: true,
+        image: true,
+        basePrice: true,
+        unit: true,
+        categoryId: true
+      }
+    })
+
+    // Create a product lookup map
+    const productMap = products.reduce((acc, product) => {
+      acc[product.id] = product
+      return acc
+    }, {} as Record<string, any>)
+
+    // Combine orders with product data
+    const ordersWithProducts = orders.map(order => ({
+      ...order,
+      items: order.items.map(item => ({
+        ...item,
+        product: productMap[item.productId] || null // Will be null for missing products
+      }))
+    }))
+
+    return NextResponse.json(ordersWithProducts)
   } catch (error) {
     console.error("Error fetching orders:", error)
     return NextResponse.json(
@@ -95,8 +139,25 @@ export async function PUT(request: NextRequest) {
         },
         items: {
           include: {
-            product: true,
-            variation: true
+            product: {
+              select: {
+                id: true,
+                name: true,
+                description: true,
+                image: true,
+                basePrice: true,
+                unit: true,
+                categoryId: true
+              }
+            },
+            variation: {
+              select: {
+                id: true,
+                name: true,
+                type: true,
+                price: true
+              }
+            }
           }
         },
         delivery: true

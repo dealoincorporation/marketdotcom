@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server'
 import { getUserFromRequest } from '@/lib/auth'
 
+// Force dynamic rendering to avoid static generation issues
+export const dynamic = 'force-dynamic'
+
 export async function GET(request: Request) {
   try {
     const envCheck = {

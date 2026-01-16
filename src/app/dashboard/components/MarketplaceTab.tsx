@@ -11,7 +11,9 @@ import {
   Package,
   Star,
   Heart,
-  Eye
+  Eye,
+  ChevronLeft,
+  ChevronRight
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -29,6 +31,7 @@ interface Product {
   stock: number
   unit: string
   inStock: boolean
+  images: string[]
   variations: Array<{
     id: string
     name: string
@@ -65,6 +68,7 @@ export default function MarketplaceTab({
   const [quantities, setQuantities] = useState<{ [key: string]: number }>({})
   const [selectedVariations, setSelectedVariations] = useState<{ [key: string]: string }>({})
   const [searchTerm, setSearchTerm] = useState("")
+  const [currentImageIndexes, setCurrentImageIndexes] = useState<Record<string, number>>({})
 
   const handleQuantityChange = (productId: string, quantity: number) => {
     setQuantities(prev => ({
@@ -82,6 +86,30 @@ export default function MarketplaceTab({
 
   const formatPrice = (price: number) => {
     return `₦${price.toLocaleString()}`
+  }
+
+  // Image slider functions
+  const getCurrentImageIndex = (productId: string) => {
+    return currentImageIndexes[productId] || 0
+  }
+
+  const setCurrentImageIndex = (productId: string, index: number) => {
+    setCurrentImageIndexes(prev => ({
+      ...prev,
+      [productId]: index
+    }))
+  }
+
+  const nextImage = (productId: string, images: string[]) => {
+    const currentIndex = getCurrentImageIndex(productId)
+    const nextIndex = (currentIndex + 1) % images.length
+    setCurrentImageIndex(productId, nextIndex)
+  }
+
+  const prevImage = (productId: string, images: string[]) => {
+    const currentIndex = getCurrentImageIndex(productId)
+    const prevIndex = currentIndex === 0 ? images.length - 1 : currentIndex - 1
+    setCurrentImageIndex(productId, prevIndex)
   }
 
   // Apply search filter to the already filtered products
@@ -289,9 +317,64 @@ export default function MarketplaceTab({
             transition={{ duration: 0.3 }}
           >
             <Card className="h-full hover:shadow-lg transition-shadow duration-300 overflow-hidden">
-              {/* Product Image Placeholder */}
-              <div className="h-32 sm:h-40 lg:h-48 bg-gradient-to-br from-orange-100 to-red-100 flex items-center justify-center">
-                <Package className="h-12 w-12 sm:h-16 sm:w-16 text-orange-400" />
+              {/* Product Image Slider */}
+              <div className="relative h-32 sm:h-40 lg:h-48 bg-gray-100 overflow-hidden">
+                {product.images && product.images.length > 0 ? (
+                  <>
+                    <img
+                      src={product.images[getCurrentImageIndex(product.id)]}
+                      alt={product.name}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    />
+                    {/* Image Navigation */}
+                    {product.images.length > 1 && (
+                      <>
+                        <button
+                          onClick={(e) => {
+                            e.preventDefault()
+                            e.stopPropagation()
+                            prevImage(product.id, product.images)
+                          }}
+                          className="absolute left-2 top-1/2 -translate-y-1/2 p-1.5 bg-black/50 hover:bg-black/70 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <ChevronLeft className="h-4 w-4" />
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.preventDefault()
+                            e.stopPropagation()
+                            nextImage(product.id, product.images)
+                          }}
+                          className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 bg-black/50 hover:bg-black/70 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <ChevronRight className="h-4 w-4" />
+                        </button>
+                        {/* Image Dots */}
+                        <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                          {product.images.map((_, index) => (
+                            <button
+                              key={index}
+                              onClick={(e) => {
+                                e.preventDefault()
+                                e.stopPropagation()
+                                setCurrentImageIndex(product.id, index)
+                              }}
+                              className={`w-2 h-2 rounded-full ${
+                                index === getCurrentImageIndex(product.id)
+                                  ? 'bg-white'
+                                  : 'bg-white/50'
+                              }`}
+                            />
+                          ))}
+                        </div>
+                      </>
+                    )}
+                  </>
+                ) : (
+                  <div className="w-full h-full bg-gradient-to-br from-orange-100 to-red-100 flex items-center justify-center">
+                    <Package className="h-12 w-12 sm:h-16 sm:w-16 text-orange-400" />
+                  </div>
+                )}
               </div>
 
               <CardContent className="p-3 sm:p-4">

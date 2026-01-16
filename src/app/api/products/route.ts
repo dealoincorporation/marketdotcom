@@ -40,7 +40,13 @@ export async function GET(request: NextRequest) {
       orderBy: { createdAt: "desc" }
     })
 
-    return NextResponse.json(products)
+    // Transform products to handle images array
+    const transformedProducts = products.map(product => ({
+      ...product,
+      images: product.image ? JSON.parse(product.image) : []
+    }))
+
+    return NextResponse.json(transformedProducts)
   } catch (error) {
     console.error("Error fetching products:", error)
 
@@ -96,20 +102,55 @@ export async function POST(request: NextRequest) {
     const user = getUserFromRequest(request)
 
     if (!user || user.role !== "ADMIN") {
+      console.log('Authentication failed - user:', user)
       return NextResponse.json(
         { error: "Unauthorized" },
         { status: 401 }
       )
     }
 
+    console.log('User authenticated:', user.email)
+
     const body = await request.json()
-    const { name, description, basePrice, categoryId, stock, unit, inStock, image, variations } = body
+    const { name, description, basePrice, categoryId, stock, unit, inStock, images, variations } = body
 
     if (!name || !categoryId || basePrice === undefined) {
       return NextResponse.json(
         { error: "Missing required fields" },
         { status: 400 }
       )
+    }
+
+    // Ensure the category exists, create it if it doesn't
+    let category = await prisma.category.findUnique({
+      where: { id: categoryId }
+    })
+
+    if (!category) {
+      // Create the category if it doesn't exist
+      const categoryNames: Record<string, string> = {
+        'fruits': '🍎 Fruits',
+        'vegetables': '🥕 Vegetables',
+        'grains': '🌾 Grains & Cereals',
+        'proteins': '🥩 Proteins',
+        'dairy': '🥛 Dairy',
+        'beverages': '🥤 Beverages',
+        'snacks': '🍿 Snacks',
+        'spices': '🌿 Spices & Seasonings',
+        'bakery': '🍞 Bakery',
+        'frozen': '🧊 Frozen Foods',
+        'canned': '🥫 Canned Goods',
+        'organic': '🌱 Organic Products'
+      }
+
+      const categoryName = categoryNames[categoryId] || categoryId
+      category = await prisma.category.create({
+        data: {
+          id: categoryId,
+          name: categoryName,
+          description: `${categoryName} category`
+        }
+      })
     }
 
     const product = await prisma.product.create({
@@ -121,7 +162,7 @@ export async function POST(request: NextRequest) {
         stock: parseInt(stock) || 0,
         unit: unit || "piece",
         inStock: inStock !== undefined ? inStock : true,
-        image: image || null,
+        image: images && images.length > 0 ? JSON.stringify(images) : null,
       },
       include: {
         category: true

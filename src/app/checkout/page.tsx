@@ -503,44 +503,55 @@ export default function CheckoutPage() {
                   <p className="text-orange-100 mt-1">Select where you'd like your order delivered</p>
                 </div>
                 <div className="p-6">
-                  <RadioGroup value={selectedAddress} onValueChange={setSelectedAddress} className="space-y-4">
+                  <RadioGroup value={selectedAddress} onValueChange={setSelectedAddress} className="space-y-3 sm:space-y-4">
                     {addresses.map(address => (
-                      <div key={address.id} className={`relative p-6 rounded-xl border-2 transition-all duration-300 cursor-pointer ${
+                      <div key={address.id} className={`relative p-4 sm:p-6 rounded-xl border-2 transition-all duration-300 cursor-pointer ${
                         selectedAddress === address.id
                           ? 'border-orange-500 bg-gradient-to-r from-orange-50 to-red-50 shadow-lg'
                           : 'border-gray-200 hover:border-gray-300 hover:shadow-md'
                       }`}>
-                        <div className="flex items-start space-x-4">
+                        <div className="flex items-start space-x-3 sm:space-x-4">
                           <RadioGroupItem
                             value={address.id}
                             id={address.id}
-                            className="mt-1"
+                            className="mt-1 flex-shrink-0"
                           />
-                          <Label htmlFor={address.id} className="flex-1 cursor-pointer">
-                            <div className="flex items-start justify-between">
-                              <div className="flex-1">
-                                <div className="flex items-center space-x-3 mb-2">
-                                  <span className="font-bold text-lg text-gray-900">{address.name}</span>
-                                  {address.isDefault && (
-                                    <Badge className="bg-gradient-to-r from-green-500 to-emerald-500 text-white border-0 shadow-sm">
-                                      Default
-                                    </Badge>
-                                  )}
-                                  <div className={`p-2 rounded-lg ${
-                                    address.type === "home"
-                                      ? 'bg-blue-100 text-blue-600'
-                                      : 'bg-purple-100 text-purple-600'
-                                  }`}>
-                                    {address.type === "home" ? <Home className="h-4 w-4" /> : <Building className="h-4 w-4" />}
+                          <Label htmlFor={address.id} className="flex-1 cursor-pointer min-w-0">
+                            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
+                              <div className="flex-1 min-w-0">
+                                <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-3 mb-2 gap-2">
+                                  <span className="font-bold text-base sm:text-lg text-gray-900 truncate">{address.name}</span>
+                                  <div className="flex items-center space-x-2">
+                                    {address.isDefault && (
+                                      <Badge className="bg-gradient-to-r from-green-500 to-emerald-500 text-white border-0 shadow-sm text-xs">
+                                        Default
+                                      </Badge>
+                                    )}
+                                    <div className={`p-1.5 sm:p-2 rounded-lg flex-shrink-0 ${
+                                      address.type === "home"
+                                        ? 'bg-blue-100 text-blue-600'
+                                        : 'bg-purple-100 text-purple-600'
+                                    }`}>
+                                      {address.type === "home" ? <Home className="h-3 w-3 sm:h-4 sm:w-4" /> : <Building className="h-3 w-3 sm:h-4 sm:w-4" />}
+                                    </div>
                                   </div>
                                 </div>
-                                <p className="text-gray-700 font-medium mb-1">{address.address}</p>
-                                <p className="text-gray-600 text-sm">{address.city}, {address.state}</p>
-                                <p className="text-gray-600 text-sm font-medium">{address.phone}</p>
+                                <p className="text-gray-700 font-medium mb-1 text-sm sm:text-base leading-tight">{address.address}</p>
+                                <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4">
+                                  <p className="text-gray-600 text-xs sm:text-sm">{address.city}, {address.state}</p>
+                                  <p className="text-gray-600 text-xs sm:text-sm font-medium">{address.phone}</p>
+                                </div>
                               </div>
                             </div>
                           </Label>
                         </div>
+                        {selectedAddress === address.id && (
+                          <div className="absolute top-2 right-2 sm:top-4 sm:right-4">
+                            <div className="w-5 h-5 bg-orange-500 rounded-full flex items-center justify-center">
+                              <Check className="h-3 w-3 text-white" />
+                            </div>
+                          </div>
+                        )}
                       </div>
                     ))}
                   </RadioGroup>
@@ -670,31 +681,31 @@ export default function CheckoutPage() {
 
               {/* Delivery Schedule - Responsive */}
               <div className="bg-white/70 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 overflow-hidden">
-                <div className="bg-gradient-to-r from-green-500 to-emerald-500 p-4 sm:p-6">
+                <div className="bg-gradient-to-r from-orange-500 to-red-500 p-4 sm:p-6">
                   <h2 className="text-lg sm:text-xl font-bold text-white flex items-center">
                     <Calendar className="h-5 w-5 sm:h-6 sm:w-6 mr-2 sm:mr-3" />
                     <span className="text-sm sm:text-base">Schedule Your Delivery</span>
                   </h2>
-                  <p className="text-green-100 mt-1 text-sm sm:text-base">Choose when you'd like your order delivered</p>
+                  <p className="text-orange-100 mt-1 text-sm sm:text-base">Choose when you'd like your order delivered</p>
                 </div>
                 <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
                   <div className="space-y-3">
                     <Label className="text-sm font-semibold text-gray-700 flex items-center">
-                      <Calendar className="h-4 w-4 mr-2 text-green-600" />
+                      <Calendar className="h-4 w-4 mr-2 text-orange-600" />
                       Preferred Delivery Date
                     </Label>
                     <Select value={deliveryDate} onValueChange={setDeliveryDate}>
-                      <SelectTrigger className="h-12 border-2 focus:border-green-500 bg-white text-sm sm:text-base">
+                      <SelectTrigger className="h-12 border-2 focus:border-orange-500 bg-white text-sm sm:text-base">
                         <SelectValue placeholder="Select delivery date" />
                       </SelectTrigger>
-                      <SelectContent className="bg-white border-2 border-gray-200 shadow-xl">
+                      <SelectContent className="bg-white border-2 border-gray-200 shadow-xl max-h-60">
                         {[...new Set(deliverySlots.map(slot => slot.date))].map(date => (
-                          <SelectItem key={date} value={date} className="h-12 hover:bg-green-50 focus:bg-green-50 cursor-pointer">
+                          <SelectItem key={date} value={date} className="h-12 sm:h-14 hover:bg-orange-50 focus:bg-orange-50 cursor-pointer">
                             <div className="flex flex-col items-start py-1">
-                              <span className="font-medium text-gray-900">
+                              <span className="font-medium text-gray-900 text-sm sm:text-base">
                                 {new Date(date).toLocaleDateString('en-US', { weekday: 'long' })}
                               </span>
-                              <span className="text-sm text-gray-500">
+                              <span className="text-xs sm:text-sm text-gray-500">
                                 {new Date(date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
                               </span>
                             </div>
@@ -707,7 +718,7 @@ export default function CheckoutPage() {
                   {deliveryDate && (
                     <div className="space-y-3">
                       <Label className="text-sm font-semibold text-gray-700 flex items-center">
-                        <Clock className="h-4 w-4 mr-2 text-green-600" />
+                        <Clock className="h-4 w-4 mr-2 text-orange-600" />
                         Preferred Time Slot
                       </Label>
                       <RadioGroup value={deliveryTime} onValueChange={setDeliveryTime} className="space-y-2 sm:space-y-3">
@@ -716,15 +727,15 @@ export default function CheckoutPage() {
                           .map(slot => (
                             <div key={slot.id} className={`p-3 sm:p-4 rounded-xl border-2 transition-all duration-300 cursor-pointer ${
                               deliveryTime === slot.timeSlot
-                                ? 'border-green-500 bg-gradient-to-r from-green-50 to-emerald-50 shadow-lg'
-                                : 'border-gray-200 hover:border-green-300 hover:shadow-md'
+                                ? 'border-orange-500 bg-gradient-to-r from-orange-50 to-red-50 shadow-lg'
+                                : 'border-gray-200 hover:border-orange-300 hover:shadow-md'
                             }`}>
-                              <div className="flex items-center space-x-3">
-                                <RadioGroupItem value={slot.timeSlot} id={slot.id} />
-                                <Label htmlFor={slot.id} className="flex-1 cursor-pointer">
-                                  <div className="flex items-center space-x-3">
-                                    <div className="p-2 bg-green-100 rounded-lg flex-shrink-0">
-                                      <Clock className="h-4 w-4 sm:h-5 sm:w-5 text-green-600" />
+                              <div className="flex items-center space-x-2 sm:space-x-3">
+                                <RadioGroupItem value={slot.timeSlot} id={slot.id} className="flex-shrink-0" />
+                                <Label htmlFor={slot.id} className="flex-1 cursor-pointer min-w-0">
+                                  <div className="flex items-center space-x-2 sm:space-x-3">
+                                    <div className="p-2 bg-orange-100 rounded-lg flex-shrink-0">
+                                      <Clock className="h-3 w-3 sm:h-4 sm:w-4 text-orange-600" />
                                     </div>
                                     <div className="min-w-0 flex-1">
                                       <span className="font-semibold text-gray-900 text-sm sm:text-base block truncate">{slot.timeSlot}</span>
@@ -749,32 +760,32 @@ export default function CheckoutPage() {
                       onChange={(e) => setDeliveryNotes(e.target.value)}
                       placeholder="Any special instructions for delivery..."
                       rows={3}
-                      className="border-2 focus:border-green-500 resize-none bg-white text-sm sm:text-base"
+                      className="border-2 focus:border-orange-500 resize-none bg-white text-sm sm:text-base min-h-[80px] sm:min-h-[100px]"
                     />
                   </div>
 
-                  <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-4 sm:p-5">
+                  <div className="bg-gradient-to-r from-orange-50 to-red-50 border border-orange-200 rounded-xl p-4 sm:p-5">
                     <div className="flex items-start space-x-3 sm:space-x-4">
-                      <div className="p-2 sm:p-3 bg-blue-100 rounded-xl flex-shrink-0">
-                        <Truck className="h-5 w-5 sm:h-6 sm:w-6 text-blue-600" />
+                      <div className="p-2 sm:p-3 bg-orange-100 rounded-xl flex-shrink-0">
+                        <Truck className="h-5 w-5 sm:h-6 sm:w-6 text-orange-600" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <h3 className="font-bold text-blue-900 mb-2 text-sm sm:text-base">🚚 Delivery Information</h3>
-                        <ul className="text-xs sm:text-sm text-blue-800 space-y-1 sm:space-y-1.5">
+                        <h3 className="font-bold text-orange-900 mb-2 text-sm sm:text-base">🚚 Delivery Information</h3>
+                        <ul className="text-xs sm:text-sm text-orange-800 space-y-1 sm:space-y-1.5">
                           <li className="flex items-center">
-                            <Check className="h-3 w-3 sm:h-4 sm:w-4 mr-2 text-green-600 flex-shrink-0" />
+                            <Check className="h-3 w-3 sm:h-4 sm:w-4 mr-2 text-orange-600 flex-shrink-0" />
                             <span className="truncate">Orders delivered within 4 hours of scheduled time</span>
                           </li>
                           <li className="flex items-center">
-                            <Check className="h-3 w-3 sm:h-4 sm:w-4 mr-2 text-green-600 flex-shrink-0" />
+                            <Check className="h-3 w-3 sm:h-4 sm:w-4 mr-2 text-orange-600 flex-shrink-0" />
                             <span className="truncate">Place orders before 10 AM for same-day delivery</span>
                           </li>
                           <li className="flex items-center">
-                            <Check className="h-3 w-3 sm:h-4 sm:w-4 mr-2 text-green-600 flex-shrink-0" />
+                            <Check className="h-3 w-3 sm:h-4 sm:w-4 mr-2 text-orange-600 flex-shrink-0" />
                             <span className="truncate">Orders after 3 PM delivered next day</span>
                           </li>
                           <li className="flex items-center">
-                            <Check className="h-3 w-3 sm:h-4 sm:w-4 mr-2 text-green-600 flex-shrink-0" />
+                            <Check className="h-3 w-3 sm:h-4 sm:w-4 mr-2 text-orange-600 flex-shrink-0" />
                             <span className="truncate">SMS & email updates on delivery status</span>
                           </li>
                         </ul>
@@ -797,15 +808,15 @@ export default function CheckoutPage() {
                     <p className="text-orange-100 mt-1">{totalItems} items in your cart</p>
                   </div>
                   <div className="p-6">
-                    <div className="space-y-4 mb-6">
+                    <div className="space-y-3 sm:space-y-4 mb-6">
                       {items.map(item => (
                         <div key={item.id} className="flex items-start space-x-3 p-3 bg-gray-50 rounded-lg">
-                          <div className="w-12 h-12 bg-gradient-to-r from-orange-100 to-red-100 rounded-lg flex items-center justify-center">
-                            <span className="text-sm font-bold text-orange-600">{item.quantity}</span>
+                          <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-r from-orange-100 to-red-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                            <span className="text-xs sm:text-sm font-bold text-orange-600">{item.quantity}</span>
                           </div>
                           <div className="flex-1 min-w-0">
                             <p className="text-sm font-medium text-gray-900 truncate">{item.name}</p>
-                            <p className="text-sm text-gray-600">₦{(item.price * item.quantity).toLocaleString()}</p>
+                            <p className="text-xs sm:text-sm text-gray-600">₦{(item.price * item.quantity).toLocaleString()}</p>
                           </div>
                         </div>
                       ))}
@@ -813,20 +824,20 @@ export default function CheckoutPage() {
 
                     <div className="space-y-3 border-t border-orange-200 pt-4">
                       <div className="flex justify-between items-center bg-orange-50 p-3 rounded-lg">
-                        <span className="text-gray-700">Subtotal</span>
-                        <span className="font-semibold text-orange-700">₦{subtotal.toLocaleString()}</span>
+                        <span className="text-gray-700 text-sm sm:text-base">Subtotal</span>
+                        <span className="font-semibold text-orange-700 text-sm sm:text-base">₦{subtotal.toLocaleString()}</span>
                       </div>
                       <div className="flex justify-between items-center bg-gray-50 p-3 rounded-lg">
-                        <span className="text-gray-700">Delivery Fee</span>
-                        <span className={`font-semibold ${deliveryFee === 0 ? 'text-green-600' : 'text-orange-700'}`}>
+                        <span className="text-gray-700 text-sm sm:text-base">Delivery Fee</span>
+                        <span className={`font-semibold text-sm sm:text-base ${deliveryFee === 0 ? 'text-green-600' : 'text-orange-700'}`}>
                           {deliveryFee === 0 ? 'Free' : `₦${deliveryFee.toLocaleString()}`}
                         </span>
                       </div>
                       <div className="relative">
                         <div className="border-t border-orange-300 pt-3">
-                          <div className="flex justify-between items-center bg-gradient-to-r from-orange-500 to-orange-600 text-white p-4 rounded-lg">
-                            <span className="text-lg font-bold">Total</span>
-                            <span className="text-lg font-bold">
+                          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 bg-gradient-to-r from-orange-500 to-orange-600 text-white p-3 sm:p-4 rounded-lg">
+                            <span className="text-base sm:text-lg font-bold">Total</span>
+                            <span className="text-base sm:text-lg font-bold">
                               ₦{finalTotal.toLocaleString()}
                             </span>
                           </div>
@@ -836,19 +847,19 @@ export default function CheckoutPage() {
 
                     <Button
                       onClick={() => setStep(2)}
-                      className="w-full h-12 mt-6 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-300 border-0"
+                      className="w-full h-12 sm:h-14 mt-6 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-300 border-0 text-sm sm:text-base"
                       disabled={!selectedAddress || !deliveryDate || !deliveryTime}
                     >
                       Continue to Payment →
                     </Button>
 
                     {!selectedAddress && (
-                      <p className="text-sm text-red-600 mt-2 flex items-center">
+                      <p className="text-xs sm:text-sm text-red-600 mt-2 flex items-center justify-center">
                         <span className="mr-1">⚠️</span> Please select a delivery address
                       </p>
                     )}
                     {selectedAddress && (!deliveryDate || !deliveryTime) && (
-                      <p className="text-sm text-red-600 mt-2 flex items-center">
+                      <p className="text-xs sm:text-sm text-red-600 mt-2 flex items-center justify-center">
                         <span className="mr-1">⚠️</span> Please select delivery date and time
                       </p>
                     )}
@@ -890,98 +901,100 @@ export default function CheckoutPage() {
                   <p className="text-orange-100 mt-1">Select how you'd like to pay for your order</p>
                 </div>
                 <div className="p-6">
-                  <RadioGroup value={paymentMethod} onValueChange={setPaymentMethod} className="space-y-4">
+                  <RadioGroup value={paymentMethod} onValueChange={setPaymentMethod} className="space-y-3 sm:space-y-4">
                     {/* Credit/Debit Card */}
-                    <div className={`relative p-6 rounded-xl border-2 transition-all duration-300 cursor-pointer ${
+                    <div className={`relative p-4 sm:p-6 rounded-xl border-2 transition-all duration-300 cursor-pointer ${
                       paymentMethod === "card"
                         ? 'border-orange-500 bg-gradient-to-r from-orange-50 to-red-50 shadow-lg'
                         : 'border-gray-200 hover:border-orange-300 hover:shadow-md'
                     }`}>
-                      <div className="flex items-center space-x-4">
-                        <RadioGroupItem value="card" id="card" className="text-orange-600" />
-                        <Label htmlFor="card" className="flex-1 cursor-pointer">
-                          <div className="flex items-center space-x-4">
-                            <div className="p-4 bg-gradient-to-r from-orange-100 to-red-100 rounded-xl">
-                              <CreditCard className="h-8 w-8 text-orange-600" />
+                      <div className="flex items-start space-x-3 sm:space-x-4">
+                        <RadioGroupItem value="card" id="card" className="text-orange-600 mt-1" />
+                        <Label htmlFor="card" className="flex-1 cursor-pointer min-w-0">
+                          <div className="flex flex-col sm:flex-row sm:items-center space-y-3 sm:space-y-0 sm:space-x-4">
+                            <div className="p-3 sm:p-4 bg-gradient-to-r from-orange-100 to-red-100 rounded-xl flex-shrink-0">
+                              <CreditCard className="h-6 w-6 sm:h-8 sm:w-8 text-orange-600" />
                             </div>
-                            <div className="flex-1">
-                              <div className="font-bold text-xl text-gray-900 mb-1">Credit/Debit Card</div>
+                            <div className="flex-1 min-w-0">
+                              <div className="font-bold text-lg sm:text-xl text-gray-900 mb-1">Credit/Debit Card</div>
                               <div className="text-sm text-gray-600 mb-2">Visa, Mastercard, Verve accepted</div>
                               <div className="flex items-center space-x-2">
                                 <div className="flex space-x-1">
-                                  <div className="w-8 h-5 bg-gradient-to-r from-blue-600 to-blue-700 rounded text-white text-xs flex items-center justify-center font-bold">V</div>
-                                  <div className="w-8 h-5 bg-gradient-to-r from-red-600 to-red-700 rounded text-white text-xs flex items-center justify-center font-bold">M</div>
-                                  <div className="w-8 h-5 bg-gradient-to-r from-purple-600 to-purple-700 rounded text-white text-xs flex items-center justify-center font-bold">V</div>
+                                  <div className="w-6 h-4 sm:w-8 sm:h-5 bg-gradient-to-r from-blue-600 to-blue-700 rounded text-white text-xs flex items-center justify-center font-bold">V</div>
+                                  <div className="w-6 h-4 sm:w-8 sm:h-5 bg-gradient-to-r from-red-600 to-red-700 rounded text-white text-xs flex items-center justify-center font-bold">M</div>
+                                  <div className="w-6 h-4 sm:w-8 sm:h-5 bg-gradient-to-r from-purple-600 to-purple-700 rounded text-white text-xs flex items-center justify-center font-bold">V</div>
                                 </div>
                               </div>
                             </div>
                           </div>
                         </Label>
-                        <div className="text-green-600">
-                          <Shield className="h-6 w-6" />
+                        <div className="text-green-600 flex-shrink-0">
+                          <Shield className="h-5 w-5 sm:h-6 sm:w-6" />
                         </div>
                       </div>
                       {paymentMethod === "card" && (
-                        <div className="absolute -top-2 -right-2 w-6 h-6 bg-gradient-to-r from-orange-500 to-red-500 rounded-full flex items-center justify-center">
-                          <Check className="h-4 w-4 text-white" />
+                        <div className="absolute top-2 right-2 sm:top-4 sm:right-4 w-5 h-5 sm:w-6 sm:h-6 bg-gradient-to-r from-orange-500 to-red-500 rounded-full flex items-center justify-center">
+                          <Check className="h-3 w-3 sm:h-4 sm:w-4 text-white" />
                         </div>
                       )}
                     </div>
 
                     {/* Wallet Balance */}
-                    <div className={`relative p-6 rounded-xl border-2 transition-all duration-300 cursor-pointer ${
+                    <div className={`relative p-4 sm:p-6 rounded-xl border-2 transition-all duration-300 cursor-pointer ${
                       paymentMethod === "wallet"
                         ? 'border-green-500 bg-gradient-to-r from-green-50 to-emerald-50 shadow-lg'
                         : 'border-gray-200 hover:border-green-300 hover:shadow-md'
                     }`}>
-                      <div className="flex items-center space-x-4">
-                        <RadioGroupItem value="wallet" id="wallet" className="text-green-600" />
-                        <Label htmlFor="wallet" className="flex-1 cursor-pointer">
-                          <div className="flex items-center space-x-4">
-                            <div className="p-4 bg-gradient-to-r from-green-100 to-emerald-100 rounded-xl">
-                              <span className="text-3xl">💰</span>
+                      <div className="flex items-start space-x-3 sm:space-x-4">
+                        <RadioGroupItem value="wallet" id="wallet" className="text-green-600 mt-1" />
+                        <Label htmlFor="wallet" className="flex-1 cursor-pointer min-w-0">
+                          <div className="flex flex-col sm:flex-row sm:items-center space-y-3 sm:space-y-0 sm:space-x-4">
+                            <div className="p-3 sm:p-4 bg-gradient-to-r from-green-100 to-emerald-100 rounded-xl flex-shrink-0">
+                              <span className="text-2xl sm:text-3xl">💰</span>
                             </div>
-                            <div className="flex-1">
-                              <div className="font-bold text-xl text-gray-900 mb-1">Wallet Balance</div>
+                            <div className="flex-1 min-w-0">
+                              <div className="font-bold text-lg sm:text-xl text-gray-900 mb-1">Wallet Balance</div>
                               <div className="text-sm text-gray-600 mb-2">Instant payment from your wallet</div>
-                              <div className="text-lg font-bold text-green-600">
+                              <div className="text-base sm:text-lg font-bold text-green-600">
                                 ₦{walletBalance.toLocaleString()} available
                               </div>
                             </div>
                           </div>
                         </Label>
-                        {walletBalance >= finalTotal ? (
-                          <div className="text-green-600">
-                            <Check className="h-6 w-6" />
-                          </div>
-                        ) : (
-                          <div className="text-gray-400">
-                            <X className="h-6 w-6" />
-                          </div>
-                        )}
+                        <div className="flex-shrink-0">
+                          {walletBalance >= finalTotal ? (
+                            <div className="text-green-600">
+                              <Check className="h-5 w-5 sm:h-6 sm:w-6" />
+                            </div>
+                          ) : (
+                            <div className="text-gray-400">
+                              <X className="h-5 w-5 sm:h-6 sm:w-6" />
+                            </div>
+                          )}
+                        </div>
                       </div>
                       {paymentMethod === "wallet" && (
-                        <div className="absolute -top-2 -right-2 w-6 h-6 bg-gradient-to-r from-green-500 to-emerald-500 rounded-full flex items-center justify-center">
-                          <Check className="h-4 w-4 text-white" />
+                        <div className="absolute top-2 right-2 sm:top-4 sm:right-4 w-5 h-5 sm:w-6 sm:h-6 bg-gradient-to-r from-green-500 to-emerald-500 rounded-full flex items-center justify-center">
+                          <Check className="h-3 w-3 sm:h-4 sm:w-4 text-white" />
                         </div>
                       )}
                     </div>
 
                     {/* Bank Transfer (Paystack) */}
-                    <div className={`relative p-6 rounded-xl border-2 transition-all duration-300 cursor-pointer ${
+                    <div className={`relative p-4 sm:p-6 rounded-xl border-2 transition-all duration-300 cursor-pointer ${
                       paymentMethod === "paystack"
                         ? 'border-purple-500 bg-gradient-to-r from-purple-50 to-pink-50 shadow-lg'
                         : 'border-gray-200 hover:border-purple-300 hover:shadow-md'
                     }`}>
-                      <div className="flex items-center space-x-4">
-                        <RadioGroupItem value="paystack" id="paystack" className="text-purple-600" />
-                        <Label htmlFor="paystack" className="flex-1 cursor-pointer">
-                          <div className="flex items-center space-x-4">
-                            <div className="p-4 bg-gradient-to-r from-purple-100 to-pink-100 rounded-xl">
-                              <span className="text-3xl">🏦</span>
+                      <div className="flex items-start space-x-3 sm:space-x-4">
+                        <RadioGroupItem value="paystack" id="paystack" className="text-purple-600 mt-1" />
+                        <Label htmlFor="paystack" className="flex-1 cursor-pointer min-w-0">
+                          <div className="flex flex-col sm:flex-row sm:items-center space-y-3 sm:space-y-0 sm:space-x-4">
+                            <div className="p-3 sm:p-4 bg-gradient-to-r from-purple-100 to-pink-100 rounded-xl flex-shrink-0">
+                              <span className="text-2xl sm:text-3xl">🏦</span>
                             </div>
-                            <div className="flex-1">
-                              <div className="font-bold text-xl text-gray-900 mb-1">Bank Transfer</div>
+                            <div className="flex-1 min-w-0">
+                              <div className="font-bold text-lg sm:text-xl text-gray-900 mb-1">Bank Transfer</div>
                               <div className="text-sm text-gray-600 mb-2">Paystack - secure bank transfers</div>
                               <div className="text-sm text-purple-600 font-medium">
                                 Direct bank transfer or USSD
@@ -989,13 +1002,13 @@ export default function CheckoutPage() {
                             </div>
                           </div>
                         </Label>
-                        <div className="text-purple-600">
-                          <Shield className="h-6 w-6" />
+                        <div className="text-purple-600 flex-shrink-0">
+                          <Shield className="h-5 w-5 sm:h-6 sm:w-6" />
                         </div>
                       </div>
                       {paymentMethod === "paystack" && (
-                        <div className="absolute -top-2 -right-2 w-6 h-6 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
-                          <Check className="h-4 w-4 text-white" />
+                        <div className="absolute top-2 right-2 sm:top-4 sm:right-4 w-5 h-5 sm:w-6 sm:h-6 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
+                          <Check className="h-3 w-3 sm:h-4 sm:w-4 text-white" />
                         </div>
                       )}
                     </div>
@@ -1049,27 +1062,27 @@ export default function CheckoutPage() {
                 </div>
                 <div className="p-6">
                   {/* Order Breakdown */}
-                  <div className="space-y-4 mb-6">
-                    <div className="flex justify-between items-center py-3 px-4 bg-gray-50 rounded-lg">
-                      <span className="text-gray-700 font-medium">Subtotal</span>
-                      <span className="font-bold text-gray-900">₦{subtotal.toLocaleString()}</span>
+                  <div className="space-y-3 sm:space-y-4 mb-6">
+                    <div className="flex justify-between items-center py-3 px-3 sm:px-4 bg-gray-50 rounded-lg">
+                      <span className="text-gray-700 font-medium text-sm sm:text-base">Subtotal</span>
+                      <span className="font-bold text-gray-900 text-sm sm:text-base">₦{subtotal.toLocaleString()}</span>
                     </div>
-                    <div className="flex justify-between items-center py-3 px-4 bg-gray-50 rounded-lg">
-                      <span className="text-gray-700 font-medium">Delivery Fee</span>
-                      <span className={`font-bold ${deliveryFee === 0 ? 'text-green-600' : 'text-gray-900'}`}>
+                    <div className="flex justify-between items-center py-3 px-3 sm:px-4 bg-gray-50 rounded-lg">
+                      <span className="text-gray-700 font-medium text-sm sm:text-base">Delivery Fee</span>
+                      <span className={`font-bold text-sm sm:text-base ${deliveryFee === 0 ? 'text-green-600' : 'text-gray-900'}`}>
                         {deliveryFee === 0 ? 'Free' : `₦${deliveryFee.toLocaleString()}`}
                       </span>
                     </div>
                     {useWallet && (
-                      <div className="flex justify-between items-center py-3 px-4 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg">
-                        <span className="font-medium text-green-900">Wallet Deduction</span>
-                        <span className="font-bold text-green-600">-₦{walletDeduction.toLocaleString()}</span>
+                      <div className="flex justify-between items-center py-3 px-3 sm:px-4 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg">
+                        <span className="font-medium text-green-900 text-sm sm:text-base">Wallet Deduction</span>
+                        <span className="font-bold text-green-600 text-sm sm:text-base">-₦{walletDeduction.toLocaleString()}</span>
                       </div>
                     )}
                     <div className="border-t-2 border-gray-300 pt-4 mt-4">
-                      <div className="flex justify-between items-center py-3">
-                        <span className="text-xl font-bold text-gray-900">Total to Pay</span>
-                        <span className="text-3xl font-bold bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent">
+                      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
+                        <span className="text-lg sm:text-xl font-bold text-gray-900">Total to Pay</span>
+                        <span className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent">
                           ₦{finalTotal.toLocaleString()}
                         </span>
                       </div>
@@ -1078,7 +1091,7 @@ export default function CheckoutPage() {
 
                   {/* Action Buttons */}
                   <div className="space-y-3">
-                    <div className="flex space-x-3">
+                    <div className="flex flex-col sm:flex-row gap-3">
                       <Button
                         variant="outline"
                         onClick={() => setStep(1)}
@@ -1088,12 +1101,12 @@ export default function CheckoutPage() {
                       </Button>
                       <Button
                         onClick={handlePlaceOrder}
-                        className="flex-1 h-14 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-bold text-lg shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50"
+                        className="flex-1 h-12 sm:h-14 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-bold text-base sm:text-lg shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50"
                         disabled={loading}
                       >
                         {loading ? (
                           <>
-                            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                            <div className="animate-spin rounded-full h-4 w-4 sm:h-5 sm:w-5 border-b-2 border-white mr-2"></div>
                             Processing Payment...
                           </>
                         ) : (
@@ -1105,17 +1118,19 @@ export default function CheckoutPage() {
                     </div>
 
                   {/* Order Summary Preview */}
-                  <div className="mt-6 p-4 bg-gradient-to-r from-gray-50 to-gray-100 border border-gray-200 rounded-xl">
+                  <div className="mt-4 sm:mt-6 p-3 sm:p-4 bg-gradient-to-r from-gray-50 to-gray-100 border border-gray-200 rounded-xl">
                     <div className="text-center">
-                      <div className="text-sm text-gray-600 mb-2">Payment Method</div>
-                      <div className="flex items-center justify-center space-x-2">
-                        {paymentMethod === 'card' && <CreditCard className="h-5 w-5 text-gray-600" />}
-                        {paymentMethod === 'wallet' && <span className="text-lg">💰</span>}
-                        {paymentMethod === 'paystack' && <span className="text-lg">🏦</span>}
-                        <span className="text-sm font-medium text-gray-800">
-                          {paymentMethod === 'card' ? 'Credit/Debit Card' :
-                           paymentMethod === 'wallet' ? 'Wallet Balance' : 'Bank Transfer'}
-                        </span>
+                      <div className="text-xs sm:text-sm text-gray-600 mb-2">Payment Method</div>
+                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-center gap-2 sm:space-x-2">
+                        <div className="flex items-center justify-center space-x-2">
+                          {paymentMethod === 'card' && <CreditCard className="h-4 w-4 sm:h-5 sm:w-5 text-gray-600" />}
+                          {paymentMethod === 'wallet' && <span className="text-base sm:text-lg">💰</span>}
+                          {paymentMethod === 'paystack' && <span className="text-base sm:text-lg">🏦</span>}
+                          <span className="text-sm font-medium text-gray-800">
+                            {paymentMethod === 'card' ? 'Credit/Debit Card' :
+                             paymentMethod === 'wallet' ? 'Wallet Balance' : 'Bank Transfer'}
+                          </span>
+                        </div>
                         {useWallet && paymentMethod === 'card' && (
                           <span className="text-xs text-green-600 font-medium">
                             (+₦{walletDeduction.toLocaleString()} from wallet)

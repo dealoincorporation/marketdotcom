@@ -73,7 +73,7 @@ export async function POST(request: NextRequest) {
       role: user.role || 'user'
     }
 
-    const accessToken = generateToken(tokenPayload, '1h')
+    const accessToken = generateToken(tokenPayload, '24h')
     const refreshToken = generateRefreshToken(tokenPayload)
 
     // Remove sensitive data from response

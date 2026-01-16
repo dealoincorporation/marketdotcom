@@ -121,10 +121,12 @@ export default function AdminTab({
 
   const handleToggleStockStatus = async (product: Product) => {
     try {
+      const token = localStorage.getItem('token')
       const response = await fetch(`/api/products/${product.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
         },
         body: JSON.stringify({
           ...product,
@@ -148,10 +150,12 @@ export default function AdminTab({
 
     try {
       // TODO: Implement price update API call
+      const token = localStorage.getItem('token')
       const response = await fetch(`/api/products/${selectedProductForPrice.id}/price`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
         },
         body: JSON.stringify({
           price: parseFloat(newPrice),

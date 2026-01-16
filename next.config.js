@@ -32,6 +32,10 @@ const nextConfig = {
     NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY: process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY || process.env.PAYSTACK_PUBLIC_KEY || 'pk_test_9071bb582b6486e980b86bce551587236426329a',
     DATABASE_URL: process.env.DATABASE_URL || 'mongodb://localhost:27017/marketdotcom',
     JWT_SECRET: process.env.JWT_SECRET || 'fallback-jwt-secret',
+    // Cloudinary configuration
+    CLOUDINARY_CLOUD_NAME: process.env.CLOUDINARY_CLOUD_NAME,
+    CLOUDINARY_API_KEY: process.env.CLOUDINARY_API_KEY,
+    CLOUDINARY_API_SECRET: process.env.CLOUDINARY_API_SECRET,
   },
 }
 

@@ -198,10 +198,12 @@ export default function ManageProductsTab({
         const confirmImport = confirm(`Import ${productsToImport.length} products?`)
         if (confirmImport) {
           try {
+            const token = localStorage.getItem('token')
             const response = await fetch('/api/products/import', {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
+                ...(token ? { 'Authorization': `Bearer ${token}` } : {})
               },
               body: JSON.stringify(productsToImport),
             })

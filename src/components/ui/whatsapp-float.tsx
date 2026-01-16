@@ -9,22 +9,27 @@ export function WhatsAppFloat() {
   const whatsappUrl = `https://wa.me/${whatsappNumber.replace(/^0/, '234')}`
 
   const [showModal, setShowModal] = useState(false)
+  const [hasShownInitial, setHasShownInitial] = useState(false)
 
-  // Modal appears every 30 seconds for 8 seconds, then disappears for 30 seconds
+  // Modal appears only once per session after 30 seconds, for 10 seconds
   useEffect(() => {
-    const showInterval = setInterval(() => {
-      setShowModal(true)
-      setTimeout(() => setShowModal(false), 8000) // Show for 8 seconds
-    }, 30000) // Every 30 seconds
+    // Check if modal has already been shown in this session
+    const modalShown = localStorage.getItem('whatsappModalShown')
+    if (modalShown === 'true') {
+      return // Don't show again in this session
+    }
 
-    // Show modal initially after 5 seconds
+    // Show modal once after 30 seconds (increased from 5)
     const initialTimer = setTimeout(() => {
       setShowModal(true)
-      setTimeout(() => setShowModal(false), 8000)
-    }, 5000)
+      setHasShownInitial(true)
+      localStorage.setItem('whatsappModalShown', 'true')
+
+      // Hide after 10 seconds (increased from 8)
+      setTimeout(() => setShowModal(false), 10000)
+    }, 30000) // Increased from 5 seconds to 30 seconds
 
     return () => {
-      clearInterval(showInterval)
       clearTimeout(initialTimer)
     }
   }, [])

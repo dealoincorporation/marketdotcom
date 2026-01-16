@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import { motion } from "framer-motion"
-import { ShoppingBag, Search, Filter, ShoppingCart, Heart, Star, Plus, Minus, Menu, X } from "lucide-react"
+import { ShoppingBag, Search, Filter, ShoppingCart, Heart, Star, Plus, Minus, Menu, X, ChevronLeft, ChevronRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
@@ -11,105 +11,109 @@ import { Card, CardContent } from "@/components/ui/card"
 import { useCartStore } from "@/lib/cart-store"
 import { useAuth } from "@/contexts/AuthContext"
 
-// Sample products data (in a real app, this would come from the database)
-const sampleProducts = [
-  {
-    id: "1",
-    name: "Fresh Tomatoes",
-    description: "Organic red tomatoes, perfect for salads and cooking",
-    price: 2500,
-    category: "Vegetables",
-    image: "/api/placeholder/300/200",
-    stock: 50,
-    rating: 4.5,
-    reviews: 24,
-    unit: "kg",
-    variations: [
-      { id: "1a", name: "Small Pack", price: 2000, stock: 30 },
-      { id: "1b", name: "Large Pack", price: 4000, stock: 20 },
-    ]
-  },
-  {
-    id: "2",
-    name: "Premium Rice",
-    description: "Long grain white rice, imported quality",
-    price: 8500,
-    category: "Grains",
-    image: "/api/placeholder/300/200",
-    stock: 100,
-    rating: 4.8,
-    reviews: 156,
-    unit: "bag",
-  },
-  {
-    id: "3",
-    name: "Palm Oil",
-    description: "Pure red palm oil, traditional cooking oil",
-    price: 3200,
-    category: "Oils",
-    image: "/api/placeholder/300/200",
-    stock: 75,
-    rating: 4.6,
-    reviews: 89,
-    unit: "liter",
-  },
-  {
-    id: "4",
-    name: "Fresh Fish",
-    description: "Fresh croaker fish, cleaned and ready to cook",
-    price: 5500,
-    category: "Seafood",
-    image: "/api/placeholder/300/200",
-    stock: 15,
-    rating: 4.7,
-    reviews: 42,
-    unit: "piece",
-  },
-  {
-    id: "5",
-    name: "Yam Tubers",
-    description: "Large yam tubers, perfect for pounding",
-    price: 1800,
-    category: "Tubers",
-    image: "/api/placeholder/300/200",
-    stock: 60,
-    rating: 4.4,
-    reviews: 78,
-    unit: "kg",
-  },
-  {
-    id: "6",
-    name: "Groundnut Oil",
-    description: "Pure groundnut oil for healthy cooking",
-    price: 4200,
-    category: "Oils",
-    image: "/api/placeholder/300/200",
-    stock: 45,
-    rating: 4.9,
-    reviews: 123,
-    unit: "liter",
-  },
+// Default categories for when API is unavailable
+const defaultCategories = [
+  { id: 'all', name: 'All Products', displayName: 'All' },
+  { id: 'fruits', name: '🍎 Fruits', displayName: 'Fruits' },
+  { id: 'vegetables', name: '🥕 Vegetables', displayName: 'Vegetables' },
+  { id: 'grains', name: '🌾 Grains & Cereals', displayName: 'Grains' },
+  { id: 'proteins', name: '🥩 Proteins', displayName: 'Proteins' },
+  { id: 'dairy', name: '🥛 Dairy', displayName: 'Dairy' },
+  { id: 'beverages', name: '🥤 Beverages', displayName: 'Beverages' },
+  { id: 'snacks', name: '🍿 Snacks', displayName: 'Snacks' },
+  { id: 'spices', name: '🌿 Spices & Seasonings', displayName: 'Spices' },
+  { id: 'bakery', name: '🍞 Bakery', displayName: 'Bakery' },
+  { id: 'frozen', name: '🧊 Frozen Foods', displayName: 'Frozen' },
+  { id: 'canned', name: '🥫 Canned Goods', displayName: 'Canned' },
+  { id: 'organic', name: '🌱 Organic Products', displayName: 'Organic' }
 ]
 
-const categories = ["All", "Vegetables", "Grains", "Oils", "Seafood", "Tubers", "Fruits", "Dairy"]
-
 export default function MarketplacePage() {
-  const [products, setProducts] = useState(sampleProducts)
-  const [filteredProducts, setFilteredProducts] = useState(sampleProducts)
-  const [selectedCategory, setSelectedCategory] = useState("All")
+  const [products, setProducts] = useState<any[]>([])
+  const [categories, setCategories] = useState(defaultCategories)
+  const [filteredProducts, setFilteredProducts] = useState<any[]>([])
+  const [selectedCategory, setSelectedCategory] = useState("all")
   const [searchQuery, setSearchQuery] = useState("")
+  const [isLoading, setIsLoading] = useState(true)
   const [showFilters, setShowFilters] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [currentImageIndexes, setCurrentImageIndexes] = useState<Record<string, number>>({})
 
   const { user } = useAuth()
   const { items, addItem, removeItem, getItemQuantity } = useCartStore()
+
+  const isAdmin = user?.role === "ADMIN"
+
+  // Fetch products and categories on component mount
+  useEffect(() => {
+    const fetchData = async () => {
+      setIsLoading(true)
+      try {
+        // Fetch products
+        const productsResponse = await fetch('/api/products')
+        if (productsResponse.ok) {
+          const productsData = await productsResponse.json()
+          const transformedProducts = productsData.map((product: any) => ({
+            id: product.id,
+            name: product.name,
+            description: product.description,
+            price: product.basePrice,
+            category: product.category?.name || 'Uncategorized',
+            categoryId: product.categoryId,
+            images: product.images || [],
+            image: product.images?.[0] || '/api/placeholder/300/200', // Use first image or placeholder
+            stock: product.stock,
+            rating: 4.5, // Default rating
+            reviews: Math.floor(Math.random() * 100) + 10, // Mock reviews
+            unit: product.unit,
+            inStock: product.inStock,
+            variations: product.variations || []
+          }))
+          setProducts(transformedProducts)
+        }
+
+        // Fetch categories
+        const categoriesResponse = await fetch('/api/categories')
+        if (categoriesResponse.ok) {
+          const categoriesData = await categoriesResponse.json()
+          const apiCategories = categoriesData.data || categoriesData
+
+          // Merge API categories with defaults
+          const mergedCategories = [...defaultCategories]
+          apiCategories.forEach((cat: any) => {
+            const existingIndex = mergedCategories.findIndex(c => c.id === cat.id)
+            if (existingIndex >= 0) {
+              mergedCategories[existingIndex] = {
+                ...mergedCategories[existingIndex],
+                name: cat.name,
+                displayName: cat.name.replace(/^[^\s]*\s/, '') // Remove emoji for display
+              }
+            } else {
+              mergedCategories.push({
+                id: cat.id,
+                name: cat.name,
+                displayName: cat.name.replace(/^[^\s]*\s/, '')
+              })
+            }
+          })
+          setCategories(mergedCategories)
+        }
+      } catch (error) {
+        console.error('Error fetching marketplace data:', error)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchData()
+  }, [])
 
   useEffect(() => {
     let filtered = products
 
     // Filter by category
-    if (selectedCategory !== "All") {
-      filtered = filtered.filter(product => product.category === selectedCategory)
+    if (selectedCategory !== "all") {
+      filtered = filtered.filter(product => product.categoryId === selectedCategory)
     }
 
     // Filter by search query
@@ -136,6 +140,30 @@ export default function MarketplacePage() {
 
   const cartItemCount = items.reduce((total, item) => total + item.quantity, 0)
 
+  // Image slider functions
+  const getCurrentImageIndex = (productId: string) => {
+    return currentImageIndexes[productId] || 0
+  }
+
+  const setCurrentImageIndex = (productId: string, index: number) => {
+    setCurrentImageIndexes(prev => ({
+      ...prev,
+      [productId]: index
+    }))
+  }
+
+  const nextImage = (productId: string, images: string[]) => {
+    const currentIndex = getCurrentImageIndex(productId)
+    const nextIndex = (currentIndex + 1) % images.length
+    setCurrentImageIndex(productId, nextIndex)
+  }
+
+  const prevImage = (productId: string, images: string[]) => {
+    const currentIndex = getCurrentImageIndex(productId)
+    const prevIndex = currentIndex === 0 ? images.length - 1 : currentIndex - 1
+    setCurrentImageIndex(productId, prevIndex)
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Sticky Header */}
@@ -149,7 +177,14 @@ export default function MarketplacePage() {
                 alt="Marketdotcom Logo"
                 className="h-16 w-16 sm:h-20 sm:w-20 lg:h-24 lg:w-24 object-contain"
               />
-              <span className="text-lg font-bold text-gray-900 hidden sm:block">Marketplace</span>
+              <div className="flex flex-col">
+                <span className="text-lg font-bold text-gray-900 hidden sm:block">Marketplace</span>
+                {isAdmin && (
+                  <span className="text-xs text-orange-600 font-medium hidden sm:block">
+                    Admin Mode
+                  </span>
+                )}
+              </div>
             </Link>
 
             {/* Desktop Navigation */}
@@ -164,7 +199,7 @@ export default function MarketplacePage() {
                   <Link href="/cart">
                     <Button variant="outline" size="sm" className="relative">
                       <ShoppingCart className="h-4 w-4 mr-2" />
-                      Cart
+                      {isAdmin ? 'Cart (Admin)' : 'Cart'}
                       {cartItemCount > 0 && (
                         <Badge className="absolute -top-2 -right-2 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs">
                           {cartItemCount}
@@ -297,13 +332,13 @@ export default function MarketplacePage() {
             <div className="hidden lg:flex items-center space-x-2 overflow-x-auto">
               {categories.map((category) => (
                 <Button
-                  key={category}
-                  variant={selectedCategory === category ? "default" : "outline"}
+                  key={category.id}
+                  variant={selectedCategory === category.id ? "default" : "outline"}
                   size="sm"
-                  onClick={() => setSelectedCategory(category)}
+                  onClick={() => setSelectedCategory(category.id)}
                   className="whitespace-nowrap"
                 >
-                  {category}
+                  {category.displayName}
                 </Button>
               ))}
             </div>
@@ -322,16 +357,16 @@ export default function MarketplacePage() {
                 <div className="flex flex-wrap gap-2">
                   {categories.map((category) => (
                     <Button
-                      key={category}
-                      variant={selectedCategory === category ? "default" : "outline"}
+                      key={category.id}
+                      variant={selectedCategory === category.id ? "default" : "outline"}
                       size="sm"
-                      onClick={() => setSelectedCategory(category)}
-                      className={selectedCategory === category
+                      onClick={() => setSelectedCategory(category.id)}
+                      className={selectedCategory === category.id
                         ? "bg-orange-500 hover:bg-orange-600 text-white"
                         : "bg-white hover:bg-gray-50 border-gray-300 text-gray-700"
                       }
                     >
-                      {category}
+                      {category.name}
                     </Button>
                   ))}
                 </div>
@@ -345,15 +380,23 @@ export default function MarketplacePage() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-2xl font-bold text-gray-900">
-            {selectedCategory === "All" ? "All Products" : selectedCategory}
+            {(() => {
+              const category = categories.find(c => c.id === selectedCategory)
+              return category ? category.displayName : 'All Products'
+            })()}
             <span className="text-gray-500 text-lg ml-2">
               ({filteredProducts.length} items)
             </span>
           </h1>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
-          {filteredProducts.map((product, index) => (
+        {isLoading ? (
+          <div className="flex items-center justify-center py-12">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600"></div>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
+            {filteredProducts.map((product, index) => (
             <motion.div
               key={product.id}
               initial={{ opacity: 0, y: 20 }}
@@ -362,11 +405,61 @@ export default function MarketplacePage() {
             >
               <Card className="group hover:shadow-lg transition-shadow duration-300">
                 <CardContent className="p-0">
-                  {/* Product Image */}
+                  {/* Product Image Slider */}
                   <div className="relative aspect-square bg-gray-100 rounded-t-lg overflow-hidden">
-                    <div className="w-full h-full bg-gradient-to-br from-green-100 to-blue-100 flex items-center justify-center">
-                      <ShoppingBag className="h-12 w-12 text-green-600" />
-                    </div>
+                    {product.images && product.images.length > 0 ? (
+                      <>
+                        <img
+                          src={product.images[getCurrentImageIndex(product.id)]}
+                          alt={product.name}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        />
+                        {/* Image Navigation */}
+                        {product.images.length > 1 && (
+                          <>
+                            <button
+                              onClick={(e) => {
+                                e.preventDefault()
+                                prevImage(product.id, product.images)
+                              }}
+                              className="absolute left-2 top-1/2 -translate-y-1/2 p-1.5 bg-black/50 hover:bg-black/70 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                            >
+                              <ChevronLeft className="h-4 w-4" />
+                            </button>
+                            <button
+                              onClick={(e) => {
+                                e.preventDefault()
+                                nextImage(product.id, product.images)
+                              }}
+                              className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 bg-black/50 hover:bg-black/70 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                            >
+                              <ChevronRight className="h-4 w-4" />
+                            </button>
+                            {/* Image Dots */}
+                            <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                              {product.images.map((image: any, index: number) => (
+                                <button
+                                  key={index}
+                                  onClick={(e) => {
+                                    e.preventDefault()
+                                    setCurrentImageIndex(product.id, index)
+                                  }}
+                                  className={`w-2 h-2 rounded-full ${
+                                    index === getCurrentImageIndex(product.id)
+                                      ? 'bg-white'
+                                      : 'bg-white/50'
+                                  }`}
+                                />
+                              ))}
+                            </div>
+                          </>
+                        )}
+                      </>
+                    ) : (
+                      <div className="w-full h-full bg-gradient-to-br from-green-100 to-blue-100 flex items-center justify-center">
+                        <ShoppingBag className="h-12 w-12 text-green-600" />
+                      </div>
+                    )}
                     <button className="absolute top-3 right-3 p-2 bg-white/80 backdrop-blur-sm rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
                       <Heart className="h-4 w-4 text-gray-600" />
                     </button>
@@ -438,8 +531,9 @@ export default function MarketplacePage() {
                 </CardContent>
               </Card>
             </motion.div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
 
         {filteredProducts.length === 0 && (
           <div className="text-center py-12">
