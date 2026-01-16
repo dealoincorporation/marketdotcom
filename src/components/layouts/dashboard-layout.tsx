@@ -98,7 +98,7 @@ export function DashboardLayout({
                     alt="Marketdotcom Logo"
                     className="h-24 w-24 object-contain"
                   />
-                  <span className="text-xl font-bold text-gray-900">Marketdotcom</span>
+                  <span className="hidden md:block text-xl font-bold text-gray-900">Marketdotcom</span>
                 </motion.div>
               </Link>
             </div>
@@ -113,19 +113,18 @@ export function DashboardLayout({
 
               {/* Mobile Cart Button */}
               <div className="lg:hidden">
-                <Link href="/cart">
-                  <button
-                    className="relative bg-white hover:bg-orange-50 border-2 border-gray-300 hover:border-orange-300 rounded-md pt-4 pr-4 pb-3 pl-3 cursor-pointer active:scale-95 transition-all duration-150 active:bg-orange-100 min-w-[52px] min-h-[52px] flex items-center justify-center touch-manipulation"
-                    style={{ WebkitTapHighlightColor: 'transparent' }}
-                  >
-                    <ShoppingCart className="h-5 w-5" />
-                    {totalItems > 0 && (
-                      <span className="absolute -top-1 -right-1 bg-orange-600 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
-                        {totalItems}
-                      </span>
-                    )}
-                  </button>
-                </Link>
+                <button
+                  onClick={() => setIsCartOpen(true)}
+                  className="relative bg-white hover:bg-orange-50 border-2 border-gray-300 hover:border-orange-300 rounded-md pt-4 pr-4 pb-3 pl-3 cursor-pointer active:scale-95 transition-all duration-150 active:bg-orange-100 min-w-[52px] min-h-[52px] flex items-center justify-center touch-manipulation"
+                  style={{ WebkitTapHighlightColor: 'transparent' }}
+                >
+                  <ShoppingCart className="h-5 w-5" />
+                  {totalItems > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-orange-600 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
+                      {totalItems}
+                    </span>
+                  )}
+                </button>
               </div>
 
               {/* Desktop Cart Button */}
@@ -415,26 +414,39 @@ export function DashboardLayout({
                     <span className="text-sm font-medium text-gray-700">Subtotal</span>
                     <span className="text-sm font-bold text-gray-900">{formatCurrency(getTotalPrice())}</span>
                   </div>
-                  <div className="flex space-x-3">
+                  <div className="space-y-2">
                     <Button
                       variant="outline"
                       onClick={() => {
-                        clearCart()
                         setIsCartOpen(false)
+                        router.push('/cart')
                       }}
-                      className="flex-1"
+                      className="w-full"
                     >
-                      Clear Cart
+                      View Full Cart
                     </Button>
-                    <Button
-                      onClick={() => {
-                        setIsCartOpen(false)
-                        router.push('/checkout')
-                      }}
-                      className="flex-1 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600"
-                    >
-                      Checkout
-                    </Button>
+                    <div className="flex space-x-3">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          clearCart()
+                          setIsCartOpen(false)
+                        }}
+                        className="flex-1"
+                      >
+                        Clear Cart
+                      </Button>
+                      <Button
+                        onClick={() => {
+                          setIsCartOpen(false)
+                          router.push('/checkout')
+                        }}
+                        className="flex-1 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600"
+                      >
+                        Checkout
+                      </Button>
+                    </div>
                   </div>
                 </div>
               </div>
