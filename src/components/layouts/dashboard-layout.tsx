@@ -113,35 +113,19 @@ export function DashboardLayout({
 
               {/* Mobile Cart Button */}
               <div className="lg:hidden">
-                <button
-                  className="relative bg-white hover:bg-orange-50 border-2 border-gray-300 hover:border-orange-300 rounded-md pt-4 pr-4 pb-3 pl-3 cursor-pointer active:scale-95 transition-all duration-150 active:bg-orange-100 min-w-[52px] min-h-[52px] flex items-center justify-center touch-manipulation"
-                  onClick={() => {
-                    console.log('Cart button clicked!')
-                    setIsCartOpen(true)
-                  }}
-                  onTouchStart={(e) => {
-                    e.preventDefault()
-                    console.log('Touch started on cart button')
-                    e.currentTarget.style.transform = 'scale(0.95)'
-                    e.currentTarget.style.backgroundColor = 'rgb(255 237 213)' // orange-100
-                  }}
-                  onTouchEnd={(e) => {
-                    e.preventDefault()
-                    console.log('Touch ended on cart button')
-                    setTimeout(() => {
-                      e.currentTarget.style.transform = 'scale(1)'
-                      e.currentTarget.style.backgroundColor = ''
-                    }, 150)
-                  }}
-                  style={{ WebkitTapHighlightColor: 'transparent' }}
-                >
-                  <ShoppingCart className="h-5 w-5" />
-                  {totalItems > 0 && (
-                    <span className="absolute -top-1 -right-1 bg-orange-600 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
-                      {totalItems}
-                    </span>
-                  )}
-                </button>
+                <Link href="/cart">
+                  <button
+                    className="relative bg-white hover:bg-orange-50 border-2 border-gray-300 hover:border-orange-300 rounded-md pt-4 pr-4 pb-3 pl-3 cursor-pointer active:scale-95 transition-all duration-150 active:bg-orange-100 min-w-[52px] min-h-[52px] flex items-center justify-center touch-manipulation"
+                    style={{ WebkitTapHighlightColor: 'transparent' }}
+                  >
+                    <ShoppingCart className="h-5 w-5" />
+                    {totalItems > 0 && (
+                      <span className="absolute -top-1 -right-1 bg-orange-600 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
+                        {totalItems}
+                      </span>
+                    )}
+                  </button>
+                </Link>
               </div>
 
               {/* Desktop Cart Button */}
