@@ -39,7 +39,7 @@ export default function AddProductPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
       {/* Header */}
-      <header className="bg-white shadow-lg border-b border-gray-200">
+      <header className="sticky top-0 z-50 bg-white shadow-lg border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center space-x-4">
@@ -50,15 +50,15 @@ export default function AddProductPage() {
                 <ArrowLeft className="h-5 w-5" />
               </Link>
               <div>
-                <h1 className="text-2xl font-bold text-gray-900">Add New Product</h1>
-                <p className="text-sm text-gray-600">Create a new product for your marketplace</p>
+                <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Add New Product</h1>
+                <p className="hidden sm:block text-sm text-gray-600">Create a new product for your marketplace</p>
               </div>
             </div>
             <div className="flex items-center space-x-4">
               <Link href="/dashboard?tab=manage-products">
                 <Button variant="outline" className="flex items-center space-x-2">
                   <X className="h-4 w-4" />
-                  <span>Cancel</span>
+                  <span className="hidden sm:inline">Cancel</span>
                 </Button>
               </Link>
             </div>
