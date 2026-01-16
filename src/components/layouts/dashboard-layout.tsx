@@ -72,7 +72,7 @@ export function DashboardLayout({
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
       {/* Header */}
-      <header className="bg-white shadow-lg border-b border-gray-200">
+      <header className="bg-white shadow-lg border-b border-gray-200 relative z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center space-x-4">
@@ -112,9 +112,21 @@ export function DashboardLayout({
               </div>
 
               {/* Mobile Cart Button */}
-              <div className="lg:hidden">
+              <div className="lg:hidden relative z-50">
                 <button
-                  onClick={() => setIsCartOpen(true)}
+                  onClick={() => {
+                    console.log('Cart button clicked!')
+                    setIsCartOpen(true)
+                  }}
+                  onTouchStart={(e) => {
+                    console.log('Cart button touch start')
+                    e.currentTarget.style.transform = 'scale(0.95)'
+                  }}
+                  onTouchEnd={(e) => {
+                    console.log('Cart button touch end')
+                    e.currentTarget.style.transform = 'scale(1)'
+                    setIsCartOpen(true)
+                  }}
                   className="relative bg-white hover:bg-orange-50 border-2 border-gray-300 hover:border-orange-300 rounded-md pt-4 pr-4 pb-3 pl-3 cursor-pointer active:scale-95 transition-all duration-150 active:bg-orange-100 min-w-[52px] min-h-[52px] flex items-center justify-center touch-manipulation"
                   style={{ WebkitTapHighlightColor: 'transparent' }}
                 >
@@ -294,10 +306,10 @@ export function DashboardLayout({
               {/* Welcome Banner */}
               {user && (
                 <motion.div
-                  initial={{ opacity: 0, y: -20, scale: 0.95 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
                   transition={{ duration: 0.6, delay: 0.2 }}
-                  className="mb-8 bg-gradient-to-r from-orange-500 to-red-500 rounded-xl shadow-lg overflow-hidden"
+                  className="mb-8 bg-gradient-to-r from-orange-500 to-red-500 rounded-xl shadow-lg overflow-hidden relative z-10"
                 >
                   <div className="px-6 py-8 sm:px-8 sm:py-10">
                     <div className="flex items-center justify-between">
