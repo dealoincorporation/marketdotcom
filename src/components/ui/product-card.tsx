@@ -12,6 +12,8 @@ import {
   Package,
   Edit,
   Trash2,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -20,7 +22,7 @@ import { Product } from '@prisma/client'
 import { formatCurrency, getInitials, cn } from '@/lib/helpers'
 
 interface ProductCardProps {
-  product: Product
+  product: Product & { images?: string[] }
   onAddToCart?: (product: Product, variation?: any, quantity?: number) => void
   onEdit?: (product: Product) => void
   onDelete?: (productId: string) => void
@@ -39,6 +41,14 @@ export function ProductCard({
   const [quantity, setQuantity] = useState(1)
   const [selectedVariation, setSelectedVariation] = useState((product as any).variations?.[0] || null)
   const [isWishlisted, setIsWishlisted] = useState(false)
+  const [currentImageIndex, setCurrentImageIndex] = useState(0)
+
+  // Get product images - fallback to single image or placeholder
+  const productImages = (product as any).images?.length > 0
+    ? (product as any).images
+    : product.image ? [product.image] : []
+
+  const hasMultipleImages = productImages.length > 1
 
   const handleAddToCart = () => {
     if (onAddToCart) {
@@ -54,6 +64,18 @@ export function ProductCard({
     setQuantity(prev => Math.max(prev - 1, 1))
   }
 
+  const nextImage = () => {
+    setCurrentImageIndex((prev) =>
+      prev === productImages.length - 1 ? 0 : prev + 1
+    )
+  }
+
+  const prevImage = () => {
+    setCurrentImageIndex((prev) =>
+      prev === 0 ? productImages.length - 1 : prev - 1
+    )
+  }
+
   const currentPrice = selectedVariation ? selectedVariation.price : product.basePrice
   const hasVariations = (product as any).variations?.length > 0
 
@@ -67,13 +89,58 @@ export function ProductCard({
       <Card className="h-full overflow-hidden hover:shadow-lg transition-all duration-300 border-0 shadow-md">
         {/* Product Image */}
         <div className="relative aspect-square overflow-hidden bg-gray-100">
-          {product.image ? (
-            <Image
-              src={product.image}
-              alt={product.name}
-              fill
-              className="object-cover transition-transform duration-300 group-hover:scale-105"
-            />
+          {productImages.length > 0 ? (
+            <>
+              <Image
+                src={productImages[currentImageIndex]}
+                alt={product.name}
+                fill
+                className="object-cover transition-transform duration-300 group-hover:scale-105"
+              />
+
+              {/* Image Navigation */}
+              {hasMultipleImages && (
+                <>
+                  <button
+                    onClick={(e) => {
+                      e.preventDefault()
+                      prevImage()
+                    }}
+                    className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white rounded-full p-1 shadow-md transition-colors"
+                  >
+                    <ChevronLeft className="h-4 w-4 text-gray-700" />
+                  </button>
+
+                  <button
+                    onClick={(e) => {
+                      e.preventDefault()
+                      nextImage()
+                    }}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white rounded-full p-1 shadow-md transition-colors"
+                  >
+                    <ChevronRight className="h-4 w-4 text-gray-700" />
+                  </button>
+
+                  {/* Image Dots */}
+                  <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex space-x-1">
+                    {productImages.map((image: string, index: number) => (
+                      <button
+                        key={index}
+                        onClick={(e) => {
+                          e.preventDefault()
+                          setCurrentImageIndex(index)
+                        }}
+                        className={`w-2 h-2 rounded-full transition-colors ${
+                          index === currentImageIndex
+                            ? 'bg-white'
+                            : 'bg-white/50 hover:bg-white/75'
+                        }`}
+                      />
+                    ))}
+                  </div>
+                </>
+              )}
+            </>
           ) : (
             <div className="flex items-center justify-center h-full bg-gradient-to-br from-orange-100 to-orange-200">
               <Package className="h-12 w-12 text-orange-400" />

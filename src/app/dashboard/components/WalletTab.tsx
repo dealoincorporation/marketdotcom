@@ -45,6 +45,21 @@ export default function WalletTab({ walletInfo }: WalletTabProps) {
   const [showConvertModal, setShowConvertModal] = useState(false)
   const [pointsToConvert, setPointsToConvert] = useState("")
 
+  // Rewards state
+  const [rewardsData, setRewardsData] = useState({
+    totalPoints: 0,
+    tier: 1,
+    tierName: 'Bronze',
+    pointsToNextTier: 1000,
+    rewards: [],
+    pointsSettings: {
+      pointsPerNaira: 0.1,
+      nairaPerPoint: 10,
+      minimumPointsToConvert: 100
+    }
+  })
+  const [rewardsLoading, setRewardsLoading] = useState(true)
+
   // Referral data state
   const [referralData, setReferralData] = useState({
     code: "",
@@ -64,15 +79,11 @@ export default function WalletTab({ walletInfo }: WalletTabProps) {
   }[]>([])
   const [transactionsLoading, setTransactionsLoading] = useState(true)
 
-  // Mock points settings
-  const pointsSettings = {
-    pointsPerNaira: 0.1,
-    nairaPerPoint: 10,
-    minimumPointsToConvert: 100
-  }
+  // Use real points settings from API
+  const pointsSettings = rewardsData.pointsSettings
 
-  const maxConvertibleAmount = Math.floor(walletInfo.points / pointsSettings.nairaPerPoint) * pointsSettings.nairaPerPoint
-  const convertiblePoints = Math.min(walletInfo.points, maxConvertibleAmount)
+  const maxConvertibleAmount = Math.floor(rewardsData.totalPoints / pointsSettings.nairaPerPoint) * pointsSettings.nairaPerPoint
+  const convertiblePoints = Math.min(rewardsData.totalPoints, maxConvertibleAmount)
   const cashValue = Math.floor(convertiblePoints / pointsSettings.nairaPerPoint) * pointsSettings.nairaPerPoint
 
   // Check for payment verification on component mount
@@ -107,6 +118,32 @@ export default function WalletTab({ walletInfo }: WalletTabProps) {
     }
 
     fetchReferralData()
+  }, [])
+
+  // Fetch rewards data
+  useEffect(() => {
+    const fetchRewards = async () => {
+      try {
+        const token = localStorage.getItem('token')
+        const response = await fetch('/api/rewards', {
+          headers: {
+            ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+          }
+        })
+
+        if (response.ok) {
+          const data = await response.json()
+          setRewardsData(data)
+        }
+      } catch (error) {
+        console.error('Error fetching rewards:', error)
+        // Keep default values on error
+      } finally {
+        setRewardsLoading(false)
+      }
+    }
+
+    fetchRewards()
   }, [])
 
   // Fetch recent transactions
@@ -209,9 +246,8 @@ export default function WalletTab({ walletInfo }: WalletTabProps) {
     }
   }
 
-  const pointsToNextTier = 1000 - (walletInfo.points % 1000)
-  const currentTier = Math.floor(walletInfo.points / 1000) + 1
-  const tierName = currentTier === 1 ? 'Bronze' : currentTier === 2 ? 'Silver' : currentTier === 3 ? 'Gold' : 'Platinum'
+  // Use real tier data from API
+  const { tier, tierName, pointsToNextTier } = rewardsData
 
   return (
     <div>
@@ -235,22 +271,15 @@ export default function WalletTab({ walletInfo }: WalletTabProps) {
                 {formatPrice(walletInfo.walletBalance)}
               </div>
               <p className="text-green-700 text-sm">
-                Available for purchases and withdrawals
+                Available for purchases
               </p>
-              <div className="mt-4 flex space-x-2">
+              <div className="mt-4">
                 <button
                   onClick={() => setShowFundModal(true)}
-                  className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors text-sm font-medium flex items-center space-x-1"
+                  className="w-full px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors text-sm font-medium flex items-center justify-center space-x-1"
                 >
                   <Plus className="h-4 w-4" />
                   <span>Add Money</span>
-                </button>
-                <button
-                  disabled
-                  className="px-4 py-2 border border-gray-300 text-gray-400 rounded-md cursor-not-allowed text-sm font-medium"
-                  title="Withdrawal not available"
-                >
-                  Withdraw
                 </button>
               </div>
             </CardContent>
@@ -267,7 +296,7 @@ export default function WalletTab({ walletInfo }: WalletTabProps) {
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold text-orange-900 mb-2">
-                {walletInfo.points.toLocaleString()} pts
+                {rewardsLoading ? "..." : rewardsData.totalPoints.toLocaleString() + " pts"}
               </div>
               <div className="flex items-center space-x-2 mb-3">
                 <Badge className="bg-orange-100 text-orange-800 border-orange-300">
@@ -280,14 +309,14 @@ export default function WalletTab({ walletInfo }: WalletTabProps) {
               <div className="w-full bg-orange-200 rounded-full h-2 mb-4">
                 <div
                   className="bg-orange-600 h-2 rounded-full transition-all duration-500"
-                  style={{ width: `${((walletInfo.points % 1000) / 1000) * 100}%` }}
+                  style={{ width: `${((rewardsData.totalPoints % 1000) / 1000) * 100}%` }}
                 ></div>
               </div>
 
               <div className="space-y-2">
                 <button
                   onClick={() => setShowConvertModal(true)}
-                  disabled={walletInfo.points < pointsSettings.minimumPointsToConvert}
+                  disabled={rewardsData.totalPoints < pointsSettings.minimumPointsToConvert}
                   className="w-full px-4 py-2 bg-orange-600 text-white rounded-md hover:bg-orange-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors text-sm font-medium"
                 >
                   Convert to Cash
@@ -554,7 +583,7 @@ export default function WalletTab({ walletInfo }: WalletTabProps) {
                 <div className="bg-orange-50 p-4 rounded-lg">
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-orange-800 font-medium">Your Points</span>
-                    <span className="text-orange-900 font-bold">{walletInfo.points.toLocaleString()} pts</span>
+                    <span className="text-orange-900 font-bold">{rewardsData.totalPoints.toLocaleString()} pts</span>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-orange-800 font-medium">Conversion Rate</span>
@@ -577,7 +606,7 @@ export default function WalletTab({ walletInfo }: WalletTabProps) {
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
                   />
                   <p className="text-xs text-gray-500">
-                    Minimum: {pointsSettings.minimumPointsToConvert} pts • Maximum: {convertiblePoints} pts
+                    Minimum: {pointsSettings.minimumPointsToConvert} pts • Maximum: {convertiblePoints} pts • Available: {rewardsData.totalPoints} pts
                   </p>
                 </div>
 

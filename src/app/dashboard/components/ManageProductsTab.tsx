@@ -297,26 +297,26 @@ export default function ManageProductsTab({
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
     >
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Product Management</h1>
-        <p className="text-gray-600">Comprehensive product inventory and management system</p>
+      <div className="mb-6 sm:mb-8">
+        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">Product Management</h1>
+        <p className="text-sm sm:text-base text-gray-600">Comprehensive product inventory and management system</p>
       </div>
 
       {/* Statistics Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
+      <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4 mb-6 sm:mb-8">
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.3, delay: 0.1 }}
         >
           <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200">
-            <CardContent className="p-4">
+            <CardContent className="p-3 sm:p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-blue-600 text-sm font-medium">Total Products</p>
-                  <p className="text-xl font-bold text-blue-900">{totalProducts}</p>
+                  <p className="text-blue-600 text-xs sm:text-sm font-medium">Total Products</p>
+                  <p className="text-lg sm:text-xl font-bold text-blue-900">{totalProducts}</p>
                 </div>
-                <Package className="h-6 w-6 text-blue-600" />
+                <Package className="h-5 w-5 sm:h-6 sm:w-6 text-blue-600" />
               </div>
             </CardContent>
           </Card>
@@ -328,13 +328,13 @@ export default function ManageProductsTab({
           transition={{ duration: 0.3, delay: 0.2 }}
         >
           <Card className="bg-gradient-to-br from-green-50 to-green-100 border-green-200">
-            <CardContent className="p-4">
+            <CardContent className="p-3 sm:p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-green-600 text-sm font-medium">In Stock</p>
-                  <p className="text-xl font-bold text-green-900">{inStockProducts}</p>
+                  <p className="text-green-600 text-xs sm:text-sm font-medium">In Stock</p>
+                  <p className="text-lg sm:text-xl font-bold text-green-900">{inStockProducts}</p>
                 </div>
-                <CheckCircle className="h-6 w-6 text-green-600" />
+                <CheckCircle className="h-5 w-5 sm:h-6 sm:w-6 text-green-600" />
               </div>
             </CardContent>
           </Card>
@@ -346,13 +346,13 @@ export default function ManageProductsTab({
           transition={{ duration: 0.3, delay: 0.3 }}
         >
           <Card className="bg-gradient-to-br from-red-50 to-red-100 border-red-200">
-            <CardContent className="p-4">
+            <CardContent className="p-3 sm:p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-red-600 text-sm font-medium">Out of Stock</p>
-                  <p className="text-xl font-bold text-red-900">{outOfStockProducts}</p>
+                  <p className="text-red-600 text-xs sm:text-sm font-medium">Out of Stock</p>
+                  <p className="text-lg sm:text-xl font-bold text-red-900">{outOfStockProducts}</p>
                 </div>
-                <XCircle className="h-6 w-6 text-red-600" />
+                <XCircle className="h-5 w-5 sm:h-6 sm:w-6 text-red-600" />
               </div>
             </CardContent>
           </Card>
@@ -364,13 +364,13 @@ export default function ManageProductsTab({
           transition={{ duration: 0.3, delay: 0.4 }}
         >
           <Card className="bg-gradient-to-br from-orange-50 to-orange-100 border-orange-200">
-            <CardContent className="p-4">
+            <CardContent className="p-3 sm:p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-orange-600 text-sm font-medium">Low Stock</p>
-                  <p className="text-xl font-bold text-orange-900">{lowStockProducts}</p>
+                  <p className="text-orange-600 text-xs sm:text-sm font-medium">Low Stock</p>
+                  <p className="text-lg sm:text-xl font-bold text-orange-900">{lowStockProducts}</p>
                 </div>
-                <AlertTriangle className="h-6 w-6 text-orange-600" />
+                <AlertTriangle className="h-5 w-5 sm:h-6 sm:w-6 text-orange-600" />
               </div>
             </CardContent>
           </Card>
@@ -382,13 +382,13 @@ export default function ManageProductsTab({
           transition={{ duration: 0.3, delay: 0.5 }}
         >
           <Card className="bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200">
-            <CardContent className="p-4">
+            <CardContent className="p-3 sm:p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-purple-600 text-sm font-medium">Total Value</p>
-                  <p className="text-lg font-bold text-purple-900">{formatPrice(totalValue)}</p>
+                  <p className="text-purple-600 text-xs sm:text-sm font-medium">Total Value</p>
+                  <p className="text-base sm:text-lg font-bold text-purple-900">{formatPrice(totalValue)}</p>
                 </div>
-                <BarChart3 className="h-6 w-6 text-purple-600" />
+                <BarChart3 className="h-5 w-5 sm:h-6 sm:w-6 text-purple-600" />
               </div>
             </CardContent>
           </Card>
@@ -396,7 +396,7 @@ export default function ManageProductsTab({
       </div>
 
       {/* Controls */}
-      <div className="flex flex-col sm:flex-row gap-4 mb-6">
+      <div className="space-y-4 mb-6">
         <div className="flex-1 relative">
           <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
           <Input
@@ -407,59 +407,62 @@ export default function ManageProductsTab({
           />
         </div>
 
-        <div className="flex gap-2">
-          <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-            <SelectTrigger className="w-40">
-              <SelectValue placeholder="Category" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Categories</SelectItem>
-              {categories.map((category) => (
-                <SelectItem key={category.id} value={category.id}>
-                  {category.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+        <div className="flex flex-col sm:flex-row gap-2">
+          <div className="flex gap-2 flex-wrap">
+            <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+              <SelectTrigger className="w-full sm:w-40">
+                <SelectValue placeholder="All Categories" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Categories</SelectItem>
+                {categories.map((category) => (
+                  <SelectItem key={category.id} value={category.id}>
+                    {category.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
 
-          <Select value={stockFilter} onValueChange={setStockFilter}>
-            <SelectTrigger className="w-32">
-              <SelectValue placeholder="Stock" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Stock</SelectItem>
-              <SelectItem value="in-stock">In Stock</SelectItem>
-              <SelectItem value="out-of-stock">Out of Stock</SelectItem>
-              <SelectItem value="low-stock">Low Stock</SelectItem>
-            </SelectContent>
-          </Select>
+            <Select value={stockFilter} onValueChange={setStockFilter}>
+              <SelectTrigger className="w-full sm:w-32">
+                <SelectValue placeholder="All Stock" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Stock</SelectItem>
+                <SelectItem value="in-stock">In Stock</SelectItem>
+                <SelectItem value="out-of-stock">Out of Stock</SelectItem>
+                <SelectItem value="low-stock">Low Stock</SelectItem>
+              </SelectContent>
+            </Select>
 
-          <Select value={sortBy} onValueChange={setSortBy}>
-            <SelectTrigger className="w-32">
-              <SelectValue placeholder="Sort" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="name">Name</SelectItem>
-              <SelectItem value="price-low">Price: Low</SelectItem>
-              <SelectItem value="price-high">Price: High</SelectItem>
-              <SelectItem value="stock-low">Stock: Low</SelectItem>
-              <SelectItem value="stock-high">Stock: High</SelectItem>
-              <SelectItem value="newest">Newest</SelectItem>
-            </SelectContent>
-          </Select>
+            <Select value={sortBy} onValueChange={setSortBy}>
+              <SelectTrigger className="w-full sm:w-32">
+                <SelectValue placeholder="Sort by Name" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="name">Name</SelectItem>
+                <SelectItem value="price-low">Price: Low</SelectItem>
+                <SelectItem value="price-high">Price: High</SelectItem>
+                <SelectItem value="stock-low">Stock: Low</SelectItem>
+                <SelectItem value="stock-high">Stock: High</SelectItem>
+                <SelectItem value="newest">Newest</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
 
-          <Link href="/dashboard/add-product">
-            <Button className="bg-orange-600 hover:bg-orange-700 text-white font-medium">
+          <Link href="/dashboard/add-product" className="sm:ml-auto">
+            <Button className="w-full sm:w-auto bg-orange-600 hover:bg-orange-700 text-white font-medium">
               <Plus className="h-4 w-4 mr-2" />
-              Add Product
+              <span className="hidden xs:inline">Add Product</span>
+              <span className="xs:hidden">Add</span>
             </Button>
           </Link>
         </div>
       </div>
 
       {/* Bulk Actions */}
-      <div className="flex flex-wrap gap-2 mb-6">
-        <div className="flex gap-2">
+      <div className="flex flex-col sm:flex-row gap-2 mb-6">
+        <div className="flex flex-wrap gap-2">
           <input
             type="file"
             accept=".csv"
@@ -471,27 +474,37 @@ export default function ManageProductsTab({
             variant="outline"
             size="sm"
             onClick={() => document.getElementById('csv-import')?.click()}
+            className="flex-1 sm:flex-none"
           >
             <Upload className="h-4 w-4 mr-2" />
-            Import CSV
+            <span className="hidden xs:inline">Import CSV</span>
+            <span className="xs:hidden">Import</span>
           </Button>
           <Button
             variant="outline"
             size="sm"
             onClick={() => window.open('/sample-products.csv', '_blank')}
+            className="flex-1 sm:flex-none"
           >
-            📄 Sample CSV
+            📄 <span className="hidden xs:inline">Sample CSV</span>
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={exportToCSV}
+            className="flex-1 sm:flex-none"
+          >
+            <Download className="h-4 w-4 mr-2" />
+            <span className="hidden xs:inline">Export CSV</span>
+            <span className="xs:hidden">Export</span>
           </Button>
         </div>
-        <Button variant="outline" size="sm" onClick={exportToCSV}>
-          <Download className="h-4 w-4 mr-2" />
-          Export CSV
-        </Button>
         <Button
           variant="outline"
           size="sm"
           onClick={handleBulkEdit}
           disabled={selectedProducts.length === 0}
+          className="flex-1 sm:flex-none"
         >
           <Filter className="h-4 w-4 mr-2" />
           Bulk Edit ({selectedProducts.length})
@@ -508,97 +521,195 @@ export default function ManageProductsTab({
             </Badge>
           </CardTitle>
         </CardHeader>
-        <CardContent>
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr className="border-b border-gray-200">
-                      <th className="py-3 px-4 font-medium text-gray-700 w-12">
-                        <input
-                          type="checkbox"
-                          checked={selectedProducts.length === filteredProducts.length && filteredProducts.length > 0}
-                          onChange={handleSelectAll}
-                          className="rounded border-gray-300 text-orange-600 focus:ring-orange-500"
-                        />
-                      </th>
-                      <th className="text-left py-3 px-4 font-medium text-gray-700">Product</th>
-                      <th className="text-left py-3 px-4 font-medium text-gray-700">Category</th>
-                      <th className="text-left py-3 px-4 font-medium text-gray-700">Price</th>
-                      <th className="text-left py-3 px-4 font-medium text-gray-700">Stock</th>
-                      <th className="text-left py-3 px-4 font-medium text-gray-700">Status</th>
-                      <th className="text-left py-3 px-4 font-medium text-gray-700">Created</th>
-                      <th className="text-right py-3 px-4 font-medium text-gray-700">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filteredProducts.map((product) => (
-                      <tr key={product.id} className="border-b border-gray-100 hover:bg-gray-50">
-                        <td className="py-4 px-4">
-                          <input
-                            type="checkbox"
-                            checked={selectedProducts.includes(product.id)}
-                            onChange={() => handleSelectProduct(product.id)}
-                            className="rounded border-gray-300 text-orange-600 focus:ring-orange-500"
-                          />
-                        </td>
-                        <td className="py-4 px-4">
-                      <div>
-                        <div className="font-medium text-gray-900">{product.name}</div>
-                        <div className="text-sm text-gray-600 line-clamp-1 max-w-xs">{product.description}</div>
+        <CardContent className="p-0 sm:p-6">
+          {/* Mobile: Card Layout */}
+          <div className="block sm:hidden">
+            <div className="px-4 py-2 border-b border-gray-200 bg-gray-50">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    checked={selectedProducts.length === filteredProducts.length && filteredProducts.length > 0}
+                    onChange={handleSelectAll}
+                    className="rounded border-gray-300 text-orange-600 focus:ring-orange-500"
+                  />
+                  <span className="text-sm font-medium text-gray-700">
+                    Select All ({filteredProducts.length})
+                  </span>
+                </div>
+                <Badge variant="outline" className="text-xs">
+                  {filteredProducts.length} shown
+                </Badge>
+              </div>
+            </div>
+
+            <div className="divide-y divide-gray-200">
+              {filteredProducts.map((product) => (
+                <div key={product.id} className="p-4 space-y-3">
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-start space-x-3 flex-1">
+                      <input
+                        type="checkbox"
+                        checked={selectedProducts.includes(product.id)}
+                        onChange={() => handleSelectProduct(product.id)}
+                        className="mt-1 rounded border-gray-300 text-orange-600 focus:ring-orange-500"
+                      />
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-medium text-gray-900 text-sm">{product.name}</h3>
+                        <p className="text-xs text-gray-600 line-clamp-2 mt-1">{product.description}</p>
                       </div>
-                    </td>
-                    <td className="py-4 px-4 text-gray-600">{product.category.name}</td>
-                    <td className="py-4 px-4 font-medium text-gray-900">
-                      {formatPrice(product.basePrice)}
-                    </td>
-                    <td className="py-4 px-4">
-                      <span className={`font-medium ${product.stock < 10 ? 'text-red-600' : 'text-gray-900'}`}>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4 text-xs">
+                    <div>
+                      <span className="text-gray-500">Category:</span>
+                      <span className="ml-1 text-gray-900">{product.category.name}</span>
+                    </div>
+                    <div>
+                      <span className="text-gray-500">Price:</span>
+                      <span className="ml-1 font-medium text-gray-900">{formatPrice(product.basePrice)}</span>
+                    </div>
+                    <div>
+                      <span className="text-gray-500">Stock:</span>
+                      <span className={`ml-1 font-medium ${product.stock < 10 ? 'text-red-600' : 'text-gray-900'}`}>
                         {product.stock} {product.unit}
                       </span>
-                    </td>
-                    <td className="py-4 px-4">
-                      <Badge variant={product.inStock ? "default" : "secondary"}>
+                    </div>
+                    <div>
+                      <span className="text-gray-500">Status:</span>
+                      <Badge variant={product.inStock ? "default" : "secondary"} className="ml-1 text-xs">
                         {product.inStock ? "In Stock" : "Out of Stock"}
                       </Badge>
-                    </td>
-                    <td className="py-4 px-4 text-sm text-gray-600">
-                      {new Date(product.createdAt).toLocaleDateString()}
-                    </td>
-                        <td className="py-4 px-4 text-right">
-                          <div className="flex items-center justify-end space-x-1">
-                            <Link href={`/dashboard/edit-product/${product.id}`}>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                title="Edit Product"
-                              >
-                                <Edit className="h-4 w-4" />
-                              </Button>
-                            </Link>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => onToggleStockStatus(product)}
-                          title={product.inStock ? "Put Out of Stock" : "Put In Stock"}
-                          className={product.inStock ? "text-yellow-600 hover:text-yellow-700 hover:border-yellow-300" : "text-green-600 hover:text-green-700 hover:border-green-300"}
-                        >
-                          {product.inStock ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between pt-2 border-t border-gray-100">
+                    <span className="text-xs text-gray-500">
+                      Created: {new Date(product.createdAt).toLocaleDateString()}
+                    </span>
+                    <div className="flex items-center space-x-1">
+                      <Link href={`/dashboard/edit-product/${product.id}`}>
+                        <Button variant="outline" size="sm" className="h-8 w-8 p-0">
+                          <Edit className="h-3 w-3" />
                         </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => onDeleteProduct(product.id)}
-                          className="text-red-600 hover:text-red-700 hover:border-red-300"
-                          title="Delete Product"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </td>
+                      </Link>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => onToggleStockStatus(product)}
+                        className={`h-8 w-8 p-0 ${product.inStock ? "text-yellow-600 hover:text-yellow-700 hover:border-yellow-300" : "text-green-600 hover:text-green-700 hover:border-green-300"}`}
+                      >
+                        {product.inStock ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => onDeleteProduct(product.id)}
+                        className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:border-red-300"
+                      >
+                        <Trash2 className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Desktop: Table Layout */}
+          <div className="hidden sm:block">
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-gray-200">
+                    <th className="py-3 px-4 font-medium text-gray-700 w-12">
+                      <input
+                        type="checkbox"
+                        checked={selectedProducts.length === filteredProducts.length && filteredProducts.length > 0}
+                        onChange={handleSelectAll}
+                        className="rounded border-gray-300 text-orange-600 focus:ring-orange-500"
+                      />
+                    </th>
+                    <th className="text-left py-3 px-4 font-medium text-gray-700">Product</th>
+                    <th className="text-left py-3 px-4 font-medium text-gray-700">Category</th>
+                    <th className="text-left py-3 px-4 font-medium text-gray-700">Price</th>
+                    <th className="text-left py-3 px-4 font-medium text-gray-700">Stock</th>
+                    <th className="text-left py-3 px-4 font-medium text-gray-700">Status</th>
+                    <th className="text-left py-3 px-4 font-medium text-gray-700">Created</th>
+                    <th className="text-right py-3 px-4 font-medium text-gray-700">Actions</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {filteredProducts.map((product) => (
+                    <tr key={product.id} className="border-b border-gray-100 hover:bg-gray-50">
+                      <td className="py-4 px-4">
+                        <input
+                          type="checkbox"
+                          checked={selectedProducts.includes(product.id)}
+                          onChange={() => handleSelectProduct(product.id)}
+                          className="rounded border-gray-300 text-orange-600 focus:ring-orange-500"
+                        />
+                      </td>
+                      <td className="py-4 px-4">
+                        <div>
+                          <div className="font-medium text-gray-900">{product.name}</div>
+                          <div className="text-sm text-gray-600 line-clamp-1 max-w-xs">{product.description}</div>
+                        </div>
+                      </td>
+                      <td className="py-4 px-4 text-gray-600">{product.category.name}</td>
+                      <td className="py-4 px-4 font-medium text-gray-900">
+                        {formatPrice(product.basePrice)}
+                      </td>
+                      <td className="py-4 px-4">
+                        <span className={`font-medium ${product.stock < 10 ? 'text-red-600' : 'text-gray-900'}`}>
+                          {product.stock} {product.unit}
+                        </span>
+                      </td>
+                      <td className="py-4 px-4">
+                        <Badge variant={product.inStock ? "default" : "secondary"}>
+                          {product.inStock ? "In Stock" : "Out of Stock"}
+                        </Badge>
+                      </td>
+                      <td className="py-4 px-4 text-sm text-gray-600">
+                        {new Date(product.createdAt).toLocaleDateString()}
+                      </td>
+                      <td className="py-4 px-4 text-right">
+                        <div className="flex items-center justify-end space-x-1">
+                          <Link href={`/dashboard/edit-product/${product.id}`}>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              title="Edit Product"
+                            >
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                          </Link>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => onToggleStockStatus(product)}
+                            title={product.inStock ? "Put Out of Stock" : "Put In Stock"}
+                            className={product.inStock ? "text-yellow-600 hover:text-yellow-700 hover:border-yellow-300" : "text-green-600 hover:text-green-700 hover:border-green-300"}
+                          >
+                            {product.inStock ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => onDeleteProduct(product.id)}
+                            className="text-red-600 hover:text-red-700 hover:border-red-300"
+                            title="Delete Product"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
 
           {filteredProducts.length === 0 && (
