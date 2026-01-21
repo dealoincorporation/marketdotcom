@@ -44,8 +44,9 @@ function DashboardContent() {
   // UI state
   const [activeTab, setActiveTab] = useState<DashboardTab>("marketplace")
   const [selectedCategory, setSelectedCategory] = useState("all")
-  const [selectedProduct, setSelectedProduct] = useState("all")
-  const [selectedVariation, setSelectedVariation] = useState("all")
+  const [selectedGroup, setSelectedGroup] = useState("all")
+  const [selectedBrand, setSelectedBrand] = useState("all")
+  const [selectedPack, setSelectedPack] = useState("all")
   const [filteredProducts, setFilteredProducts] = useState<any[]>([])
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [updatingOrderId, setUpdatingOrderId] = useState<string | null>(null)
@@ -72,12 +73,16 @@ function DashboardContent() {
       filtered = filtered.filter(product => product.categoryId === selectedCategory)
     }
 
-    if (selectedProduct && selectedProduct !== "all") {
-      filtered = filtered.filter(product => product.id === selectedProduct)
+    if (selectedGroup && selectedGroup !== "all") {
+      filtered = filtered.filter(product => (product.groupName || product.name) === selectedGroup)
+    }
+
+    if (selectedBrand && selectedBrand !== "all") {
+      filtered = filtered.filter(product => product.id === selectedBrand)
     }
 
     setFilteredProducts(filtered)
-  }, [products, selectedCategory, selectedProduct])
+  }, [products, selectedCategory, selectedGroup, selectedBrand])
 
   const handleAddToCart = (product: any, variation?: any, quantity: number = 1) => {
     // Handle base product selection (when variation is "base")
@@ -243,12 +248,14 @@ function DashboardContent() {
             products={products}
             categories={categories}
             selectedCategory={selectedCategory}
-            selectedProduct={selectedProduct}
-            selectedVariation={selectedVariation}
+            selectedGroup={selectedGroup}
+            selectedBrand={selectedBrand}
+            selectedPack={selectedPack}
             filteredProducts={filteredProducts}
             onCategoryChange={setSelectedCategory}
-            onProductChange={setSelectedProduct}
-            onVariationChange={setSelectedVariation}
+            onGroupChange={setSelectedGroup}
+            onBrandChange={setSelectedBrand}
+            onPackChange={setSelectedPack}
             onAddToCart={handleAddToCart}
           />
         )}

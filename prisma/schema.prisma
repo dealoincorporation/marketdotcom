@@ -88,6 +88,8 @@ model Category {
 model Product {
   id          String     @id @default(cuid()) @map("_id")
   name        String
+  // Product family/group (e.g. "Rice") so multiple brand products can be grouped in filters
+  groupName   String?
   description String?
   image       String?
   basePrice   Float

@@ -112,7 +112,7 @@ export async function POST(request: NextRequest) {
     console.log('User authenticated:', user.email)
 
     const body = await request.json()
-    const { name, description, basePrice, categoryId, stock, unit, inStock, images, variations } = body
+    const { name, groupName, description, basePrice, categoryId, stock, unit, inStock, images, variations } = body
 
     if (!name || !categoryId || basePrice === undefined) {
       return NextResponse.json(
@@ -120,6 +120,13 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       )
     }
+
+    const parsedStock = Number.parseInt(stock) || 0
+    const incomingVariations: any[] = Array.isArray(variations) ? variations : []
+    const hasInStockVariation = incomingVariations.some(v => (Number.parseInt(v?.stock) || 0) > 0)
+
+    // Always derive inStock from actual inventory to avoid inconsistent UI states.
+    const derivedInStock = parsedStock > 0 || hasInStockVariation
 
     // Ensure the category exists, create it if it doesn't
     let category = await prisma.category.findUnique({
@@ -156,12 +163,13 @@ export async function POST(request: NextRequest) {
     const product = await prisma.product.create({
       data: {
         name,
+        groupName: groupName?.trim() || null,
         description,
         basePrice: parseFloat(basePrice),
         categoryId,
-        stock: parseInt(stock) || 0,
+        stock: parsedStock,
         unit: unit || "piece",
-        inStock: inStock !== undefined ? inStock : true,
+        inStock: derivedInStock,
         image: images && images.length > 0 ? JSON.stringify(images) : null,
       },
       include: {
@@ -170,18 +178,32 @@ export async function POST(request: NextRequest) {
     })
 
     // Create variations if provided
-    if (variations && variations.length > 0) {
+    if (incomingVariations.length > 0) {
       await prisma.variation.createMany({
-        data: variations.map((v: any) => ({
+        data: incomingVariations.map((v: any) => ({
           name: v.name,
           type: v.type || "Size",
           price: parseFloat(v.price) || 0,
+          stock: Number.parseInt(v.stock) || 0,
+          unit: v.unit || null,
+          quantity: v.quantity !== undefined && v.quantity !== null && v.quantity !== "" ? parseFloat(v.quantity) : null,
+          image: v.image || null,
           productId: product.id,
         }))
       })
     }
 
-    return NextResponse.json(product, { status: 201 })
+    // Return the created product with variations so the UI can reflect inventory immediately.
+    const created = await prisma.product.findUnique({
+      where: { id: product.id },
+      include: { category: true, variations: true },
+    })
+
+    const transformed = created
+      ? { ...created, images: created.image ? JSON.parse(created.image) : [] }
+      : null
+
+    return NextResponse.json(transformed ?? product, { status: 201 })
   } catch (error) {
     console.error("Error creating product:", error)
     return NextResponse.json(

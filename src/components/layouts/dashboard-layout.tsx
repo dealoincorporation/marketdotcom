@@ -72,14 +72,14 @@ export function DashboardLayout({
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
       {/* Header */}
-      <header className="bg-white shadow-lg border-b border-gray-200 relative z-40">
+      <header className="bg-white shadow-lg border-b border-gray-200 relative z-[60]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center space-x-4">
               {/* Mobile menu button */}
               <button
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                className="md:hidden p-2 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100 cursor-pointer"
+                className="md:hidden p-2 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100 cursor-pointer relative z-[61]"
               >
                 {isMobileMenuOpen ? (
                   <X className="h-6 w-6" />
@@ -88,7 +88,7 @@ export function DashboardLayout({
                 )}
               </button>
 
-              <Link href="/" className="flex items-center space-x-3">
+              <Link href="/" className="flex items-center space-x-3 relative z-[61]">
                 <motion.div
                   whileHover={{ scale: 1.05 }}
                   className="flex items-center space-x-3"
@@ -112,27 +112,42 @@ export function DashboardLayout({
               </div>
 
               {/* Mobile Cart Button */}
-              <div className="lg:hidden relative z-50">
+              <div className="lg:hidden relative z-[61]">
                 <button
-                  onClick={() => {
+                  onClick={(e) => {
+                    e.preventDefault()
+                    e.stopPropagation()
                     console.log('Cart button clicked!')
                     setIsCartOpen(true)
                   }}
+                  onMouseDown={(e) => {
+                    e.preventDefault()
+                    e.stopPropagation()
+                  }}
                   onTouchStart={(e) => {
+                    e.preventDefault()
+                    e.stopPropagation()
                     console.log('Cart button touch start')
-                    e.currentTarget.style.transform = 'scale(0.95)'
+                    const target = e.currentTarget
+                    target.style.transform = 'scale(0.95)'
+                    target.style.opacity = '0.8'
                   }}
                   onTouchEnd={(e) => {
+                    e.preventDefault()
+                    e.stopPropagation()
                     console.log('Cart button touch end')
-                    e.currentTarget.style.transform = 'scale(1)'
+                    const target = e.currentTarget
+                    target.style.transform = 'scale(1)'
+                    target.style.opacity = '1'
                     setIsCartOpen(true)
                   }}
-                  className="relative bg-white hover:bg-orange-50 border-2 border-gray-300 hover:border-orange-300 rounded-md pt-4 pr-4 pb-3 pl-3 cursor-pointer active:scale-95 transition-all duration-150 active:bg-orange-100 min-w-[52px] min-h-[52px] flex items-center justify-center touch-manipulation"
-                  style={{ WebkitTapHighlightColor: 'transparent' }}
+                  className="relative bg-white hover:bg-orange-50 border-2 border-gray-300 hover:border-orange-300 rounded-md p-3 cursor-pointer active:scale-95 transition-all duration-150 active:bg-orange-100 min-w-[48px] min-h-[48px] flex items-center justify-center touch-manipulation pointer-events-auto"
+                  style={{ WebkitTapHighlightColor: 'transparent', touchAction: 'manipulation' }}
+                  type="button"
                 >
-                  <ShoppingCart className="h-5 w-5" />
+                  <ShoppingCart className="h-5 w-5 pointer-events-none" />
                   {totalItems > 0 && (
-                    <span className="absolute -top-1 -right-1 bg-orange-600 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
+                    <span className="absolute -top-1 -right-1 bg-orange-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold pointer-events-none z-[62]">
                       {totalItems}
                     </span>
                   )}
@@ -171,7 +186,7 @@ export function DashboardLayout({
         <motion.div
           initial={{ x: 0 }}
           animate={{ x: 0 }}
-          className={`fixed md:relative z-50 md:z-auto w-64 bg-white shadow-xl border-r border-gray-200 h-full flex flex-col ${
+          className={`fixed md:relative z-[55] md:z-auto w-64 bg-white shadow-xl border-r border-gray-200 h-full flex flex-col ${
             isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
           }`}
         >
@@ -348,7 +363,7 @@ export function DashboardLayout({
       </div>
 
       {/* Bottom Navigation - Mobile Only */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-40 shadow-lg">
+      <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-[60] shadow-lg">
         <div className={`grid ${user?.role === 'ADMIN' ? 'grid-cols-4' : 'grid-cols-3'} h-16`}>
           {navigationItems.map((item) => {
             const Icon = item.icon
@@ -395,7 +410,7 @@ export function DashboardLayout({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black bg-opacity-50 z-50 lg:hidden"
+            className="fixed inset-0 bg-black bg-opacity-50 z-[70] lg:hidden"
             onClick={() => setIsCartOpen(false)}
           >
           <motion.div
@@ -403,7 +418,7 @@ export function DashboardLayout({
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
             transition={{ type: 'tween', duration: 0.3 }}
-            className="absolute right-0 top-0 h-full w-full max-w-sm bg-white shadow-xl"
+            className="absolute right-0 top-0 h-full w-full max-w-sm bg-white shadow-xl z-[71]"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Cart Header */}

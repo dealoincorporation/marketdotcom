@@ -5,6 +5,7 @@ import { Product } from '@prisma/client'
 
 interface ProductForm {
   name: string
+  groupName?: string
   description: string
   basePrice: number
   categoryId: string

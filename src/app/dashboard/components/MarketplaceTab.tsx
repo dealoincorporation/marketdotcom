@@ -2,57 +2,28 @@
 
 import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
-import {
-  Search,
-  Filter,
-  Plus,
-  Minus,
-  ShoppingCart,
-  Package,
-  Star,
-  Heart,
-  Eye,
-  ChevronLeft,
-  ChevronRight
-} from "lucide-react"
+import { Search, Filter, Package } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { MarketplaceProductCard, type MarketplaceProduct } from "@/components/marketplace/MarketplaceProductCard"
 
-interface Product {
-  id: string
-  name: string
-  description: string
-  basePrice: number
-  categoryId: string
-  category: { id: string; name: string }
-  stock: number
-  unit: string
-  inStock: boolean
-  images: string[]
-  variations: Array<{
-    id: string
-    name: string
-    price: number
-    stock: number
-    unit?: string
-    quantity?: number
-    image?: string
-  }>
-}
+type Product = MarketplaceProduct
 
 interface MarketplaceTabProps {
   products: Product[]
   categories: Array<{ id: string; name: string }>
   selectedCategory: string
-  selectedProduct: string
-  selectedVariation: string
+  selectedGroup: string
+  selectedBrand: string
+  selectedPack: string
   filteredProducts: Product[]
   onCategoryChange: (category: string) => void
-  onProductChange: (product: string) => void
-  onVariationChange: (variation: string) => void
+  onGroupChange: (group: string) => void
+  onBrandChange: (brandProductId: string) => void
+  onPackChange: (packId: string) => void
   onAddToCart: (product: Product, variation?: any, quantity?: number) => void
 }
 
@@ -60,18 +31,21 @@ export default function MarketplaceTab({
   products,
   categories,
   selectedCategory,
-  selectedProduct,
-  selectedVariation,
+  selectedGroup,
+  selectedBrand,
+  selectedPack,
   filteredProducts,
   onCategoryChange,
-  onProductChange,
-  onVariationChange,
+  onGroupChange,
+  onBrandChange,
+  onPackChange,
   onAddToCart
 }: MarketplaceTabProps) {
   const [quantities, setQuantities] = useState<{ [key: string]: number }>({})
   const [selectedVariations, setSelectedVariations] = useState<{ [key: string]: string }>({})
   const [searchTerm, setSearchTerm] = useState("")
-  const [currentImageIndexes, setCurrentImageIndexes] = useState<Record<string, number>>({})
+  const [quickQty, setQuickQty] = useState(1)
+  // (moved image carousel logic into MarketplaceProductCard)
 
   // Auto-select first available option for products
   useEffect(() => {
@@ -110,33 +84,54 @@ export default function MarketplaceTab({
     }))
   }
 
-  const formatPrice = (price: number) => {
-    return `₦${price.toLocaleString()}`
-  }
+  const formatPrice = (price: number) => `₦${price.toLocaleString()}`
 
-  // Image slider functions
-  const getCurrentImageIndex = (productId: string) => {
-    return currentImageIndexes[productId] || 0
-  }
+  const categoryProducts = selectedCategory === "all"
+    ? products
+    : products.filter((p) => p.categoryId === selectedCategory)
 
-  const setCurrentImageIndex = (productId: string, index: number) => {
-    setCurrentImageIndexes(prev => ({
-      ...prev,
-      [productId]: index
-    }))
-  }
+  const groupOptions = Array.from(
+    new Set(
+      categoryProducts.map((p) => (p as any).groupName || p.name).filter(Boolean)
+    )
+  ).sort((a, b) => String(a).localeCompare(String(b)))
 
-  const nextImage = (productId: string, images: string[]) => {
-    const currentIndex = getCurrentImageIndex(productId)
-    const nextIndex = (currentIndex + 1) % images.length
-    setCurrentImageIndex(productId, nextIndex)
-  }
+  const productsInGroup =
+    selectedGroup === "all"
+      ? categoryProducts
+      : categoryProducts.filter((p) => ((p as any).groupName || p.name) === selectedGroup)
 
-  const prevImage = (productId: string, images: string[]) => {
-    const currentIndex = getCurrentImageIndex(productId)
-    const prevIndex = currentIndex === 0 ? images.length - 1 : currentIndex - 1
-    setCurrentImageIndex(productId, prevIndex)
-  }
+  const selectedBrandProduct =
+    selectedBrand === "all" ? null : products.find((p) => p.id === selectedBrand) || null
+
+  const packOptions = (() => {
+    if (!selectedBrandProduct) return []
+    const options: Array<{ id: string; label: string; stock: number; variation?: any }> = []
+    if (selectedBrandProduct.stock > 0) {
+      options.push({
+        id: "base",
+        label: `Standard - ₦${selectedBrandProduct.basePrice.toLocaleString()} (${selectedBrandProduct.stock} left)`,
+        stock: selectedBrandProduct.stock,
+      })
+    }
+    for (const v of (selectedBrandProduct.variations || []).filter((vv: any) => (vv.stock || 0) > 0)) {
+      const label = v.quantity && v.unit ? `${v.quantity}${v.unit} ${v.name}` : v.name
+      options.push({
+        id: v.id,
+        label: `${label} - ₦${Number(v.price || 0).toLocaleString()} (${v.stock} left)`,
+        stock: v.stock,
+        variation: v,
+      })
+    }
+    return options
+  })()
+
+  const selectedPackOption = selectedPack === "all"
+    ? null
+    : packOptions.find((p) => p.id === selectedPack) || null
+
+  const maxQuickQty = selectedPackOption ? Math.min(20, selectedPackOption.stock) : 0
+  const qtyOptions = Array.from({ length: Math.max(0, maxQuickQty) }, (_, i) => String(i + 1))
 
   // Apply search filter to the already filtered products
   const searchFilteredProducts = filteredProducts.filter(product =>
@@ -176,7 +171,7 @@ export default function MarketplaceTab({
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className={`grid grid-cols-1 ${selectedCategory !== "all" ? "md:grid-cols-3" : "md:grid-cols-2"} gap-6`}>
+          <div className={`grid grid-cols-1 ${selectedCategory !== "all" ? "md:grid-cols-4" : "md:grid-cols-2"} gap-6`}>
             <div className="space-y-2">
               <label className="block text-sm font-medium text-gray-700 flex items-center">
                 <span>1. Select Category</span>
@@ -193,7 +188,7 @@ export default function MarketplaceTab({
                 <SelectTrigger className="w-full">
                   <SelectValue placeholder="All Categories" />
                 </SelectTrigger>
-                <SelectContent className="bg-white border-gray-300 shadow-lg z-50">
+                <SelectContent position="popper" sideOffset={6} collisionPadding={12} className="bg-white border-gray-300 shadow-lg">
                   <SelectItem value="all">All Categories</SelectItem>
                   {categories.map(category => (
                     <SelectItem key={category.id} value={category.id}>
@@ -209,9 +204,14 @@ export default function MarketplaceTab({
             <div className="space-y-2">
               <label className="block text-sm font-medium text-gray-700 flex items-center">
                 <span>2. Select Product</span>
-                {selectedProduct !== "all" && (
+                {selectedGroup !== "all" && (
                   <button
-                    onClick={() => onProductChange("all")}
+                    onClick={() => {
+                      onGroupChange("all")
+                      onBrandChange("all")
+                      onPackChange("all")
+                      setQuickQty(1)
+                    }}
                     className="ml-2 text-xs text-gray-500 hover:text-gray-700"
                   >
                     Clear
@@ -219,32 +219,82 @@ export default function MarketplaceTab({
                 )}
               </label>
               <Select
-                value={selectedProduct}
-                onValueChange={onProductChange}
+                value={selectedGroup}
+                onValueChange={(v) => {
+                  onGroupChange(v)
+                  onBrandChange("all")
+                  onPackChange("all")
+                  setQuickQty(1)
+                }}
                 disabled={selectedCategory === "all"}
               >
                 <SelectTrigger className="w-full">
-                  <SelectValue placeholder={selectedCategory === "all" ? "Select category first" : "All Products"} />
+                  <SelectValue placeholder="All Products" />
                 </SelectTrigger>
-                <SelectContent className="bg-white border-gray-300 shadow-lg z-50">
+                <SelectContent position="popper" sideOffset={6} collisionPadding={12} className="bg-white border-gray-300 shadow-lg">
                   <SelectItem value="all">All Products</SelectItem>
-                  {products
-                    .filter(product => selectedCategory === "all" || product.categoryId === selectedCategory)
-                    .map(product => (
-                      <SelectItem key={product.id} value={product.id}>
-                        {product.name}
-                      </SelectItem>
-                    ))}
+                  {groupOptions.map((g) => (
+                    <SelectItem key={g} value={g}>
+                      {g} {groupOptions.length > 0 ? "" : ""}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {selectedGroup !== "all" && (
+                <p className="text-xs text-gray-500">
+                  Showing {(productsInGroup || []).length} brand(s) under <span className="font-medium">{selectedGroup}</span>
+                </p>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-gray-700 flex items-center">
+                <span>3. Select Variation (Brand)</span>
+                {selectedBrand !== "all" && (
+                  <button
+                    onClick={() => {
+                      onBrandChange("all")
+                      onPackChange("all")
+                      setQuickQty(1)
+                    }}
+                    className="ml-2 text-xs text-gray-500 hover:text-gray-700"
+                  >
+                    Clear
+                  </button>
+                )}
+              </label>
+              <Select
+                value={selectedBrand}
+                onValueChange={(v) => {
+                  onBrandChange(v)
+                  onPackChange("all")
+                  setQuickQty(1)
+                }}
+                disabled={selectedGroup === "all"}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder={selectedGroup === "all" ? "Select product first" : "All brands"} />
+                </SelectTrigger>
+                <SelectContent position="popper" sideOffset={6} collisionPadding={12} className="bg-white border-gray-300 shadow-lg">
+                  <SelectItem value="all">All brands</SelectItem>
+                  {productsInGroup.map((p) => (
+                    <SelectItem key={p.id} value={p.id}>
+                      {p.name}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
 
             <div className="space-y-2">
               <label className="block text-sm font-medium text-gray-700 flex items-center">
-                <span>3. Select Variation (Optional)</span>
-                {selectedVariation !== "all" && (
+                <span>4. Pack / Quantity</span>
+                {selectedPack !== "all" && (
                   <button
-                    onClick={() => onVariationChange("all")}
+                    onClick={() => {
+                      onPackChange("all")
+                      setQuickQty(1)
+                    }}
                     className="ml-2 text-xs text-gray-500 hover:text-gray-700"
                   >
                     Clear
@@ -252,60 +302,71 @@ export default function MarketplaceTab({
                 )}
               </label>
               <Select
-                value={selectedVariation}
-                onValueChange={onVariationChange}
-                disabled={selectedProduct === "all"}
+                value={selectedPack}
+                onValueChange={(v) => {
+                  onPackChange(v)
+                  setQuickQty(1)
+                }}
+                disabled={!selectedBrandProduct}
               >
                 <SelectTrigger className="w-full">
-                  <SelectValue placeholder={selectedProduct === "all" ? "Select product first" : "All Variations"} />
+                  <SelectValue placeholder={!selectedBrandProduct ? "Select brand first" : "Choose pack"} />
                 </SelectTrigger>
-                <SelectContent className="bg-white border-gray-300 shadow-lg z-50">
-                  <SelectItem value="all">All Variations</SelectItem>
-                  {(() => {
-                    const selectedProd = products.find(p => p.id === selectedProduct)
-                        const options = []
-
-                        // Add base product option if it has stock
-                        if (selectedProd?.stock && selectedProd.stock > 0) {
-                          options.push(
-                            <SelectItem key="base" value="base" className="flex items-center space-x-2 font-medium">
-                              <span>Standard - {formatPrice(selectedProd.basePrice)} ({selectedProd.stock} left)</span>
-                            </SelectItem>
-                          )
-                        }
-
-                        // Add variation options
-                        selectedProd?.variations
-                          ?.filter(variation => variation.stock > 0)
-                          ?.forEach(variation => {
-                            const displayName = variation.quantity && variation.unit
-                              ? `${variation.quantity} ${variation.unit} ${variation.name}`
-                              : variation.name;
-                            options.push(
-                              <SelectItem key={variation.id} value={variation.id} className="flex items-center space-x-2">
-                                {variation.image && (
-                                  <img
-                                    src={variation.image}
-                                    alt={variation.name}
-                                    className="w-6 h-6 object-cover rounded"
-                                  />
-                                )}
-                                <span>{displayName} - {formatPrice(variation.price)} ({variation.stock} left)</span>
+                <SelectContent position="popper" sideOffset={6} collisionPadding={12} className="bg-white border-gray-300 shadow-lg">
+                  <SelectItem value="all">All packs</SelectItem>
+                  {packOptions.length > 0 ? (
+                    packOptions.map((o) => (
+                      <SelectItem key={o.id} value={o.id}>
+                        {o.label}
                       </SelectItem>
-                            );
-                          })
-
-                        return options.length > 0 ? options : [<SelectItem key="none" value="none" disabled>No options available</SelectItem>]
-                  })()}
+                    ))
+                  ) : (
+                    <SelectItem value="none" disabled>
+                      No packs in stock
+                    </SelectItem>
+                  )}
                 </SelectContent>
               </Select>
+
+              {selectedPackOption && (
+                <div className="flex items-center gap-2">
+                  <Select
+                    value={String(quickQty)}
+                    onValueChange={(v) => setQuickQty(Number(v))}
+                    disabled={maxQuickQty <= 0}
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Qty" />
+                    </SelectTrigger>
+                    <SelectContent position="popper" sideOffset={6} collisionPadding={12} className="bg-white border-gray-300 shadow-lg">
+                      {qtyOptions.map((q) => (
+                        <SelectItem key={q} value={q}>
+                          {q}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Button
+                    type="button"
+                    className="whitespace-nowrap bg-orange-600 hover:bg-orange-700"
+                    disabled={!selectedBrandProduct || !selectedPackOption || quickQty < 1 || quickQty > maxQuickQty}
+                    onClick={() => {
+                      if (!selectedBrandProduct || !selectedPackOption) return
+                      const variation = selectedPackOption.id === "base" ? "base" : selectedPackOption.variation
+                      onAddToCart(selectedBrandProduct, variation, quickQty)
+                    }}
+                  >
+                    Add
+                  </Button>
+                </div>
+              )}
             </div>
               </>
             )}
           </div>
 
           {/* Active Filters Display */}
-          {(selectedCategory !== "all" || selectedProduct !== "all" || selectedVariation !== "all") && (
+          {(selectedCategory !== "all" || selectedGroup !== "all" || selectedBrand !== "all" || selectedPack !== "all") && (
             <div className="mt-6 pt-4 border-t border-gray-200">
               <div className="flex flex-wrap items-center gap-2">
                 <span className="text-sm font-medium text-gray-700">Active filters:</span>
@@ -320,41 +381,33 @@ export default function MarketplaceTab({
                     </button>
                   </Badge>
                 )}
-                {selectedProduct !== "all" && (
+                {selectedGroup !== "all" && (
                   <Badge variant="secondary" className="flex items-center gap-1">
-                    Product: {products.find(p => p.id === selectedProduct)?.name}
+                    Product: {selectedGroup}
                     <button
-                      onClick={() => onProductChange("all")}
+                      onClick={() => onGroupChange("all")}
                       className="ml-1 text-gray-500 hover:text-gray-700"
                     >
                       ×
                     </button>
                   </Badge>
                 )}
-                {selectedVariation !== "all" && (
+                {selectedBrand !== "all" && (
                   <Badge variant="secondary" className="flex items-center gap-1">
-                    {(() => {
-                      const selectedProd = products.find(p => p.id === selectedProduct)
-                      const variation = selectedProd?.variations?.find(v => v.id === selectedVariation)
-                      if (!variation) return null;
-                      const displayName = variation.quantity && variation.unit
-                        ? `${variation.quantity} ${variation.unit} ${variation.name}`
-                        : variation.name;
-                      return (
-                        <>
-                          {variation.image && (
-                            <img
-                              src={variation.image}
-                              alt={variation.name}
-                              className="w-4 h-4 object-cover rounded"
-                            />
-                          )}
-                          Variation: {displayName}
-                        </>
-                      );
-                    })()}
+                    Brand: {products.find(p => p.id === selectedBrand)?.name}
                     <button
-                      onClick={() => onVariationChange("all")}
+                      onClick={() => onBrandChange("all")}
+                      className="ml-1 text-gray-500 hover:text-gray-700"
+                    >
+                      ×
+                    </button>
+                  </Badge>
+                )}
+                {selectedPack !== "all" && (
+                  <Badge variant="secondary" className="flex items-center gap-1">
+                    Pack: {selectedPack === "base" ? "Standard" : "Selected pack"}
+                    <button
+                      onClick={() => onPackChange("all")}
                       className="ml-1 text-gray-500 hover:text-gray-700"
                     >
                       ×
@@ -364,8 +417,10 @@ export default function MarketplaceTab({
                 <button
                   onClick={() => {
                     onCategoryChange("all")
-                    onProductChange("all")
-                    onVariationChange("all")
+                    onGroupChange("all")
+                    onBrandChange("all")
+                    onPackChange("all")
+                    setQuickQty(1)
                   }}
                   className="text-sm text-orange-600 hover:text-orange-700 font-medium"
                 >
@@ -380,226 +435,22 @@ export default function MarketplaceTab({
       {/* Products Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
         {searchFilteredProducts.map((product) => (
-          <motion.div
+          <MarketplaceProductCard
             key={product.id}
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.3 }}
-          >
-            <Card className="h-full hover:shadow-lg transition-shadow duration-300 overflow-hidden">
-              {/* Product Image Slider */}
-              <div className="relative h-32 sm:h-40 lg:h-48 bg-gray-100 overflow-hidden">
-                {product.images && product.images.length > 0 ? (
-                  <>
-                    <img
-                      src={product.images[getCurrentImageIndex(product.id)]}
-                      alt={product.name}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                    />
-                    {/* Image Navigation */}
-                    {product.images.length > 1 && (
-                      <>
-                        <button
-                          onClick={(e) => {
-                            e.preventDefault()
-                            e.stopPropagation()
-                            prevImage(product.id, product.images)
-                          }}
-                          className="absolute left-2 top-1/2 -translate-y-1/2 p-1.5 bg-black/40 hover:bg-black/70 text-white rounded-full opacity-70 hover:opacity-100 transition-all duration-200 shadow-lg hover:shadow-xl"
-                        >
-                          <ChevronLeft className="h-4 w-4" />
-                        </button>
-                        <button
-                          onClick={(e) => {
-                            e.preventDefault()
-                            e.stopPropagation()
-                            nextImage(product.id, product.images)
-                          }}
-                          className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 bg-black/40 hover:bg-black/70 text-white rounded-full opacity-70 hover:opacity-100 transition-all duration-200 shadow-lg hover:shadow-xl"
-                        >
-                          <ChevronRight className="h-4 w-4" />
-                        </button>
-                        {/* Image Dots */}
-                        <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex space-x-1 opacity-60 hover:opacity-100 transition-opacity">
-                          {product.images.map((_, index) => (
-                            <button
-                              key={index}
-                              onClick={(e) => {
-                                e.preventDefault()
-                                e.stopPropagation()
-                                setCurrentImageIndex(product.id, index)
-                              }}
-                              className={`w-2 h-2 rounded-full transition-all duration-200 hover:scale-110 ${
-                                index === getCurrentImageIndex(product.id)
-                                  ? 'bg-white shadow-lg'
-                                  : 'bg-white/60 hover:bg-white/80'
-                              }`}
-                            />
-                          ))}
-                        </div>
-                      </>
-                    )}
-                  </>
-                ) : (
-                  <div className="w-full h-full bg-gradient-to-br from-orange-100 to-red-100 flex items-center justify-center">
-                    <Package className="h-12 w-12 sm:h-16 sm:w-16 text-orange-400" />
-                  </div>
-                )}
-
-                {/* Image Count Indicator */}
-                {product.images && product.images.length > 1 && (
-                  <div className="absolute top-3 right-3 bg-black/60 text-white text-xs px-2 py-1 rounded-full flex items-center space-x-1 backdrop-blur-sm">
-                    <span>{product.images.length}</span>
-                    <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clipRule="evenodd" />
-                    </svg>
-                  </div>
-                )}
-              </div>
-
-              <CardContent className="p-3 sm:p-4">
-                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between mb-2">
-                  <h3 className="font-semibold text-gray-900 text-base sm:text-lg leading-tight mb-1 sm:mb-0">
-                    {product.name}
-                  </h3>
-                  <Badge variant={product.inStock ? "default" : "secondary"} className="self-start sm:ml-2 text-xs">
-                    {product.inStock ? "In Stock" : "Out of Stock"}
-                  </Badge>
-                </div>
-
-                <p className="text-gray-600 text-xs sm:text-sm mb-3 line-clamp-2">
-                  {product.description}
-                </p>
-
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-xl sm:text-2xl font-bold text-orange-600">
-                    {(() => {
-                      const selectedVariationId = selectedVariations[product.id]
-                      const selectedVariation = selectedVariationId
-                        ? product.variations.find(v => v.id === selectedVariationId)
-                        : null
-                      return formatPrice(selectedVariation?.price || product.basePrice)
-                    })()}
-                  </span>
-                  <span className="text-xs sm:text-sm text-gray-500">
-                    per {(() => {
-                      const selectedVariationId = selectedVariations[product.id]
-                      const selectedVariation = selectedVariationId
-                        ? product.variations.find(v => v.id === selectedVariationId)
-                        : null
-                      return selectedVariation?.unit || product.unit
-                    })()}
-                  </span>
-                </div>
-
-                <div className="text-sm text-gray-600 mb-4">
-                  <span className="font-medium">Category:</span> {product.category.name}
-                </div>
-
-                {/* Variations */}
-                {product.variations.length > 0 && (
-                  <div className="mb-4 p-3 bg-orange-50 border border-orange-200 rounded-lg">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Select Variation <span className="text-red-500">*</span>
-                    </label>
-                    <Select
-                      value={selectedVariations[product.id] || ""}
-                      onValueChange={(value) => handleVariationChange(product.id, value)}
-                    >
-                      <SelectTrigger className="w-full">
-                        <SelectValue placeholder={product.stock > 0 ? "Standard or choose option" : "Choose an option"} />
-                      </SelectTrigger>
-                      <SelectContent className="bg-white border-gray-300 shadow-lg z-50">
-                        {/* Base product option - if it has stock */}
-                        {product.stock > 0 && (
-                          <SelectItem value="base" className="flex items-center space-x-2 font-medium">
-                            <span>Standard - {formatPrice(product.basePrice)} ({product.stock} left)</span>
-                          </SelectItem>
-                        )}
-                        {/* Variation options */}
-                        {product.variations
-                          .filter(variation => variation.stock > 0) // Only show in-stock variations
-                          .map(variation => {
-                            const displayName = variation.quantity && variation.unit
-                              ? `${variation.quantity} ${variation.unit} ${variation.name}`
-                              : variation.name;
-                            return (
-                              <SelectItem key={variation.id} value={variation.id} className="flex items-center space-x-2">
-                                {variation.image && (
-                                  <img
-                                    src={variation.image}
-                                    alt={variation.name}
-                                    className="w-6 h-6 object-cover rounded"
-                                  />
-                                )}
-                                <span>{displayName} - {formatPrice(variation.price)} ({variation.stock} left)</span>
-                              </SelectItem>
-                            );
-                          })}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                )}
-
-                {/* Quantity Selector */}
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 space-y-2 sm:space-y-0">
-                  <div className="flex items-center space-x-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleQuantityChange(product.id, (quantities[product.id] || 0) - 1)}
-                      disabled={(quantities[product.id] || 0) <= 0}
-                      className="h-8 w-8 p-0"
-                    >
-                      <Minus className="h-3 w-3" />
-                    </Button>
-                    <span className="w-8 sm:w-12 text-center font-medium text-sm sm:text-base">
-                      {quantities[product.id] || 0}
-                    </span>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleQuantityChange(product.id, (quantities[product.id] || 0) + 1)}
-                      className="h-8 w-8 p-0"
-                    >
-                      <Plus className="h-3 w-3" />
-                    </Button>
-                  </div>
-                  <span className="text-xs sm:text-sm text-gray-500">
-                    Stock: {product.stock} {product.unit}
-                  </span>
-                </div>
-
-                {/* Add to Cart Button */}
-                <Button
-                  onClick={() => {
-                    const quantity = quantities[product.id] || 1
-                    const selectedVariationId = selectedVariations[product.id]
-                    const variation = selectedVariationId
-                      ? product.variations.find(v => v.id === selectedVariationId)
+            product={product}
+            selectedVariationId={selectedVariations[product.id]}
+            onVariationChange={(value) => handleVariationChange(product.id, value)}
+            quantity={quantities[product.id] ?? 1}
+            onQuantityChange={(next) => handleQuantityChange(product.id, next)}
+            onAddToCart={(variationId) => {
+              const quantity = quantities[product.id] ?? 1
+              const variation =
+                variationId && variationId !== "base"
+                  ? product.variations.find((v) => v.id === variationId)
                       : undefined
-
                     onAddToCart(product, variation, quantity)
                   }}
-                  disabled={Boolean(
-                    !product.inStock ||
-                    (quantities[product.id] || 0) <= 0 ||
-                    // Disable if variations exist but no option selected AND base product not available
-                    (product.variations.length > 0 && !selectedVariations[product.id] && product.stock <= 0) ||
-                    // Disable if a variation is selected but out of stock
-                    (selectedVariations[product.id] && selectedVariations[product.id] !== "base" && product.variations.find(v => v.id === selectedVariations[product.id])?.stock === 0)
-                  )}
-                  className="w-full bg-orange-600 hover:bg-orange-700"
-                >
-                  <ShoppingCart className="h-4 w-4 mr-2" />
-                  {(!selectedVariations[product.id] && product.variations.length > 0 && product.stock <= 0)
-                    ? "Select Option"
-                    : "Add to Cart"
-                  }
-                </Button>
-              </CardContent>
-            </Card>
-          </motion.div>
+          />
         ))}
       </div>
 

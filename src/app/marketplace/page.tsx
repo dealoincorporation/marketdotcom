@@ -11,6 +11,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useCartStore } from "@/lib/cart-store"
 import { useAuth } from "@/contexts/AuthContext"
+import { MarketplaceProductCard, type MarketplaceProduct } from "@/components/marketplace/MarketplaceProductCard"
 
 // Default categories for when API is unavailable
 const defaultCategories = [
@@ -30,7 +31,7 @@ const defaultCategories = [
 ]
 
 export default function MarketplacePage() {
-  const [products, setProducts] = useState<any[]>([])
+  const [products, setProducts] = useState<MarketplaceProduct[]>([])
   const [categories, setCategories] = useState(defaultCategories)
   const [filteredProducts, setFilteredProducts] = useState<any[]>([])
   const [selectedCategory, setSelectedCategory] = useState("all")
@@ -56,21 +57,19 @@ export default function MarketplacePage() {
         const productsResponse = await fetch('/api/products')
         if (productsResponse.ok) {
           const productsData = await productsResponse.json()
-          const transformedProducts = productsData.map((product: any) => ({
+          const transformedProducts: MarketplaceProduct[] = productsData.map((product: any) => ({
             id: product.id,
             name: product.name,
+            groupName: product.groupName ?? null,
             description: product.description,
-            price: product.basePrice,
-            category: product.category?.name || 'Uncategorized',
+            basePrice: product.basePrice,
             categoryId: product.categoryId,
+            category: product.category || { id: product.categoryId, name: product.category?.name || "Uncategorized" },
             images: product.images || [],
-            image: product.images?.[0] || '/api/placeholder/300/200', // Use first image or placeholder
             stock: product.stock,
-            rating: 4.5, // Default rating
-            reviews: Math.floor(Math.random() * 100) + 10, // Mock reviews
             unit: product.unit,
             inStock: product.inStock,
-            variations: product.variations || []
+            variations: product.variations || [],
           }))
           setProducts(transformedProducts)
         }
@@ -155,33 +154,29 @@ export default function MarketplacePage() {
     }
   }, [filteredProducts, selectedVariations])
 
-  const handleAddToCart = (product: any, quantity: number = 1) => {
-    const selectedVariationId = selectedVariations[product.id]
-    let selectedVariation
-    let isBaseProduct = false
-
-    if (selectedVariationId === "base") {
-      // Base product selected
-      selectedVariation = undefined
-      isBaseProduct = true
-    } else {
-      // Specific variation selected
-      selectedVariation = selectedVariationId
-        ? product.variations.find((v: any) => v.id === selectedVariationId)
+  const handleAddToCart = (product: MarketplaceProduct, variationId: string | undefined, quantity: number = 1) => {
+    const selectedVariation =
+      variationId && variationId !== "base"
+        ? product.variations.find((v: any) => v.id === variationId)
         : undefined
-    }
 
     addItem({
       productId: product.id,
       variationId: selectedVariation?.id,
       name: selectedVariation
-        ? `${product.name} (${selectedVariation.quantity} ${selectedVariation.unit} ${selectedVariation.name})`
+        ? `${product.name} (${selectedVariation.quantity ?? ""} ${selectedVariation.unit ?? ""} ${selectedVariation.name})`.replace(/\s+/g, " ").trim()
         : product.name,
-      price: selectedVariation?.price || product.price,
-      image: selectedVariation?.image || product.image,
+      price: selectedVariation?.price || product.basePrice,
+      image: selectedVariation?.image || product.images?.[0] || "/api/placeholder/300/200",
       quantity,
       unit: selectedVariation?.unit || product.unit,
-      variation: selectedVariation,
+      variation: selectedVariation ? {
+        id: selectedVariation.id,
+        name: selectedVariation.name,
+        type: (selectedVariation as any).type || 'Size',
+        price: selectedVariation.price,
+        stock: selectedVariation.stock,
+      } : undefined,
       maxQuantity: selectedVariation ? selectedVariation.stock : product.stock,
       categoryId: product.categoryId,
       categoryName: product.category?.name,
@@ -213,7 +208,7 @@ export default function MarketplacePage() {
   const handleQuantityChange = (productId: string, quantity: number) => {
     setQuantities(prev => ({
       ...prev,
-      [productId]: Math.max(0, quantity)
+      [productId]: Math.max(1, quantity)
     }))
   }
 
@@ -478,245 +473,24 @@ export default function MarketplacePage() {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
             {filteredProducts.map((product, index) => (
-            <motion.div
-              key={product.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: index * 0.1 }}
-            >
-              <Card className="group hover:shadow-lg transition-shadow duration-300">
-                <CardContent className="p-0">
-                  {/* Product Image Slider */}
-                  <div className="relative aspect-square bg-gray-100 rounded-t-lg overflow-hidden">
-                    {product.images && product.images.length > 0 ? (
-                      <>
-                        <img
-                          src={product.images[getCurrentImageIndex(product.id)]}
-                          alt={product.name}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                        />
-                        {/* Image Navigation */}
-                        {product.images.length > 1 && (
-                          <>
-                            <button
-                              onClick={(e) => {
-                                e.preventDefault()
-                                prevImage(product.id, product.images)
-                              }}
-                              className="absolute left-2 top-1/2 -translate-y-1/2 p-1.5 bg-black/40 hover:bg-black/70 text-white rounded-full opacity-70 hover:opacity-100 transition-all duration-200 shadow-lg hover:shadow-xl"
-                            >
-                              <ChevronLeft className="h-4 w-4" />
-                            </button>
-                            <button
-                              onClick={(e) => {
-                                e.preventDefault()
-                                nextImage(product.id, product.images)
-                              }}
-                              className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 bg-black/40 hover:bg-black/70 text-white rounded-full opacity-70 hover:opacity-100 transition-all duration-200 shadow-lg hover:shadow-xl"
-                            >
-                              <ChevronRight className="h-4 w-4" />
-                            </button>
-                            {/* Image Dots */}
-                            <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex space-x-1 opacity-60 hover:opacity-100 transition-opacity">
-                              {product.images.map((image: any, index: number) => (
-                                <button
-                                  key={index}
-                                  onClick={(e) => {
-                                    e.preventDefault()
-                                    setCurrentImageIndex(product.id, index)
-                                  }}
-                                  className={`w-2 h-2 rounded-full transition-all duration-200 hover:scale-110 ${
-                                    index === getCurrentImageIndex(product.id)
-                                      ? 'bg-white shadow-lg'
-                                      : 'bg-white/60 hover:bg-white/80'
-                                  }`}
-                                />
-                              ))}
-                            </div>
-                          </>
-                        )}
-                      </>
-                    ) : (
-                      <div className="w-full h-full bg-gradient-to-br from-green-100 to-blue-100 flex items-center justify-center">
-                        <ShoppingBag className="h-12 w-12 text-green-600" />
-                      </div>
-                    )}
-
-                    {/* Image Count Indicator */}
-                    {product.images && product.images.length > 1 && (
-                      <div className="absolute top-3 right-3 bg-black/60 text-white text-xs px-2 py-1 rounded-full flex items-center space-x-1 backdrop-blur-sm">
-                        <span>{product.images.length}</span>
-                        <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clipRule="evenodd" />
-                        </svg>
-                      </div>
-                    )}
-
-                    <button className="absolute top-3 left-3 p-2 bg-white/80 backdrop-blur-sm rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
-                      <Heart className="h-4 w-4 text-gray-600" />
-                    </button>
-                    {product.stock < 10 && (
-                      <Badge className="absolute top-3 left-3 bg-red-500">
-                        Low Stock
-                      </Badge>
-                    )}
-                  </div>
-
-                  {/* Product Info */}
-                  <div className="p-4">
-                    <div className="flex items-center justify-between mb-2">
-                      <Badge variant="secondary" className="text-xs">
-                        {product.category}
-                      </Badge>
-                      <div className="flex items-center space-x-1">
-                        <Star className="h-3 w-3 text-yellow-400 fill-current" />
-                        <span className="text-xs text-gray-600">
-                          {product.rating} ({product.reviews})
-                        </span>
-                      </div>
-                    </div>
-
-                    <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2">
-                      {product.name}
-                    </h3>
-
-                    <p className="text-sm text-gray-600 mb-3 line-clamp-2">
-                      {product.description}
-                    </p>
-
-                    {/* Variations */}
-                    {product.variations && product.variations.length > 0 && (
-                      <div className="mb-4 p-3 bg-orange-50 border border-orange-200 rounded-lg">
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Select Option <span className="text-red-500">*</span>
-                        </label>
-                        <Select
-                          value={selectedVariations[product.id] || ""}
-                          onValueChange={(value) => handleVariationChange(product.id, value)}
-                        >
-                          <SelectTrigger className="w-full h-10">
-                            <SelectValue placeholder={product.stock > 0 ? "Standard or choose option" : "Choose an option"} />
-                          </SelectTrigger>
-                          <SelectContent className="bg-white border-gray-300 shadow-lg z-50">
-                            {/* Base product option - if it has stock */}
-                            {product.stock > 0 && (
-                              <SelectItem value="base" className="flex items-center space-x-2 font-medium">
-                                <span>Standard - {formatPrice(product.price)} ({product.stock} left)</span>
-                              </SelectItem>
-                            )}
-                            {/* Variation options */}
-                            {product.variations
-                              .filter((variation: any) => variation.stock > 0) // Only show in-stock variations
-                              .map((variation: any) => {
-                                const displayName = variation.quantity && variation.unit
-                                  ? `${variation.quantity} ${variation.unit} ${variation.name}`
-                                  : variation.name;
-                                return (
-                                  <SelectItem key={variation.id} value={variation.id} className="flex items-center space-x-2">
-                                    {variation.image && (
-                                      <img
-                                        src={variation.image}
-                                        alt={variation.name}
-                                        className="w-6 h-6 object-cover rounded"
-                                      />
-                                    )}
-                                    <span>{displayName} - {formatPrice(variation.price)} ({variation.stock} left)</span>
-                                  </SelectItem>
-                                );
-                              })}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    )}
-
-                    <div className="flex items-center justify-between mb-4">
-                      <div className="flex flex-col">
-                        <span className="text-lg font-bold text-gray-900">
-                          {(() => {
-                            const selectedVariationId = selectedVariations[product.id]
-                            const selectedVariation = selectedVariationId
-                              ? product.variations?.find((v: any) => v.id === selectedVariationId)
-                              : null
-                            return formatPrice(selectedVariation?.price || product.price)
-                          })()}
-                        </span>
-                        <span className="text-xs text-gray-500">per {(() => {
-                          const selectedVariationId = selectedVariations[product.id]
-                          const selectedVariation = selectedVariationId
-                            ? product.variations?.find((v: any) => v.id === selectedVariationId)
-                            : null
-                          return selectedVariation?.unit || product.unit
-                        })()}</span>
-                      </div>
-                      <Badge
-                        variant={(product.stock > 0 || (product.variations && product.variations.some((v: any) => v.stock > 0))) ? "default" : "destructive"}
-                        className="text-xs"
-                      >
-                        {(product.stock > 0 || (product.variations && product.variations.some((v: any) => v.stock > 0))) ?
-                          (product.variations && product.variations.length > 0 ?
-                            `${product.variations.filter((v: any) => v.stock > 0).length} options available` :
-                            `${product.stock} in stock`) :
-                          "Out of stock"}
-                      </Badge>
-                    </div>
-
-                    {/* Quantity Selector */}
-                    <div className="flex items-center justify-between mb-4">
-                      <div className="flex items-center space-x-2">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => handleQuantityChange(product.id, (quantities[product.id] || 0) - 1)}
-                          disabled={(quantities[product.id] || 0) <= 0}
-                          className="h-8 w-8 p-0"
-                        >
-                          <Minus className="h-3 w-3" />
-                        </Button>
-                        <span className="w-8 text-center font-medium text-sm">
-                          {quantities[product.id] || 0}
-                        </span>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => handleQuantityChange(product.id, (quantities[product.id] || 0) + 1)}
-                          className="h-8 w-8 p-0"
-                        >
-                          <Plus className="h-3 w-3" />
-                        </Button>
-                      </div>
-                    </div>
-
-                    {/* Add to Cart */}
-                    {(product.stock > 0 || (product.variations && product.variations.some((v: any) => v.stock > 0))) ? (
-                      <Button
-                        onClick={() => {
-                          const quantity = quantities[product.id] || 1
-                          handleAddToCart(product, quantity)
-                        }}
-                        disabled={
-                          (quantities[product.id] || 0) <= 0 ||
-                          // Disable if variations exist but no option selected AND base product not available
-                          (product.variations && product.variations.length > 0 && !selectedVariations[product.id] && product.stock <= 0) ||
-                          // Disable if a variation is selected but out of stock
-                          (selectedVariations[product.id] && selectedVariations[product.id] !== "base" && product.variations.find((v: any) => v.id === selectedVariations[product.id])?.stock === 0)
-                        }
-                        className="w-full bg-orange-600 hover:bg-orange-700"
-                      >
-                        <ShoppingCart className="h-4 w-4 mr-2" />
-                        {(!selectedVariations[product.id] && ((product.variations && product.variations.length > 0 && product.stock <= 0)))
-                          ? "Select Option"
-                          : "Add to Cart"
-                        }
-                      </Button>
-                    ) : (
-                      <Button disabled className="w-full" size="sm">
-                        Out of Stock
-                      </Button>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            </motion.div>
+              <motion.div
+                key={product.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: index * 0.05 }}
+              >
+                <MarketplaceProductCard
+                  product={product}
+                  selectedVariationId={selectedVariations[product.id]}
+                  onVariationChange={(value) => handleVariationChange(product.id, value)}
+                  quantity={quantities[product.id] ?? 1}
+                  onQuantityChange={(next) => handleQuantityChange(product.id, next)}
+                  onAddToCart={(variationId) => {
+                    const qty = quantities[product.id] ?? 1
+                    handleAddToCart(product, variationId, qty)
+                  }}
+                />
+              </motion.div>
             ))}
           </div>
         )}

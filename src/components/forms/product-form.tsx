@@ -13,6 +13,7 @@ import { Product, Category } from '@prisma/client'
 import { validateProductForm } from '@/lib/helpers'
 
 interface ProductFormType {
+  groupName?: string
   name: string
   description: string
   basePrice: number
@@ -58,6 +59,7 @@ export function ProductForm({
   isLoading = false,
 }: ProductFormProps) {
   const [formData, setFormData] = useState<ProductFormType>({
+    groupName: initialData?.groupName || '',
     name: initialData?.name || '',
     description: initialData?.description || '',
     basePrice: initialData?.basePrice || 0,
@@ -441,27 +443,27 @@ export function ProductForm({
     <motion.div
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
-      className="w-full max-w-4xl mx-auto px-4 sm:px-0"
+      className="w-full max-w-4xl mx-auto"
     >
       <Card className="shadow-xl">
-        <CardHeader className="px-4 sm:px-6">
-          <CardTitle className="text-xl sm:text-2xl font-bold">
+        <CardHeader className="px-0 pb-3 sm:pb-4">
+          <CardTitle className="text-lg sm:text-xl md:text-2xl font-bold">
             {initialData?.id ? 'Edit Product' : 'Add New Product'}
           </CardTitle>
         </CardHeader>
 
-        <CardContent className="px-4 sm:px-6">
-          <form onSubmit={handleSubmit} className="space-y-6 sm:space-y-8">
+        <CardContent className="px-0 overflow-visible">
+          <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6 md:space-y-8 overflow-visible">
             {/* Image Upload */}
-            <div className="space-y-4">
-              <Label className="text-base font-semibold">Product Images ({imagePreviews.length}/10)</Label>
-              <div className="space-y-4">
+            <div className="space-y-3 sm:space-y-4">
+              <Label className="text-sm sm:text-base font-semibold">Product Images ({imagePreviews.length}/10)</Label>
+              <div className="space-y-3 sm:space-y-4">
                 {/* Image Previews Grid */}
                 {imagePreviews.length > 0 && (
-                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 sm:gap-3 md:gap-4">
                     {imagePreviews.map((preview, index) => (
                       <div key={index} className="relative group">
-                        <div className="aspect-square border border-gray-200 rounded-lg overflow-hidden">
+                        <div className="aspect-square border-2 border-gray-200 rounded-lg overflow-hidden bg-gray-50">
                           <img
                             src={preview}
                             alt={`Product image ${index + 1}`}
@@ -470,12 +472,13 @@ export function ProductForm({
                           <button
                             type="button"
                             onClick={() => removeImage(index)}
-                            className="absolute top-2 right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition-colors opacity-0 group-hover:opacity-100"
+                            className="absolute top-1 right-1 sm:top-2 sm:right-2 w-6 h-6 sm:w-7 sm:h-7 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 active:bg-red-700 transition-colors opacity-90 group-hover:opacity-100 touch-manipulation"
+                            style={{ WebkitTapHighlightColor: 'transparent' }}
                           >
-                            <X className="h-3 w-3" />
+                            <X className="h-3 w-3 sm:h-4 sm:w-4" />
                           </button>
                         </div>
-                        <p className="text-xs text-gray-500 mt-1 text-center">
+                        <p className="text-xs text-gray-500 mt-1 text-center truncate">
                           Image {index + 1}
                         </p>
                       </div>
@@ -485,12 +488,12 @@ export function ProductForm({
 
                 {/* Upload Area */}
                 {imagePreviews.length < 10 && (
-                  <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-4 sm:space-y-0 sm:space-x-6">
-                    <div className="relative flex-shrink-0">
-                      <div className="w-24 h-24 sm:w-32 sm:h-32 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center bg-gray-50 hover:bg-gray-100 transition-colors cursor-pointer group">
-                        <div className="text-center">
-                          <Upload className="h-6 w-6 sm:h-8 sm:w-8 text-gray-400 mx-auto mb-2 group-hover:text-gray-600" />
-                          <span className="text-xs sm:text-sm text-gray-500">
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-3 sm:space-y-0 sm:space-x-4 md:space-x-6">
+                    <div className="relative flex-shrink-0 w-full sm:w-auto">
+                      <div className="w-full sm:w-24 h-24 sm:h-24 md:w-32 md:h-32 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center bg-gray-50 hover:bg-gray-100 active:bg-gray-200 transition-colors cursor-pointer group touch-manipulation" style={{ WebkitTapHighlightColor: 'transparent' }}>
+                        <div className="text-center px-2">
+                          <Upload className="h-5 w-5 sm:h-6 sm:w-6 md:h-8 md:w-8 text-gray-400 mx-auto mb-1 sm:mb-2 group-hover:text-gray-600" />
+                          <span className="text-xs sm:text-sm text-gray-500 block">
                             {imagePreviews.length === 0 ? 'Upload Images' : 'Add More'}
                           </span>
                         </div>
@@ -500,16 +503,16 @@ export function ProductForm({
                           multiple
                           onChange={handleImageUpload}
                           disabled={uploadingImages}
-                          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed"
+                          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed touch-manipulation"
                         />
                       </div>
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm text-gray-600 mb-2">
-                        Upload high-quality images of your product (max 10 images)
+                    <div className="flex-1 min-w-0 w-full sm:w-auto">
+                      <p className="text-xs sm:text-sm text-gray-600 mb-1 sm:mb-2">
+                        Upload high-quality images (max 10 images)
                       </p>
-                      <p className="text-xs text-gray-500 mb-3">
-                        Recommended size: 800x800px. Max 5MB per file. Formats: JPG, PNG, WebP
+                      <p className="text-xs text-gray-500 mb-2 sm:mb-3 leading-relaxed">
+                        Recommended: 800x800px. Max 5MB per file. Formats: JPG, PNG, WebP
                       </p>
                       {uploadingImages && (
                         <div className="flex items-center space-x-2">
@@ -534,37 +537,52 @@ export function ProductForm({
             </div>
 
             {/* Basic Information */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <Label htmlFor="name">Product Name *</Label>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5 md:gap-6">
+              <div className="space-y-1.5 sm:space-y-2 md:col-span-2">
+                <Label htmlFor="groupName" className="text-sm sm:text-base">
+                  Product Group <span className="text-gray-400">(optional)</span>
+                </Label>
+                <Input
+                  id="groupName"
+                  value={formData.groupName || ''}
+                  onChange={(e) => handleInputChange('groupName', e.target.value)}
+                  placeholder='e.g. "Rice" (then use Name = "Mama Gold", "Caprice", etc)'
+                  className="h-11 sm:h-12 text-base"
+                />
+                <p className="text-xs sm:text-sm text-gray-500">
+                  Use this to group multiple brand products under one product in filters (PricePally-style).
+                </p>
+              </div>
+              <div className="space-y-1.5 sm:space-y-2">
+                <Label htmlFor="name" className="text-sm sm:text-base">Product Name *</Label>
                 <Input
                   id="name"
                   value={formData.name}
                   onChange={(e) => handleInputChange('name', e.target.value)}
                   placeholder="Enter product name"
-                  className={errors.name ? 'border-red-500' : ''}
+                  className={`h-11 sm:h-12 text-base ${errors.name ? 'border-red-500' : ''}`}
                 />
                 {errors.name && (
-                  <p className="text-sm text-red-600">{errors.name}</p>
+                  <p className="text-xs sm:text-sm text-red-600">{errors.name}</p>
                 )}
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="category">Category *</Label>
+              <div className="space-y-1.5 sm:space-y-2 relative z-[100]">
+                <Label htmlFor="category" className="text-sm sm:text-base">Category *</Label>
                 <Select
                   value={formData.categoryId}
                   onValueChange={(value) => handleInputChange('categoryId', value)}
                 >
-                  <SelectTrigger className={errors.categoryId ? 'border-red-500' : ''}>
+                  <SelectTrigger className={`h-11 sm:h-12 text-base relative z-[100] ${errors.categoryId ? 'border-red-500' : ''}`}>
                     <SelectValue placeholder="Select category" />
                   </SelectTrigger>
-                  <SelectContent className="bg-white border border-gray-200 shadow-lg">
+                  <SelectContent className="bg-white border border-gray-200 shadow-lg max-h-[300px] overflow-y-auto z-[9999]" position="popper">
                     {categories.map((category) => (
-                      <SelectItem key={category.id} value={category.id} className="hover:bg-gray-50 focus:bg-gray-50">
-                        <div className="flex items-center space-x-2">
+                      <SelectItem key={category.id} value={category.id} className="hover:bg-gray-50 focus:bg-gray-50 text-sm sm:text-base">
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-2">
                           <span className="font-medium">{category.name}</span>
                           {category.description && (
-                            <span className="text-xs text-gray-500">- {category.description}</span>
+                            <span className="text-xs text-gray-500 sm:inline hidden">- {category.description}</span>
                           )}
                         </div>
                       </SelectItem>
@@ -572,12 +590,12 @@ export function ProductForm({
                   </SelectContent>
                 </Select>
                 {errors.categoryId && (
-                  <p className="text-sm text-red-600">{errors.categoryId}</p>
+                  <p className="text-xs sm:text-sm text-red-600">{errors.categoryId}</p>
                 )}
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="basePrice">Base Price (₦) *</Label>
+              <div className="space-y-1.5 sm:space-y-2">
+                <Label htmlFor="basePrice" className="text-sm sm:text-base">Base Price (₦) *</Label>
                 <Input
                   id="basePrice"
                   type="number"
@@ -586,29 +604,29 @@ export function ProductForm({
                   value={formData.basePrice}
                   onChange={(e) => handleInputChange('basePrice', parseFloat(e.target.value) || 0)}
                   placeholder="0.00"
-                  className={errors.basePrice ? 'border-red-500' : ''}
+                  className={`h-11 sm:h-12 text-base ${errors.basePrice ? 'border-red-500' : ''}`}
                 />
                 {errors.basePrice && (
-                  <p className="text-sm text-red-600">{errors.basePrice}</p>
+                  <p className="text-xs sm:text-sm text-red-600">{errors.basePrice}</p>
                 )}
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="unit">Unit *</Label>
+              <div className="space-y-1.5 sm:space-y-2">
+                <Label htmlFor="unit" className="text-sm sm:text-base">Unit *</Label>
                 <Input
                   id="unit"
                   value={formData.unit}
                   onChange={(e) => handleInputChange('unit', e.target.value)}
                   placeholder="kg, liter, piece, etc."
-                  className={errors.unit ? 'border-red-500' : ''}
+                  className={`h-11 sm:h-12 text-base ${errors.unit ? 'border-red-500' : ''}`}
                 />
                 {errors.unit && (
-                  <p className="text-sm text-red-600">{errors.unit}</p>
+                  <p className="text-xs sm:text-sm text-red-600">{errors.unit}</p>
                 )}
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="stock">Stock Quantity *</Label>
+              <div className="space-y-1.5 sm:space-y-2">
+                <Label htmlFor="stock" className="text-sm sm:text-base">Stock Quantity *</Label>
                 <Input
                   id="stock"
                   type="number"
@@ -616,44 +634,45 @@ export function ProductForm({
                   value={formData.stock}
                   onChange={(e) => handleInputChange('stock', parseInt(e.target.value) || 0)}
                   placeholder="0"
-                  className={errors.stock ? 'border-red-500' : ''}
+                  className={`h-11 sm:h-12 text-base ${errors.stock ? 'border-red-500' : ''}`}
                 />
                 {errors.stock && (
-                  <p className="text-sm text-red-600">{errors.stock}</p>
+                  <p className="text-xs sm:text-sm text-red-600">{errors.stock}</p>
                 )}
               </div>
 
-              <div className="flex items-center space-x-3 pt-6 sm:pt-8">
+              <div className="flex items-center space-x-2 sm:space-x-3 pt-4 sm:pt-6 md:pt-8">
                 <input
                   type="checkbox"
                   id="inStock"
                   checked={formData.inStock}
                   onChange={(e) => handleInputChange('inStock', e.target.checked)}
-                  className="w-5 h-5 sm:w-4 sm:h-4 text-orange-600 bg-gray-100 border-gray-300 rounded focus:ring-orange-500"
+                  className="w-5 h-5 sm:w-4 sm:h-4 text-orange-600 bg-gray-100 border-gray-300 rounded focus:ring-orange-500 touch-manipulation"
+                  style={{ WebkitTapHighlightColor: 'transparent' }}
                 />
-                <Label htmlFor="inStock" className="text-sm sm:text-base font-medium cursor-pointer">
+                <Label htmlFor="inStock" className="text-sm sm:text-base font-medium cursor-pointer touch-manipulation" style={{ WebkitTapHighlightColor: 'transparent' }}>
                   Product is in stock
                 </Label>
               </div>
             </div>
 
             {/* Description */}
-            <div className="space-y-2">
-              <Label htmlFor="description">Description</Label>
+            <div className="space-y-1.5 sm:space-y-2">
+              <Label htmlFor="description" className="text-sm sm:text-base">Description</Label>
               <Textarea
                 id="description"
                 value={formData.description}
                 onChange={(e) => handleInputChange('description', e.target.value)}
                 placeholder="Enter product description"
-                rows={3}
-                className="min-h-[80px] sm:min-h-[100px] resize-none"
+                rows={4}
+                className="min-h-[100px] sm:min-h-[120px] text-base resize-none"
               />
             </div>
 
             {/* Variations */}
-            <div className="space-y-4">
+            <div className="space-y-3 sm:space-y-4">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                <Label className="text-base font-semibold">Product Variations</Label>
+                <Label className="text-sm sm:text-base font-semibold">Product Variations</Label>
                 <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
                   <input
                     type="file"
@@ -667,7 +686,8 @@ export function ProductForm({
                     onClick={() => document.getElementById('variation-csv-import')?.click()}
                     variant="outline"
                     size="sm"
-                    className="text-blue-600 border-blue-600 hover:bg-blue-50 w-full sm:w-auto"
+                    className="text-blue-600 border-blue-600 hover:bg-blue-50 active:bg-blue-100 w-full sm:w-auto h-10 sm:h-9 text-sm touch-manipulation"
+                    style={{ WebkitTapHighlightColor: 'transparent' }}
                   >
                     <FileText className="h-4 w-4 mr-2" />
                     <span className="hidden sm:inline">Import CSV</span>
@@ -678,7 +698,8 @@ export function ProductForm({
                     onClick={addVariation}
                     variant="outline"
                     size="sm"
-                    className="text-orange-600 border-orange-600 hover:bg-orange-50 w-full sm:w-auto"
+                    className="text-orange-600 border-orange-600 hover:bg-orange-50 active:bg-orange-100 w-full sm:w-auto h-10 sm:h-9 text-sm touch-manipulation"
+                    style={{ WebkitTapHighlightColor: 'transparent' }}
                   >
                     <Plus className="h-4 w-4 mr-2" />
                     <span className="hidden sm:inline">Add Variation</span>
@@ -688,42 +709,42 @@ export function ProductForm({
               </div>
 
               {/* CSV Format Info */}
-              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-xl p-4 shadow-sm">
-                <div className="flex items-start space-x-3">
-                  <div className="flex-shrink-0 w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                    <span className="text-blue-600 text-lg">📄</span>
+              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-lg sm:rounded-xl p-3 sm:p-4 shadow-sm">
+                <div className="flex items-start space-x-2 sm:space-x-3">
+                  <div className="flex-shrink-0 w-7 h-7 sm:w-8 sm:h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                    <span className="text-blue-600 text-base sm:text-lg">📄</span>
                   </div>
-                  <div className="flex-1">
-                    <p className="text-base text-blue-800 mb-2 font-semibold">
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm sm:text-base text-blue-800 mb-1.5 sm:mb-2 font-semibold">
                       CSV Bulk Import Format
                     </p>
-                    <p className="text-sm text-blue-700 mb-3">
-                      Columns: <code className="bg-white px-2 py-1 rounded font-mono text-xs">Name, Quantity, Unit, Price, Stock, ImageURL</code>
+                    <p className="text-xs sm:text-sm text-blue-700 mb-2 sm:mb-3 break-words">
+                      Columns: <code className="bg-white px-1.5 sm:px-2 py-0.5 sm:py-1 rounded font-mono text-xs break-all">Name, Quantity, Unit, Price, Stock, ImageURL</code>
                     </p>
-                    <p className="text-sm text-blue-600 bg-white/70 rounded-lg p-3 border border-blue-100">
+                    <p className="text-xs sm:text-sm text-blue-600 bg-white/70 rounded-lg p-2 sm:p-3 border border-blue-100 break-words">
                       <strong>Example:</strong><br />
-                      <code className="font-mono text-xs">"Mama Gold, 2, kg, 4500, 25, https://example.com/image.jpg"</code>
+                      <code className="font-mono text-xs break-all">"Mama Gold, 2, kg, 4500, 25, https://example.com/image.jpg"</code>
                     </p>
                   </div>
                 </div>
               </div>
 
               {formData.variations.length > 0 && (
-                <div className="space-y-4">
+                <div className="space-y-3 sm:space-y-4">
                   {formData.variations.map((variation, index) => (
-                    <div key={index} className="p-4 sm:p-6 border-2 border-gray-200 rounded-xl bg-white shadow-sm hover:shadow-md transition-shadow duration-200">
-                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-6 gap-4 items-end">
+                    <div key={index} className="p-3 sm:p-4 md:p-6 border-2 border-gray-200 rounded-lg sm:rounded-xl bg-white shadow-sm hover:shadow-md transition-shadow duration-200 overflow-visible">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3 sm:gap-4 items-end relative">
                         <div className="col-span-1">
-                          <Label className="text-sm font-medium text-gray-700 mb-2 block">Name</Label>
+                          <Label className="text-xs sm:text-sm font-medium text-gray-700 mb-1.5 sm:mb-2 block">Name</Label>
                           <Input
                             value={variation.name}
                             onChange={(e) => updateVariation(index, 'name', e.target.value)}
                             placeholder="Mama Gold"
-                            className="w-full h-11 text-base bg-white border-2 border-gray-300 focus:border-orange-500 focus:ring-2 focus:ring-orange-200 rounded-lg"
+                            className="w-full h-10 sm:h-11 text-sm sm:text-base bg-white border-2 border-gray-300 focus:border-orange-500 focus:ring-2 focus:ring-orange-200 rounded-lg"
                           />
                         </div>
-                        <div className="col-span-1 sm:col-span-1 lg:col-span-1 xl:col-span-1">
-                          <Label className="text-sm font-medium text-gray-700 mb-2 block">Quantity</Label>
+                        <div className="col-span-1">
+                          <Label className="text-xs sm:text-sm font-medium text-gray-700 mb-1.5 sm:mb-2 block">Quantity</Label>
                           <Input
                             type="number"
                             min="0"
@@ -731,19 +752,19 @@ export function ProductForm({
                             value={variation.quantity || ""}
                             onChange={(e) => updateVariation(index, 'quantity', parseFloat(e.target.value) || undefined)}
                             placeholder="1"
-                            className="w-full h-11 text-base bg-white border-2 border-gray-300 focus:border-orange-500 focus:ring-2 focus:ring-orange-200 rounded-lg"
+                            className="w-full h-10 sm:h-11 text-sm sm:text-base bg-white border-2 border-gray-300 focus:border-orange-500 focus:ring-2 focus:ring-orange-200 rounded-lg"
                           />
                         </div>
-                        <div className="col-span-1 sm:col-span-1 lg:col-span-1 xl:col-span-1">
-                          <Label className="text-sm font-medium text-gray-700 mb-2 block">Unit</Label>
+                        <div className="col-span-1 relative z-[100]">
+                          <Label className="text-xs sm:text-sm font-medium text-gray-700 mb-1.5 sm:mb-2 block">Unit</Label>
                           <Select
                             value={variation.unit || ""}
                             onValueChange={(value) => updateVariation(index, 'unit', value)}
                           >
-                            <SelectTrigger className="w-full h-11 bg-white border-2 border-gray-300 focus:border-orange-500 focus:ring-2 focus:ring-orange-200 rounded-lg">
+                            <SelectTrigger className="w-full h-10 sm:h-11 text-sm sm:text-base bg-white border-2 border-gray-300 focus:border-orange-500 focus:ring-2 focus:ring-orange-200 rounded-lg relative z-[100]">
                               <SelectValue placeholder="Select unit" />
                             </SelectTrigger>
-                            <SelectContent className="bg-white border-2 border-gray-300 shadow-xl max-h-60 overflow-y-auto z-50">
+                            <SelectContent className="bg-white border-2 border-gray-300 shadow-xl max-h-60 overflow-y-auto z-[9999]" position="popper">
                               {/* Volume */}
                               <SelectItem value="ml">ml</SelectItem>
                               <SelectItem value="l">L</SelectItem>
@@ -771,8 +792,8 @@ export function ProductForm({
                             </SelectContent>
                           </Select>
                         </div>
-                        <div className="col-span-1 sm:col-span-1 lg:col-span-1 xl:col-span-1">
-                          <Label className="text-sm font-medium text-gray-700 mb-2 block">Price (₦)</Label>
+                        <div className="col-span-1">
+                          <Label className="text-xs sm:text-sm font-medium text-gray-700 mb-1.5 sm:mb-2 block">Price (₦)</Label>
                           <Input
                             type="number"
                             min="0"
@@ -780,18 +801,18 @@ export function ProductForm({
                             value={variation.price}
                             onChange={(e) => updateVariation(index, 'price', parseFloat(e.target.value) || 0)}
                             placeholder="0.00"
-                            className="w-full h-11 text-base bg-white border-2 border-gray-300 focus:border-orange-500 focus:ring-2 focus:ring-orange-200 rounded-lg"
+                            className="w-full h-10 sm:h-11 text-sm sm:text-base bg-white border-2 border-gray-300 focus:border-orange-500 focus:ring-2 focus:ring-orange-200 rounded-lg"
                           />
                         </div>
-                        <div className="col-span-1 sm:col-span-1 lg:col-span-1 xl:col-span-1">
-                          <Label className="text-sm font-medium text-gray-700 mb-2 block">Stock</Label>
+                        <div className="col-span-1">
+                          <Label className="text-xs sm:text-sm font-medium text-gray-700 mb-1.5 sm:mb-2 block">Stock</Label>
                           <Input
                             type="number"
                             min="0"
                             value={variation.stock}
                             onChange={(e) => updateVariation(index, 'stock', parseInt(e.target.value) || 0)}
                             placeholder="0"
-                            className="w-full h-11 text-base bg-white border-2 border-gray-300 focus:border-orange-500 focus:ring-2 focus:ring-orange-200 rounded-lg"
+                            className="w-full h-10 sm:h-11 text-sm sm:text-base bg-white border-2 border-gray-300 focus:border-orange-500 focus:ring-2 focus:ring-orange-200 rounded-lg"
                           />
                         </div>
                         {/* Variation Image Upload - Temporarily commented out */}
@@ -904,15 +925,17 @@ export function ProductForm({
                             )}
                           </div>
                         </div> */}
-                        <div className="col-span-1 sm:col-span-2 lg:col-span-2 xl:col-span-2 flex justify-end items-end pt-6">
+                        <div className="col-span-1 sm:col-span-2 md:col-span-3 lg:col-span-2 xl:col-span-2 flex justify-end items-end pt-2 sm:pt-4 md:pt-6">
                           <Button
                             type="button"
                             onClick={() => removeVariation(index)}
                             variant="outline"
-                            className="text-red-600 border-2 border-red-600 hover:bg-red-50 hover:border-red-700 w-full h-11 rounded-lg font-medium"
+                            className="text-red-600 border-2 border-red-600 hover:bg-red-50 active:bg-red-100 hover:border-red-700 w-full sm:w-auto h-10 sm:h-11 rounded-lg font-medium text-sm sm:text-base touch-manipulation"
+                            style={{ WebkitTapHighlightColor: 'transparent' }}
                           >
-                            <Minus className="h-4 w-4 mr-2" />
-                            Remove Variation
+                            <Minus className="h-4 w-4 mr-1.5 sm:mr-2" />
+                            <span className="hidden sm:inline">Remove Variation</span>
+                            <span className="sm:hidden">Remove</span>
                           </Button>
                         </div>
                       </div>
@@ -922,27 +945,29 @@ export function ProductForm({
               )}
 
               {formData.variations.length === 0 && (
-                <p className="text-sm text-gray-500 italic text-center sm:text-left">
+                <p className="text-xs sm:text-sm text-gray-500 italic text-center sm:text-left px-2">
                   No variations added. You can add variations for different sizes, colors, or packaging options.
                 </p>
               )}
             </div>
 
             {/* Form Actions */}
-            <div className="flex flex-col sm:flex-row justify-end gap-3 sm:gap-4 pt-6 border-t">
+            <div className="flex flex-col sm:flex-row justify-end gap-3 sm:gap-4 pt-4 sm:pt-6 border-t border-gray-200">
               <Button
                 type="button"
                 variant="outline"
                 onClick={onCancel}
                 disabled={isLoading}
-                className="w-full sm:w-auto order-2 sm:order-1"
+                className="w-full sm:w-auto order-2 sm:order-1 h-11 sm:h-10 text-sm sm:text-base touch-manipulation"
+                style={{ WebkitTapHighlightColor: 'transparent' }}
               >
                 Cancel
               </Button>
               <Button
                 type="submit"
                 disabled={isLoading}
-                className="bg-orange-600 hover:bg-orange-700 w-full sm:w-auto order-1 sm:order-2"
+                className="bg-orange-600 hover:bg-orange-700 active:bg-orange-800 w-full sm:w-auto order-1 sm:order-2 h-11 sm:h-10 text-sm sm:text-base font-semibold touch-manipulation"
+                style={{ WebkitTapHighlightColor: 'transparent' }}
               >
                 {isLoading ? 'Saving...' : initialData?.id ? 'Update Product' : 'Create Product'}
               </Button>

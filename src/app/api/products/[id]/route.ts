@@ -59,18 +59,24 @@ export async function PUT(
 
     const { id } = await params
     const body = await request.json()
-    const { name, description, basePrice, categoryId, stock, unit, inStock, images, variations } = body
+    const { name, groupName, description, basePrice, categoryId, stock, unit, inStock, images, variations } = body
+
+    const parsedStock = Number.parseInt(stock) || 0
+    const incomingVariations: any[] = Array.isArray(variations) ? variations : []
+    const hasInStockVariation = incomingVariations.some(v => (Number.parseInt(v?.stock) || 0) > 0)
+    const derivedInStock = parsedStock > 0 || hasInStockVariation
 
     const product = await prisma.product.update({
       where: { id },
       data: {
         name,
+        groupName: groupName?.trim() || null,
         description,
         basePrice: parseFloat(basePrice),
         categoryId,
-        stock: parseInt(stock),
+        stock: parsedStock,
         unit,
-        inStock,
+        inStock: derivedInStock,
         image: images && images.length > 0 ? JSON.stringify(images) : null,
       },
       include: {
@@ -87,19 +93,32 @@ export async function PUT(
       })
 
       // Create new variations
-      if (variations.length > 0) {
+      if (incomingVariations.length > 0) {
         await prisma.variation.createMany({
-          data: variations.map((v: any) => ({
+          data: incomingVariations.map((v: any) => ({
             name: v.name,
             type: v.type || "Size",
             price: parseFloat(v.price) || 0,
+            stock: Number.parseInt(v.stock) || 0,
+            unit: v.unit || null,
+            quantity: v.quantity !== undefined && v.quantity !== null && v.quantity !== "" ? parseFloat(v.quantity) : null,
+            image: v.image || null,
             productId: id,
           }))
         })
       }
     }
 
-    return NextResponse.json(product)
+    const updated = await prisma.product.findUnique({
+      where: { id },
+      include: { category: true, variations: true },
+    })
+
+    const transformed = updated
+      ? { ...updated, images: updated.image ? JSON.parse(updated.image) : [] }
+      : null
+
+    return NextResponse.json(transformed ?? product)
   } catch (error) {
     console.error("Error updating product:", error)
     return NextResponse.json(

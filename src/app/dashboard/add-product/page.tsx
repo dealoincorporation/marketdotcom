@@ -37,28 +37,29 @@ export default function AddProductPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 pb-20 sm:pb-0">
       {/* Header */}
       <header className="sticky top-0 z-50 bg-white shadow-lg border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <div className="flex items-center space-x-4">
+        <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-14 sm:h-16">
+            <div className="flex items-center space-x-2 sm:space-x-3 min-w-0 flex-1">
               <Link
                 href="/dashboard?tab=manage-products"
-                className="p-2 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-colors"
+                className="p-1.5 sm:p-2 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-colors flex-shrink-0 touch-manipulation"
+                style={{ WebkitTapHighlightColor: 'transparent' }}
               >
-                <ArrowLeft className="h-5 w-5" />
+                <ArrowLeft className="h-5 w-5 sm:h-6 sm:w-6" />
               </Link>
-              <div>
-                <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Add New Product</h1>
-                <p className="hidden sm:block text-sm text-gray-600">Create a new product for your marketplace</p>
+              <div className="min-w-0 flex-1">
+                <h1 className="text-base sm:text-xl md:text-2xl font-bold text-gray-900 truncate">Add New Product</h1>
+                <p className="hidden sm:block text-xs sm:text-sm text-gray-600 truncate">Create a new product for your marketplace</p>
               </div>
             </div>
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-2 sm:space-x-4 flex-shrink-0">
               <Link href="/dashboard?tab=manage-products">
-                <Button variant="outline" className="flex items-center space-x-2">
+                <Button variant="outline" size="sm" className="flex items-center space-x-1 sm:space-x-2 px-2 sm:px-4 py-1.5 sm:py-2 touch-manipulation" style={{ WebkitTapHighlightColor: 'transparent' }}>
                   <X className="h-4 w-4" />
-                  <span className="hidden sm:inline">Cancel</span>
+                  <span className="hidden xs:inline text-xs sm:text-sm">Cancel</span>
                 </Button>
               </Link>
             </div>
@@ -67,14 +68,14 @@ export default function AddProductPage() {
       </header>
 
       {/* Main Content */}
-      <div className="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-4xl mx-auto py-4 sm:py-6 md:py-8 px-3 sm:px-4 md:px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
           <Card className="shadow-xl border-0 bg-white/80 backdrop-blur-sm">
-            <CardContent className="p-8">
+            <CardContent className="p-3 sm:p-4 md:p-6 lg:p-8">
               <ProductForm
                 categories={categories}
                 onSubmit={handleSaveProduct}
