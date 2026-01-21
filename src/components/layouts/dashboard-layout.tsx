@@ -23,7 +23,7 @@ import { Button } from '@/components/ui/button'
 import { useCartStore } from '@/lib/cart-store'
 import { useAuth } from '@/contexts/AuthContext'
 import { formatCurrency, getInitials } from '@/lib/helpers'
-type DashboardTab = "marketplace" | "orders" | "manage-products" | "manage-categories" | "wallet" | "admin"
+type DashboardTab = "marketplace" | "orders" | "manage-products" | "manage-categories" | "manage-deliveries" | "wallet" | "admin"
 
 interface DashboardLayoutProps {
   children: ReactNode
@@ -79,7 +79,7 @@ export function DashboardLayout({
               {/* Mobile menu button */}
               <button
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                className="md:hidden p-2 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+                className="md:hidden p-2 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100 cursor-pointer"
               >
                 {isMobileMenuOpen ? (
                   <X className="h-6 w-6" />
@@ -215,7 +215,7 @@ export function DashboardLayout({
                       onTabChange(item.id)
                       setIsMobileMenuOpen(false)
                     }}
-                    className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-left transition-all duration-200 ${
+                    className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-left transition-all duration-200 cursor-pointer ${
                       activeTab === item.id
                         ? 'bg-gradient-to-r from-orange-50 to-red-50 text-orange-600 border-r-4 border-orange-600 shadow-sm'
                         : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
@@ -235,7 +235,7 @@ export function DashboardLayout({
                       onTabChange('admin')
                       setIsMobileMenuOpen(false)
                     }}
-                    className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-left transition-all duration-200 ${
+                    className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-left transition-all duration-200 cursor-pointer ${
                       activeTab === 'admin'
                         ? 'bg-gradient-to-r from-orange-50 to-red-50 text-orange-600 border-r-4 border-orange-600 shadow-sm'
                         : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
@@ -250,7 +250,7 @@ export function DashboardLayout({
                       onTabChange('manage-products')
                       setIsMobileMenuOpen(false)
                     }}
-                    className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-left transition-all duration-200 ${
+                    className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-left transition-all duration-200 cursor-pointer ${
                       activeTab === 'manage-products'
                         ? 'bg-gradient-to-r from-orange-50 to-red-50 text-orange-600 border-r-4 border-orange-600 shadow-sm'
                         : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
@@ -265,7 +265,7 @@ export function DashboardLayout({
                       onTabChange('manage-categories')
                       setIsMobileMenuOpen(false)
                     }}
-                    className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-left transition-all duration-200 ${
+                    className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-left transition-all duration-200 cursor-pointer ${
                       activeTab === 'manage-categories'
                         ? 'bg-gradient-to-r from-orange-50 to-red-50 text-orange-600 border-r-4 border-orange-600 shadow-sm'
                         : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
@@ -273,6 +273,21 @@ export function DashboardLayout({
                   >
                     <Package className="h-5 w-5" />
                     <span>Manage Categories</span>
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      onTabChange('manage-deliveries')
+                      setIsMobileMenuOpen(false)
+                    }}
+                    className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-left transition-all duration-200 cursor-pointer ${
+                      activeTab === 'manage-deliveries'
+                        ? 'bg-gradient-to-r from-orange-50 to-red-50 text-orange-600 border-r-4 border-orange-600 shadow-sm'
+                        : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                    }`}
+                  >
+                    <Truck className="h-5 w-5" />
+                    <span>Manage Deliveries</span>
                   </button>
                 </>
               )}
@@ -285,7 +300,7 @@ export function DashboardLayout({
                   logout()
                   router.push('/')
                 }}
-                className="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-left transition-all duration-200 text-red-600 hover:bg-red-50 hover:text-red-700"
+                className="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-left transition-all duration-200 text-red-600 hover:bg-red-50 hover:text-red-700 cursor-pointer"
               >
                 <LogOut className="h-5 w-5" />
                 <span>Sign Out</span>
@@ -295,7 +310,7 @@ export function DashboardLayout({
         </motion.div>
 
         {/* Main Content */}
-        <div className="flex-1 overflow-auto md:ml-0">
+        <div className="flex-1 overflow-auto md:ml-0 pb-20 md:pb-0">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -309,35 +324,68 @@ export function DashboardLayout({
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ duration: 0.6, delay: 0.2 }}
-                  className="mb-8 bg-gradient-to-r from-orange-500 to-red-500 rounded-xl shadow-lg overflow-hidden relative z-10"
+                  className="mb-8"
                 >
                   <div className="px-6 py-8 sm:px-8 sm:py-10">
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center">
                       <div className="flex-1">
-                        <h1 className="text-2xl sm:text-3xl font-bold text-white mb-2">
+                        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
                           Welcome back, {user.name || 'Valued Customer'}! 🎉
                         </h1>
-                        <p className="text-orange-100 text-sm sm:text-base leading-relaxed">
-                          Great to see you here! Explore our marketplace, manage your products, or check your orders.
-                          We're here to make your shopping experience amazing.
+                        <p className="text-gray-600 text-sm sm:text-base leading-relaxed">
+                          Great to see you here!
                         </p>
-                      </div>
-                      <div className="hidden sm:block ml-6">
-                        <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center">
-                          <span className="text-2xl">👋</span>
-                        </div>
                       </div>
                     </div>
                   </div>
-                  {/* Decorative elements */}
-                  <div className="absolute top-4 right-4 w-20 h-20 bg-white/10 rounded-full -translate-y-6 translate-x-6"></div>
-                  <div className="absolute bottom-4 left-4 w-12 h-12 bg-white/10 rounded-full translate-y-3 -translate-x-3"></div>
                 </motion.div>
               )}
 
               {children}
             </div>
           </motion.div>
+        </div>
+      </div>
+
+      {/* Bottom Navigation - Mobile Only */}
+      <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-40 shadow-lg">
+        <div className={`grid ${user?.role === 'ADMIN' ? 'grid-cols-4' : 'grid-cols-3'} h-16`}>
+          {navigationItems.map((item) => {
+            const Icon = item.icon
+            return (
+              <button
+                key={item.id}
+                onClick={() => {
+                  onTabChange(item.id)
+                  setIsMobileMenuOpen(false)
+                }}
+                className={`flex flex-col items-center justify-center space-y-1 transition-all duration-200 cursor-pointer ${
+                  activeTab === item.id
+                    ? 'text-orange-600 bg-orange-50'
+                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                }`}
+              >
+                <Icon className="h-5 w-5" />
+                <span className="text-xs font-medium">{item.label}</span>
+              </button>
+            )
+          })}
+          {user?.role === 'ADMIN' && (
+            <button
+              onClick={() => {
+                onTabChange('manage-products')
+                setIsMobileMenuOpen(false)
+              }}
+              className={`flex flex-col items-center justify-center space-y-1 transition-all duration-200 cursor-pointer ${
+                activeTab === 'manage-products'
+                  ? 'text-orange-600 bg-orange-50'
+                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+              }`}
+            >
+              <Box className="h-5 w-5" />
+              <span className="text-xs font-medium">Manage</span>
+            </button>
+          )}
         </div>
       </div>
 

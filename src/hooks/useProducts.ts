@@ -17,6 +17,9 @@ interface ProductForm {
     name: string
     price: number
     stock: number
+    unit?: string
+    quantity?: number
+    image?: string
   }>
 }
 
@@ -61,6 +64,16 @@ export function useProducts(initialProducts: Product[] = []): UseProductsReturn 
 
       if (!response.ok) {
         const errorData = await response.json()
+
+        // Handle expired token
+        if (response.status === 401 && errorData.message?.includes('Unauthorized')) {
+          localStorage.removeItem('token')
+          localStorage.removeItem('user')
+          alert('Your session has expired. Please log in again.')
+          window.location.href = '/auth/login'
+          return null
+        }
+
         throw new Error(errorData.message || 'Failed to create product')
       }
 
@@ -99,6 +112,16 @@ export function useProducts(initialProducts: Product[] = []): UseProductsReturn 
 
       if (!response.ok) {
         const errorData = await response.json()
+
+        // Handle expired token
+        if (response.status === 401 && errorData.message?.includes('Unauthorized')) {
+          localStorage.removeItem('token')
+          localStorage.removeItem('user')
+          alert('Your session has expired. Please log in again.')
+          window.location.href = '/auth/login'
+          return null
+        }
+
         throw new Error(errorData.message || 'Failed to update product')
       }
 
@@ -127,22 +150,47 @@ export function useProducts(initialProducts: Product[] = []): UseProductsReturn 
 
       if (token) {
         headers['Authorization'] = `Bearer ${token}`
+      } else {
+        throw new Error('No authentication token found. Please log in again.')
       }
+
+      console.log('Deleting product:', id)
+      console.log('Auth token present:', !!token)
 
       const response = await fetch(`/api/products/${id}`, {
         method: 'DELETE',
         headers,
       })
 
+      console.log('Delete response status:', response.status)
+
       if (!response.ok) {
         const errorData = await response.json()
-        throw new Error(errorData.message || 'Failed to delete product')
+        console.error('Delete error response:', errorData)
+
+        // Handle expired token specifically
+        if (response.status === 401 && errorData.error?.includes('Unauthorized')) {
+          // Clear expired token and user data
+          localStorage.removeItem('token')
+          localStorage.removeItem('user')
+
+          // Show user-friendly message and redirect to login
+          alert('Your session has expired. Please log in again.')
+          window.location.href = '/auth/login'
+          return false
+        }
+
+        throw new Error(errorData.error || errorData.message || 'Failed to delete product')
       }
+
+      const result = await response.json()
+      console.log('Delete success:', result)
 
       setProducts(prev => prev.filter(product => product.id !== id))
       return true
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'An error occurred'
+      console.error('Delete product error:', errorMessage)
       setError(errorMessage)
       return false
     } finally {

@@ -112,7 +112,7 @@ export function ModernNavigation() {
                 ) : (
                   <button
                     onClick={() => handleNavClick(item.href, item.external)}
-                    className={`relative px-4 py-2 font-medium transition-colors group ${
+                    className={`relative px-4 py-2 font-medium transition-colors group cursor-pointer ${
                       isScrolled ? 'text-gray-700 hover:text-orange-600' : 'text-gray-700 hover:text-orange-600'
                     }`}
                   >
@@ -200,7 +200,7 @@ export function ModernNavigation() {
             animate={{ opacity: 1 }}
             transition={{ duration: 0.6, delay: 0.6 }}
             onClick={() => setIsOpen(!isOpen)}
-            className={`lg:hidden p-2 rounded-lg transition-colors ${
+            className={`lg:hidden p-2 rounded-lg transition-colors cursor-pointer ${
               isScrolled
                 ? 'text-gray-700 hover:text-orange-600 hover:bg-orange-50'
                 : 'text-gray-700 hover:text-orange-600 hover:bg-orange-50'
@@ -247,7 +247,7 @@ export function ModernNavigation() {
                   ) : (
                     <button
                       onClick={() => handleNavClick(item.href, item.external)}
-                      className="block w-full text-left px-4 py-3 text-gray-700 hover:text-orange-600 hover:bg-orange-50 rounded-lg font-medium transition-colors"
+                      className="block w-full text-left px-4 py-3 text-gray-700 hover:text-orange-600 hover:bg-orange-50 rounded-lg font-medium transition-colors cursor-pointer"
                     >
                       {item.name}
                     </button>

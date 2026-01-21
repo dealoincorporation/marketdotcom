@@ -1,39 +1,199 @@
 import { create } from 'zustand'
-import { persist } from 'zustand/middleware'
+import { persist, createJSONStorage } from 'zustand/middleware'
 import toast from 'react-hot-toast'
 
+// Enhanced CartItem interface with comprehensive fields
 export interface CartItem {
-  id: string
+  id: string // Unique cart item ID (usually `${productId}-${variationId || 'base'}`)
+  productId: string // Base product ID
+  variationId?: string // Variation ID if applicable
   name: string
-  price: number
+  description?: string
+  price: number // Current price at time of adding
+  originalPrice?: number // Original price for comparison
   image: string
   quantity: number
   unit: string
+  variation?: {
+    id: string
+    name: string
+    type: string
+    price?: number
+    stock?: number
+  }
+  categoryId?: string
+  categoryName?: string
+  brand?: string
+  isAvailable: boolean // Product availability status
+  maxQuantity?: number // Maximum allowed quantity (stock limit)
+  weight?: number // For shipping calculations
+  dimensions?: {
+    length: number
+    width: number
+    height: number
+  }
+  tags?: string[]
+  addedAt: Date // When item was added to cart
+  updatedAt: Date // Last update timestamp
 }
 
-interface CartStore {
+// Cart validation result
+export interface CartValidationResult {
+  isValid: boolean
+  errors: CartValidationError[]
+  warnings: CartValidationWarning[]
+}
+
+// Cart validation error
+export interface CartValidationError {
+  itemId: string
+  type: 'out_of_stock' | 'quantity_exceeded' | 'price_changed' | 'unavailable'
+  message: string
+  suggestedAction?: 'remove' | 'update_quantity' | 'update_price'
+}
+
+// Cart validation warning
+export interface CartValidationWarning {
+  itemId: string
+  type: 'low_stock' | 'price_increased' | 'price_decreased'
+  message: string
+}
+
+// Cart summary for checkout
+export interface CartSummary {
   items: CartItem[]
-  addItem: (item: Omit<CartItem, 'quantity'> & { quantity?: number }) => void
+  subtotal: number
+  discount: number
+  tax: number
+  shipping: number
+  total: number
+  totalItems: number
+  totalWeight?: number
+  estimatedDelivery?: Date
+}
+
+// Enhanced CartStore interface
+interface CartStore {
+  // State
+  items: CartItem[]
+  isLoading: boolean
+  lastValidation: Date | null
+  userId?: string
+
+  // Basic operations
+  addItem: (item: Omit<CartItem, 'id' | 'addedAt' | 'updatedAt' | 'quantity' | 'isAvailable'> & { quantity?: number }) => Promise<boolean>
   removeItem: (id: string) => void
-  updateQuantity: (id: string, quantity: number) => void
+  updateQuantity: (id: string, quantity: number) => Promise<boolean>
   clearCart: () => void
+
+  // Advanced operations
+  mergeCart: (items: CartItem[]) => Promise<void>
+  validateCart: () => Promise<CartValidationResult>
+  applyBulkUpdate: (updates: { id: string; quantity: number }[]) => Promise<boolean>
+  syncWithServer: () => Promise<void>
+
+  // Getters
+  getItem: (id: string) => CartItem | undefined
   getItemQuantity: (id: string) => number
   getTotalItems: () => number
   getTotalPrice: () => number
+  getCartSummary: (includeShipping?: boolean) => CartSummary
+
+  // Utilities
+  hasItem: (productId: string, variationId?: string) => boolean
+  getItemsByCategory: (categoryId: string) => CartItem[]
+  getLowStockItems: () => CartItem[]
+  getUnavailableItems: () => CartItem[]
+}
+
+// Utility functions
+const generateCartItemId = (productId: string, variationId?: string): string => {
+  return variationId ? `${productId}-${variationId}` : `${productId}-base`
+}
+
+const validateQuantity = (quantity: number, maxQuantity?: number): boolean => {
+  return quantity > 0 && quantity <= (maxQuantity || 999)
+}
+
+const calculateCartTotals = (items: CartItem[]) => {
+  const subtotal = items.reduce((total, item) => total + (item.price * item.quantity), 0)
+  const totalItems = items.reduce((total, item) => total + item.quantity, 0)
+  const totalWeight = items.reduce((total, item) => total + ((item.weight || 0) * item.quantity), 0)
+
+  return { subtotal, totalItems, totalWeight }
 }
 
 export const useCartStore = create<CartStore>()(
   persist(
     (set, get) => ({
       items: [],
+      isLoading: false,
+      lastValidation: null,
+      userId: undefined,
 
-      addItem: (newItem) => {
-        set((state) => {
-          const existingItem = state.items.find(item => item.id === newItem.id)
+      addItem: async (newItem) => {
+        try {
+          // Validate quantity
+          if (!validateQuantity(newItem.quantity || 1, newItem.maxQuantity)) {
+            toast.error('Invalid quantity specified', { icon: '⚠️' })
+            return false
+          }
 
-          if (existingItem) {
-            const newQuantity = existingItem.quantity + (newItem.quantity || 1)
-            toast.success(`Updated ${newItem.name} quantity to ${newQuantity} in cart`, {
+          // Check if item is available (via maxQuantity)
+          if (newItem.maxQuantity !== undefined && newItem.maxQuantity <= 0) {
+            toast.error(`${newItem.name} is currently unavailable`, { icon: '⚠️' })
+            return false
+          }
+
+          const cartItemId = generateCartItemId(newItem.productId, newItem.variationId)
+
+          set((state) => {
+            const existingItem = state.items.find(item => item.id === cartItemId)
+
+            if (existingItem) {
+              const newQuantity = existingItem.quantity + (newItem.quantity || 1)
+
+              // Check if new quantity exceeds limits
+              if (!validateQuantity(newQuantity, existingItem.maxQuantity)) {
+                toast.error(`Cannot add more ${newItem.name}. Maximum quantity exceeded.`, { icon: '⚠️' })
+                return state
+              }
+
+              toast.success(`Updated ${newItem.name} quantity to ${newQuantity} in cart`, {
+                duration: 3000,
+                style: {
+                  background: 'rgba(34, 197, 94, 0.95)',
+                  backdropFilter: 'blur(10px)',
+                  color: 'white',
+                  border: '1px solid rgba(34, 197, 94, 0.3)',
+                },
+                icon: '🛒',
+              })
+
+              return {
+                items: state.items.map(item =>
+                  item.id === cartItemId
+                    ? {
+                        ...item,
+                        quantity: newQuantity,
+                        updatedAt: new Date()
+                      }
+                    : item
+                )
+              }
+            }
+
+            // Add new item
+            const newCartItem: CartItem = {
+              ...newItem,
+              id: cartItemId,
+              quantity: newItem.quantity || 1,
+              isAvailable: newItem.maxQuantity === undefined || newItem.maxQuantity > 0,
+              addedAt: new Date(),
+              updatedAt: new Date()
+            }
+
+            toast.success(`Added ${newItem.name} to cart`, {
               duration: 3000,
               style: {
                 background: 'rgba(34, 197, 94, 0.95)',
@@ -43,53 +203,220 @@ export const useCartStore = create<CartStore>()(
               },
               icon: '🛒',
             })
-            return {
-              items: state.items.map(item =>
-                item.id === newItem.id
-                  ? { ...item, quantity: newQuantity }
-                  : item
-              )
-            }
-          }
 
-          toast.success(`Added ${newItem.name} to cart`, {
-            duration: 3000,
-            style: {
-              background: 'rgba(34, 197, 94, 0.95)',
-              backdropFilter: 'blur(10px)',
-              color: 'white',
-              border: '1px solid rgba(34, 197, 94, 0.3)',
-            },
-            icon: '🛒',
+            return {
+              items: [...state.items, newCartItem]
+            }
           })
 
-          return {
-            items: [...state.items, { ...newItem, quantity: newItem.quantity || 1 }]
+          // Sync with server if user is logged in
+          if (get().userId) {
+            await get().syncWithServer()
           }
-        })
+
+          return true
+        } catch (error) {
+          console.error('Error adding item to cart:', error)
+          toast.error('Failed to add item to cart', { icon: '❌' })
+          return false
+        }
       },
 
       removeItem: (id) => {
-        set((state) => ({
-          items: state.items.filter(item => item.id !== id)
-        }))
-      },
-
-      updateQuantity: (id, quantity) => {
-        if (quantity <= 0) {
-          get().removeItem(id)
-          return
+        const item = get().items.find(item => item.id === id)
+        if (item) {
+          toast.success(`Removed ${item.name} from cart`, {
+            duration: 2000,
+            style: {
+              background: 'rgba(239, 68, 68, 0.95)',
+              backdropFilter: 'blur(10px)',
+              color: 'white',
+              border: '1px solid rgba(239, 68, 68, 0.3)',
+            },
+            icon: '🗑️',
+          })
         }
 
         set((state) => ({
-          items: state.items.map(item =>
-            item.id === id ? { ...item, quantity } : item
-          )
+          items: state.items.filter(item => item.id !== id)
         }))
+
+        // Sync with server if user is logged in
+        if (get().userId) {
+          get().syncWithServer()
+        }
+      },
+
+      updateQuantity: async (id, quantity) => {
+        try {
+          if (quantity <= 0) {
+            get().removeItem(id)
+            return true
+          }
+
+          const item = get().items.find(item => item.id === id)
+          if (!item) {
+            toast.error('Item not found in cart', { icon: '⚠️' })
+            return false
+          }
+
+          if (!validateQuantity(quantity, item.maxQuantity)) {
+            toast.error(`Cannot update quantity. Maximum allowed: ${item.maxQuantity}`, { icon: '⚠️' })
+            return false
+          }
+
+          set((state) => ({
+            items: state.items.map(cartItem =>
+              cartItem.id === id
+                ? { ...cartItem, quantity, updatedAt: new Date() }
+                : cartItem
+            )
+          }))
+
+          // Sync with server if user is logged in
+          if (get().userId) {
+            await get().syncWithServer()
+          }
+
+          return true
+        } catch (error) {
+          console.error('Error updating cart quantity:', error)
+          toast.error('Failed to update quantity', { icon: '❌' })
+          return false
+        }
       },
 
       clearCart: () => {
         set({ items: [] })
+        toast.success('Cart cleared', {
+          duration: 2000,
+          style: {
+            background: 'rgba(156, 163, 175, 0.95)',
+            backdropFilter: 'blur(10px)',
+            color: 'white',
+            border: '1px solid rgba(156, 163, 175, 0.3)',
+          },
+          icon: '🗑️',
+        })
+
+        // Sync with server if user is logged in
+        if (get().userId) {
+          get().syncWithServer()
+        }
+      },
+
+      // Advanced operations
+      mergeCart: async (items) => {
+        set((state) => {
+          const mergedItems = [...state.items]
+
+          items.forEach(newItem => {
+            const existingIndex = mergedItems.findIndex(item => item.id === newItem.id)
+
+            if (existingIndex >= 0) {
+              // Merge quantities
+              const existingItem = mergedItems[existingIndex]
+              const newQuantity = existingItem.quantity + newItem.quantity
+
+              mergedItems[existingIndex] = {
+                ...existingItem,
+                quantity: Math.min(newQuantity, existingItem.maxQuantity || 999),
+                updatedAt: new Date()
+              }
+            } else {
+              // Add new item
+              mergedItems.push(newItem)
+            }
+          })
+
+          return { items: mergedItems }
+        })
+
+        toast.success('Cart synchronized', { icon: '🔄' })
+      },
+
+      validateCart: async () => {
+        const items = get().items
+        const errors: CartValidationError[] = []
+        const warnings: CartValidationWarning[] = []
+
+        // Check each item
+        for (const item of items) {
+          // Check availability
+          if (!item.isAvailable) {
+            errors.push({
+              itemId: item.id,
+              type: 'unavailable',
+              message: `${item.name} is no longer available`,
+              suggestedAction: 'remove'
+            })
+          }
+
+          // Check stock
+          if (item.maxQuantity && item.quantity > item.maxQuantity) {
+            errors.push({
+              itemId: item.id,
+              type: 'quantity_exceeded',
+              message: `Only ${item.maxQuantity} ${item.name} available`,
+              suggestedAction: 'update_quantity'
+            })
+          }
+
+          // Check for low stock warning
+          if (item.maxQuantity && item.quantity >= item.maxQuantity * 0.8) {
+            warnings.push({
+              itemId: item.id,
+              type: 'low_stock',
+              message: `Only ${item.maxQuantity - item.quantity} ${item.name} remaining`
+            })
+          }
+        }
+
+        set({ lastValidation: new Date() })
+
+        return {
+          isValid: errors.length === 0,
+          errors,
+          warnings
+        }
+      },
+
+      applyBulkUpdate: async (updates) => {
+        try {
+          set((state) => {
+            const updatedItems = state.items.map(item => {
+              const update = updates.find(u => u.id === item.id)
+              if (update && validateQuantity(update.quantity, item.maxQuantity)) {
+                return { ...item, quantity: update.quantity, updatedAt: new Date() }
+              }
+              return item
+            })
+
+            return { items: updatedItems }
+          })
+
+          // Sync with server if user is logged in
+          if (get().userId) {
+            await get().syncWithServer()
+          }
+
+          return true
+        } catch (error) {
+          console.error('Error applying bulk update:', error)
+          toast.error('Failed to update cart items', { icon: '❌' })
+          return false
+        }
+      },
+
+      syncWithServer: async () => {
+        // This would sync cart with server for logged-in users
+        // Implementation depends on backend API
+        console.log('Syncing cart with server...')
+      },
+
+      // Getters
+      getItem: (id) => {
+        return get().items.find(item => item.id === id)
       },
 
       getItemQuantity: (id) => {
@@ -98,15 +425,63 @@ export const useCartStore = create<CartStore>()(
       },
 
       getTotalItems: () => {
-        return get().items.reduce((total, item) => total + item.quantity, 0)
+        return calculateCartTotals(get().items).totalItems
       },
 
       getTotalPrice: () => {
-        return get().items.reduce((total, item) => total + (item.price * item.quantity), 0)
+        return calculateCartTotals(get().items).subtotal
+      },
+
+      getCartSummary: (includeShipping = false) => {
+        const items = get().items
+        const { subtotal, totalItems, totalWeight } = calculateCartTotals(items)
+
+        const shipping = includeShipping ? Math.max(0, 1500 - (subtotal >= 10000 ? 1500 : 0)) : 0
+        const tax = subtotal * 0.075 // 7.5% tax
+        const discount = 0 // Could be calculated based on coupons
+
+        return {
+          items,
+          subtotal,
+          discount,
+          tax,
+          shipping,
+          total: subtotal + tax + shipping - discount,
+          totalItems,
+          totalWeight,
+          estimatedDelivery: new Date(Date.now() + 24 * 60 * 60 * 1000) // Next day
+        }
+      },
+
+      // Utilities
+      hasItem: (productId, variationId) => {
+        const cartItemId = generateCartItemId(productId, variationId)
+        return get().items.some(item => item.id === cartItemId)
+      },
+
+      getItemsByCategory: (categoryId) => {
+        return get().items.filter(item => item.categoryId === categoryId)
+      },
+
+      getLowStockItems: () => {
+        return get().items.filter(item =>
+          item.maxQuantity && item.quantity >= item.maxQuantity * 0.8
+        )
+      },
+
+      getUnavailableItems: () => {
+        return get().items.filter(item => !item.isAvailable)
       },
     }),
     {
-      name: 'marketdotcom-cart',
+      name: 'marketdotcom-cart-v2', // Updated storage key for new version
+      storage: createJSONStorage(() => localStorage),
+      // Only persist items, not loading states
+      partialize: (state) => ({
+        items: state.items,
+        userId: state.userId,
+        lastValidation: state.lastValidation
+      }),
     }
   )
 )

@@ -115,17 +115,31 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    console.log('DELETE /api/products/[id] called')
+
     const prisma = await getPrismaClient()
     const user = getUserFromRequest(request)
 
-    if (!user || user.role !== "ADMIN") {
+    console.log('User from token:', user)
+
+    if (!user) {
+      console.log('No user found in token')
       return NextResponse.json(
-        { error: "Unauthorized" },
+        { error: "No authentication token provided" },
         { status: 401 }
       )
     }
 
+    if (user.role !== "ADMIN") {
+      console.log('User role is not ADMIN:', user.role)
+      return NextResponse.json(
+        { error: "Unauthorized - Admin access required" },
+        { status: 403 }
+      )
+    }
+
     const { id } = await params
+    console.log('Deleting product with ID:', id)
 
     // Delete variations first
     await prisma.variation.deleteMany({
@@ -147,6 +161,7 @@ export async function DELETE(
       where: { id }
     })
 
+    console.log('Product deleted successfully:', id)
     return NextResponse.json({ message: "Product deleted successfully" })
   } catch (error) {
     console.error("Error deleting product:", error)

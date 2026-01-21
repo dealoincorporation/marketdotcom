@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
 import {
   Search,
@@ -37,6 +37,9 @@ interface Product {
     name: string
     price: number
     stock: number
+    unit?: string
+    quantity?: number
+    image?: string
   }>
 }
 
@@ -69,6 +72,29 @@ export default function MarketplaceTab({
   const [selectedVariations, setSelectedVariations] = useState<{ [key: string]: string }>({})
   const [searchTerm, setSearchTerm] = useState("")
   const [currentImageIndexes, setCurrentImageIndexes] = useState<Record<string, number>>({})
+
+  // Auto-select first available option for products
+  useEffect(() => {
+    const newSelections: { [key: string]: string } = {}
+    products.forEach(product => {
+      if (!selectedVariations[product.id]) {
+        // If base product has stock, select it
+        if (product.stock > 0) {
+          newSelections[product.id] = "base"
+        }
+        // Otherwise, find first available variation
+        else if (product.variations.length > 0) {
+          const availableVariation = product.variations.find(v => v.stock > 0)
+          if (availableVariation) {
+            newSelections[product.id] = availableVariation.id
+          }
+        }
+      }
+    })
+    if (Object.keys(newSelections).length > 0) {
+      setSelectedVariations(prev => ({ ...prev, ...newSelections }))
+    }
+  }, [products, selectedVariations])
 
   const handleQuantityChange = (productId: string, quantity: number) => {
     setQuantities(prev => ({
@@ -126,9 +152,6 @@ export default function MarketplaceTab({
       transition={{ duration: 0.5 }}
     >
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Marketplace</h1>
-        <p className="text-gray-600">Browse and shop from our wide selection of fresh products</p>
-
         {/* Search Bar */}
         <div className="mt-4 max-w-md">
           <div className="relative">
@@ -153,7 +176,7 @@ export default function MarketplaceTab({
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className={`grid grid-cols-1 ${selectedCategory !== "all" ? "md:grid-cols-3" : "md:grid-cols-2"} gap-6`}>
             <div className="space-y-2">
               <label className="block text-sm font-medium text-gray-700 flex items-center">
                 <span>1. Select Category</span>
@@ -170,7 +193,7 @@ export default function MarketplaceTab({
                 <SelectTrigger className="w-full">
                   <SelectValue placeholder="All Categories" />
                 </SelectTrigger>
-                <SelectContent className="bg-white border-gray-300 shadow-lg">
+                <SelectContent className="bg-white border-gray-300 shadow-lg z-50">
                   <SelectItem value="all">All Categories</SelectItem>
                   {categories.map(category => (
                     <SelectItem key={category.id} value={category.id}>
@@ -181,6 +204,8 @@ export default function MarketplaceTab({
               </Select>
             </div>
 
+            {selectedCategory !== "all" && (
+              <>
             <div className="space-y-2">
               <label className="block text-sm font-medium text-gray-700 flex items-center">
                 <span>2. Select Product</span>
@@ -201,7 +226,7 @@ export default function MarketplaceTab({
                 <SelectTrigger className="w-full">
                   <SelectValue placeholder={selectedCategory === "all" ? "Select category first" : "All Products"} />
                 </SelectTrigger>
-                <SelectContent className="bg-white border-gray-300 shadow-lg">
+                <SelectContent className="bg-white border-gray-300 shadow-lg z-50">
                   <SelectItem value="all">All Products</SelectItem>
                   {products
                     .filter(product => selectedCategory === "all" || product.categoryId === selectedCategory)
@@ -234,19 +259,49 @@ export default function MarketplaceTab({
                 <SelectTrigger className="w-full">
                   <SelectValue placeholder={selectedProduct === "all" ? "Select product first" : "All Variations"} />
                 </SelectTrigger>
-                <SelectContent className="bg-white border-gray-300 shadow-lg">
+                <SelectContent className="bg-white border-gray-300 shadow-lg z-50">
                   <SelectItem value="all">All Variations</SelectItem>
                   {(() => {
                     const selectedProd = products.find(p => p.id === selectedProduct)
-                    return selectedProd?.variations?.map(variation => (
-                      <SelectItem key={variation.id} value={variation.id}>
-                        {variation.name} - {formatPrice(variation.price)}
+                        const options = []
+
+                        // Add base product option if it has stock
+                        if (selectedProd?.stock && selectedProd.stock > 0) {
+                          options.push(
+                            <SelectItem key="base" value="base" className="flex items-center space-x-2 font-medium">
+                              <span>Standard - {formatPrice(selectedProd.basePrice)} ({selectedProd.stock} left)</span>
+                            </SelectItem>
+                          )
+                        }
+
+                        // Add variation options
+                        selectedProd?.variations
+                          ?.filter(variation => variation.stock > 0)
+                          ?.forEach(variation => {
+                            const displayName = variation.quantity && variation.unit
+                              ? `${variation.quantity} ${variation.unit} ${variation.name}`
+                              : variation.name;
+                            options.push(
+                              <SelectItem key={variation.id} value={variation.id} className="flex items-center space-x-2">
+                                {variation.image && (
+                                  <img
+                                    src={variation.image}
+                                    alt={variation.name}
+                                    className="w-6 h-6 object-cover rounded"
+                                  />
+                                )}
+                                <span>{displayName} - {formatPrice(variation.price)} ({variation.stock} left)</span>
                       </SelectItem>
-                    )) || []
+                            );
+                          })
+
+                        return options.length > 0 ? options : [<SelectItem key="none" value="none" disabled>No options available</SelectItem>]
                   })()}
                 </SelectContent>
               </Select>
             </div>
+              </>
+            )}
           </div>
 
           {/* Active Filters Display */}
@@ -278,10 +333,25 @@ export default function MarketplaceTab({
                 )}
                 {selectedVariation !== "all" && (
                   <Badge variant="secondary" className="flex items-center gap-1">
-                    Variation: {(() => {
+                    {(() => {
                       const selectedProd = products.find(p => p.id === selectedProduct)
                       const variation = selectedProd?.variations?.find(v => v.id === selectedVariation)
-                      return variation?.name
+                      if (!variation) return null;
+                      const displayName = variation.quantity && variation.unit
+                        ? `${variation.quantity} ${variation.unit} ${variation.name}`
+                        : variation.name;
+                      return (
+                        <>
+                          {variation.image && (
+                            <img
+                              src={variation.image}
+                              alt={variation.name}
+                              className="w-4 h-4 object-cover rounded"
+                            />
+                          )}
+                          Variation: {displayName}
+                        </>
+                      );
                     })()}
                     <button
                       onClick={() => onVariationChange("all")}
@@ -335,7 +405,7 @@ export default function MarketplaceTab({
                             e.stopPropagation()
                             prevImage(product.id, product.images)
                           }}
-                          className="absolute left-2 top-1/2 -translate-y-1/2 p-1.5 bg-black/50 hover:bg-black/70 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                          className="absolute left-2 top-1/2 -translate-y-1/2 p-1.5 bg-black/40 hover:bg-black/70 text-white rounded-full opacity-70 hover:opacity-100 transition-all duration-200 shadow-lg hover:shadow-xl"
                         >
                           <ChevronLeft className="h-4 w-4" />
                         </button>
@@ -345,12 +415,12 @@ export default function MarketplaceTab({
                             e.stopPropagation()
                             nextImage(product.id, product.images)
                           }}
-                          className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 bg-black/50 hover:bg-black/70 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                          className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 bg-black/40 hover:bg-black/70 text-white rounded-full opacity-70 hover:opacity-100 transition-all duration-200 shadow-lg hover:shadow-xl"
                         >
                           <ChevronRight className="h-4 w-4" />
                         </button>
                         {/* Image Dots */}
-                        <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex space-x-1 opacity-60 hover:opacity-100 transition-opacity">
                           {product.images.map((_, index) => (
                             <button
                               key={index}
@@ -359,10 +429,10 @@ export default function MarketplaceTab({
                                 e.stopPropagation()
                                 setCurrentImageIndex(product.id, index)
                               }}
-                              className={`w-2 h-2 rounded-full ${
+                              className={`w-2 h-2 rounded-full transition-all duration-200 hover:scale-110 ${
                                 index === getCurrentImageIndex(product.id)
-                                  ? 'bg-white'
-                                  : 'bg-white/50'
+                                  ? 'bg-white shadow-lg'
+                                  : 'bg-white/60 hover:bg-white/80'
                               }`}
                             />
                           ))}
@@ -373,6 +443,16 @@ export default function MarketplaceTab({
                 ) : (
                   <div className="w-full h-full bg-gradient-to-br from-orange-100 to-red-100 flex items-center justify-center">
                     <Package className="h-12 w-12 sm:h-16 sm:w-16 text-orange-400" />
+                  </div>
+                )}
+
+                {/* Image Count Indicator */}
+                {product.images && product.images.length > 1 && (
+                  <div className="absolute top-3 right-3 bg-black/60 text-white text-xs px-2 py-1 rounded-full flex items-center space-x-1 backdrop-blur-sm">
+                    <span>{product.images.length}</span>
+                    <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clipRule="evenodd" />
+                    </svg>
                   </div>
                 )}
               </div>
@@ -393,10 +473,22 @@ export default function MarketplaceTab({
 
                 <div className="flex items-center justify-between mb-3">
                   <span className="text-xl sm:text-2xl font-bold text-orange-600">
-                    {formatPrice(product.basePrice)}
+                    {(() => {
+                      const selectedVariationId = selectedVariations[product.id]
+                      const selectedVariation = selectedVariationId
+                        ? product.variations.find(v => v.id === selectedVariationId)
+                        : null
+                      return formatPrice(selectedVariation?.price || product.basePrice)
+                    })()}
                   </span>
                   <span className="text-xs sm:text-sm text-gray-500">
-                    per {product.unit}
+                    per {(() => {
+                      const selectedVariationId = selectedVariations[product.id]
+                      const selectedVariation = selectedVariationId
+                        ? product.variations.find(v => v.id === selectedVariationId)
+                        : null
+                      return selectedVariation?.unit || product.unit
+                    })()}
                   </span>
                 </div>
 
@@ -406,23 +498,44 @@ export default function MarketplaceTab({
 
                 {/* Variations */}
                 {product.variations.length > 0 && (
-                  <div className="mb-4">
+                  <div className="mb-4 p-3 bg-orange-50 border border-orange-200 rounded-lg">
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Variations
+                      Select Variation <span className="text-red-500">*</span>
                     </label>
                     <Select
                       value={selectedVariations[product.id] || ""}
                       onValueChange={(value) => handleVariationChange(product.id, value)}
                     >
                       <SelectTrigger className="w-full">
-                        <SelectValue placeholder="Select variation" />
+                        <SelectValue placeholder={product.stock > 0 ? "Standard or choose option" : "Choose an option"} />
                       </SelectTrigger>
-                      <SelectContent className="bg-white border-gray-300 shadow-lg">
-                        {product.variations.map(variation => (
-                          <SelectItem key={variation.id} value={variation.id}>
-                            {variation.name} - {formatPrice(variation.price)}
+                      <SelectContent className="bg-white border-gray-300 shadow-lg z-50">
+                        {/* Base product option - if it has stock */}
+                        {product.stock > 0 && (
+                          <SelectItem value="base" className="flex items-center space-x-2 font-medium">
+                            <span>Standard - {formatPrice(product.basePrice)} ({product.stock} left)</span>
                           </SelectItem>
-                        ))}
+                        )}
+                        {/* Variation options */}
+                        {product.variations
+                          .filter(variation => variation.stock > 0) // Only show in-stock variations
+                          .map(variation => {
+                            const displayName = variation.quantity && variation.unit
+                              ? `${variation.quantity} ${variation.unit} ${variation.name}`
+                              : variation.name;
+                            return (
+                              <SelectItem key={variation.id} value={variation.id} className="flex items-center space-x-2">
+                                {variation.image && (
+                                  <img
+                                    src={variation.image}
+                                    alt={variation.name}
+                                    className="w-6 h-6 object-cover rounded"
+                                  />
+                                )}
+                                <span>{displayName} - {formatPrice(variation.price)} ({variation.stock} left)</span>
+                              </SelectItem>
+                            );
+                          })}
                       </SelectContent>
                     </Select>
                   </div>
@@ -468,11 +581,21 @@ export default function MarketplaceTab({
 
                     onAddToCart(product, variation, quantity)
                   }}
-                  disabled={!product.inStock || (quantities[product.id] || 0) <= 0}
+                  disabled={Boolean(
+                    !product.inStock ||
+                    (quantities[product.id] || 0) <= 0 ||
+                    // Disable if variations exist but no option selected AND base product not available
+                    (product.variations.length > 0 && !selectedVariations[product.id] && product.stock <= 0) ||
+                    // Disable if a variation is selected but out of stock
+                    (selectedVariations[product.id] && selectedVariations[product.id] !== "base" && product.variations.find(v => v.id === selectedVariations[product.id])?.stock === 0)
+                  )}
                   className="w-full bg-orange-600 hover:bg-orange-700"
                 >
                   <ShoppingCart className="h-4 w-4 mr-2" />
-                  Add to Cart
+                  {(!selectedVariations[product.id] && product.variations.length > 0 && product.stock <= 0)
+                    ? "Select Option"
+                    : "Add to Cart"
+                  }
                 </Button>
               </CardContent>
             </Card>

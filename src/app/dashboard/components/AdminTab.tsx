@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import { motion } from "framer-motion"
 import {
@@ -84,6 +84,7 @@ export default function AdminTab({
     isActive: true,
     description: "Refer a friend and earn rewards!"
   })
+  const [referralSettingsLoading, setReferralSettingsLoading] = useState(false)
   const [showPointsSettings, setShowPointsSettings] = useState(false)
   const [pointsSettings, setPointsSettings] = useState({
     pointsPerNaira: 0.1,
@@ -176,6 +177,60 @@ export default function AdminTab({
       console.error('Error updating price:', error)
     }
   }
+
+  const handleSaveReferralSettings = async () => {
+    try {
+      setReferralSettingsLoading(true)
+      const token = localStorage.getItem('token')
+      const response = await fetch('/api/referrals/settings', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        },
+        body: JSON.stringify(referralSettings)
+      })
+
+      if (response.ok) {
+        const updatedSettings = await response.json()
+        setReferralSettings(updatedSettings)
+        alert('Referral settings updated successfully!')
+      } else {
+        alert('Failed to update referral settings')
+      }
+    } catch (error) {
+      console.error('Error saving referral settings:', error)
+      alert('Error updating referral settings')
+    } finally {
+      setReferralSettingsLoading(false)
+    }
+  }
+
+  // Fetch referral settings
+  useEffect(() => {
+    const fetchReferralSettings = async () => {
+      try {
+        setReferralSettingsLoading(true)
+        const token = localStorage.getItem('token')
+        const response = await fetch('/api/referrals/settings', {
+          headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+        })
+
+        if (response.ok) {
+          const settings = await response.json()
+          setReferralSettings(settings)
+        } else {
+          console.error('Failed to fetch referral settings')
+        }
+      } catch (error) {
+        console.error('Error fetching referral settings:', error)
+      } finally {
+        setReferralSettingsLoading(false)
+      }
+    }
+
+    fetchReferralSettings()
+  }, [])
 
   return (
     <motion.div
@@ -698,8 +753,12 @@ export default function AdminTab({
                 <Button variant="outline">
                   Reset to Default
                 </Button>
-                <Button className="bg-orange-600 hover:bg-orange-700">
-                  Save Settings
+                <Button
+                  onClick={handleSaveReferralSettings}
+                  disabled={referralSettingsLoading}
+                  className="bg-orange-600 hover:bg-orange-700"
+                >
+                  {referralSettingsLoading ? 'Saving...' : 'Save Settings'}
                 </Button>
               </div>
             </CardContent>

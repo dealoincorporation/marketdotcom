@@ -26,18 +26,9 @@ export async function getPrismaClient() {
     isVercel: !!process.env.VERCEL
   })
 
-  // In serverless environments, don't reuse the global client
-  if (process.env.NODE_ENV === "production" || process.env.VERCEL || process.env.NETLIFY) {
-    console.log("Creating new Prisma client for serverless environment")
-    return createPrismaClient()
-  }
-
-  // In development, reuse the global client to avoid connection limits
-  if (!globalForPrisma.prisma) {
-    globalForPrisma.prisma = createPrismaClient()
-    console.log("Created and cached Prisma client for development")
-  }
-  return globalForPrisma.prisma
+  // For now, always create a new client to ensure models are properly loaded
+  console.log("Creating new Prisma client")
+  return createPrismaClient()
 }
 
 // For backward compatibility - use getPrismaClient() instead for lazy loading

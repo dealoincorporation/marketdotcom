@@ -272,7 +272,7 @@ export function ProductCard({
                   <button
                     onClick={decrementQuantity}
                     disabled={quantity <= 1}
-                    className="p-2 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="p-2 hover:bg-gray-50 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <Minus className="h-4 w-4" />
                   </button>
@@ -282,7 +282,7 @@ export function ProductCard({
                   <button
                     onClick={incrementQuantity}
                     disabled={quantity >= 99}
-                    className="p-2 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="p-2 hover:bg-gray-50 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <Plus className="h-4 w-4" />
                   </button>

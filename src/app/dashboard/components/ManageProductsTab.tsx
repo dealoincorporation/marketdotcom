@@ -42,6 +42,9 @@ interface Product {
     name: string
     price: number
     stock: number
+    unit?: string
+    quantity?: number
+    image?: string
   }>
   createdAt: string
   updatedAt: string

@@ -45,6 +45,15 @@ export default function WalletTab({ walletInfo }: WalletTabProps) {
   const [showConvertModal, setShowConvertModal] = useState(false)
   const [pointsToConvert, setPointsToConvert] = useState("")
 
+  // Referral settings state
+  const [referralSettings, setReferralSettings] = useState({
+    referrerReward: 0,
+    refereeReward: 0,
+    isActive: true,
+    description: ""
+  })
+  const [referralSettingsLoading, setReferralSettingsLoading] = useState(true)
+
   // Rewards state
   const [rewardsData, setRewardsData] = useState({
     totalPoints: 0,
@@ -62,7 +71,7 @@ export default function WalletTab({ walletInfo }: WalletTabProps) {
 
   // Referral data state
   const [referralData, setReferralData] = useState({
-    code: "",
+    code: walletInfo.referralCode || "",
     totalReferrals: 0,
     successfulReferrals: 0,
     totalEarned: 0
@@ -109,15 +118,61 @@ export default function WalletTab({ walletInfo }: WalletTabProps) {
         if (response.ok) {
           const data = await response.json()
           setReferralData(data)
+        } else {
+          // If API fails, use walletInfo referral code as fallback
+          if (walletInfo.referralCode) {
+            setReferralData({
+              code: walletInfo.referralCode,
+              totalReferrals: 0,
+              successfulReferrals: 0,
+              totalEarned: 0
+            })
+          }
         }
       } catch (error) {
         console.error('Error fetching referral data:', error)
+        // Use walletInfo referral code as fallback on error
+        if (walletInfo.referralCode) {
+          setReferralData({
+            code: walletInfo.referralCode,
+            totalReferrals: 0,
+            successfulReferrals: 0,
+            totalEarned: 0
+          })
+        }
       } finally {
         setReferralLoading(false)
       }
     }
 
     fetchReferralData()
+  }, [walletInfo.referralCode])
+
+  // Fetch referral settings
+  useEffect(() => {
+    const fetchReferralSettingsData = async () => {
+      try {
+        setReferralSettingsLoading(true)
+        const token = localStorage.getItem('token')
+        const response = await fetch('/api/referrals/settings', {
+          headers: {
+            ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+          }
+        })
+
+        if (response.ok) {
+          const settings = await response.json()
+          setReferralSettings(settings)
+        }
+      } catch (error) {
+        console.error('Error fetching referral settings:', error)
+        // Keep default values if fetch fails
+      } finally {
+        setReferralSettingsLoading(false)
+      }
+    }
+
+    fetchReferralSettingsData()
   }, [])
 
   // Fetch rewards data
@@ -258,43 +313,60 @@ export default function WalletTab({ walletInfo }: WalletTabProps) {
 
       {/* Wallet Balance & Points Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-        <div>
-          <Card className="bg-gradient-to-br from-green-50 to-emerald-100 border-green-200 shadow-lg">
+        <div className="h-full">
+          <Card className="bg-gradient-to-br from-green-50 to-emerald-100 border-green-200 shadow-lg h-full">
             <CardHeader className="pb-4">
               <CardTitle className="flex items-center space-x-2 text-green-800">
                 <Wallet className="h-6 w-6" />
                 <span>Wallet Balance</span>
               </CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="flex flex-col h-full">
               <div className="text-3xl font-bold text-green-900 mb-2">
                 {formatPrice(walletInfo.walletBalance)}
               </div>
-              <p className="text-green-700 text-sm">
-                Available for purchases
-              </p>
-              <div className="mt-4">
+              <div className="flex items-center space-x-2 mb-3">
+                <Badge className="bg-green-100 text-green-800 border-green-300">
+                  Active Wallet
+                </Badge>
+                <span className="text-green-700 text-sm">
+                  Available for purchases
+                </span>
+              </div>
+
+              {/* Usage visualization - similar to rewards progress bar */}
+              <div className="w-full bg-green-200 rounded-full h-2 mb-6">
+                <div
+                  className="bg-green-600 h-2 rounded-full transition-all duration-500"
+                  style={{ width: `${Math.min((walletInfo.walletBalance / 50000) * 100, 100)}%` }}
+                ></div>
+              </div>
+
+              <div className="space-y-2">
                 <button
                   onClick={() => setShowFundModal(true)}
-                  className="w-full px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors text-sm font-medium flex items-center justify-center space-x-1"
+                  className="w-full px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors text-sm font-medium flex items-center justify-center space-x-1 cursor-pointer"
                 >
                   <Plus className="h-4 w-4" />
                   <span>Add Money</span>
                 </button>
+                <p className="text-xs text-green-600 text-center">
+                  Secure • Fast • Reliable
+                </p>
               </div>
             </CardContent>
           </Card>
         </div>
 
-        <div>
-          <Card className="bg-gradient-to-br from-orange-50 to-red-100 border-orange-200 shadow-lg">
+        <div className="h-full">
+          <Card className="bg-gradient-to-br from-orange-50 to-red-100 border-orange-200 shadow-lg h-full">
             <CardHeader className="pb-4">
               <CardTitle className="flex items-center space-x-2 text-orange-800">
                 <Star className="h-6 w-6" />
                 <span>Reward Points</span>
               </CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="flex flex-col h-full">
               <div className="text-3xl font-bold text-orange-900 mb-2">
                 {rewardsLoading ? "..." : rewardsData.totalPoints.toLocaleString() + " pts"}
               </div>
@@ -306,7 +378,7 @@ export default function WalletTab({ walletInfo }: WalletTabProps) {
                   {pointsToNextTier} pts to next tier
                 </span>
               </div>
-              <div className="w-full bg-orange-200 rounded-full h-2 mb-4">
+              <div className="w-full bg-orange-200 rounded-full h-2 mb-6">
                 <div
                   className="bg-orange-600 h-2 rounded-full transition-all duration-500"
                   style={{ width: `${((rewardsData.totalPoints % 1000) / 1000) * 100}%` }}
@@ -317,11 +389,11 @@ export default function WalletTab({ walletInfo }: WalletTabProps) {
                 <button
                   onClick={() => setShowConvertModal(true)}
                   disabled={rewardsData.totalPoints < pointsSettings.minimumPointsToConvert}
-                  className="w-full px-4 py-2 bg-orange-600 text-white rounded-md hover:bg-orange-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors text-sm font-medium"
+                  className="w-full px-4 py-2 bg-orange-600 text-white rounded-md hover:bg-orange-700 disabled:bg-gray-400 cursor-pointer disabled:cursor-not-allowed transition-colors text-sm font-medium"
                 >
                   Convert to Cash
                 </button>
-                <p className="text-xs text-gray-600 text-center">
+                <p className="text-xs text-orange-600 text-center">
                   Min: {pointsSettings.minimumPointsToConvert} pts • Rate: {pointsSettings.nairaPerPoint} pts = ₦1
                 </p>
               </div>
@@ -361,7 +433,7 @@ export default function WalletTab({ walletInfo }: WalletTabProps) {
                 </div>
                 <div className="text-center col-span-2 md:col-span-1">
                   <div className="text-sm md:text-lg font-mono bg-gray-100 px-2 md:px-3 py-2 rounded-md mb-2 break-all">
-                    {referralLoading ? "..." : referralData.code || "Loading..."}
+                    {referralLoading ? "..." : (referralData.code || walletInfo.referralCode || "...")}
                   </div>
                   <div className="text-gray-600 text-xs md:text-sm">Your Code</div>
                 </div>
@@ -373,21 +445,30 @@ export default function WalletTab({ walletInfo }: WalletTabProps) {
                     <div>
                       <h4 className="font-medium text-blue-900 mb-2">How Referral Program Works</h4>
                       <div className="text-blue-800 text-sm space-y-2">
-                        <p><strong>You earn ₦100</strong> when someone signs up using your referral code</p>
-                        <p><strong>They get ₦50</strong> bonus on their first purchase</p>
-                        <p>Share your unique code to start earning rewards!</p>
+                        {referralSettingsLoading ? (
+                          <p>Loading referral details...</p>
+                        ) : (
+                          <>
+                            <p><strong>You earn rewards</strong> when someone signs up using your referral code</p>
+                            <p><strong>They receive a bonus</strong> on their first purchase</p>
+                            <p>Share your unique code to start earning rewards!</p>
+                            {referralSettings.description && (
+                              <p className="text-blue-700 italic mt-2">{referralSettings.description}</p>
+                            )}
+                          </>
+                        )}
                       </div>
                     </div>
                   </div>
                 </div>
 
                 <div className="flex flex-col sm:flex-row gap-3">
-                  <button className="flex-1 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors text-sm font-medium">
+                  <button className="flex-1 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors text-sm font-medium cursor-pointer">
                     Share Code
                   </button>
                   <button
-                    onClick={() => navigator.clipboard.writeText(referralData.code)}
-                    className="flex-1 border border-blue-600 text-blue-600 px-4 py-2 rounded-md hover:bg-blue-50 transition-colors text-sm font-medium"
+                    onClick={() => navigator.clipboard.writeText(referralData.code || walletInfo.referralCode || '')}
+                    className="flex-1 border border-blue-600 text-blue-600 px-4 py-2 rounded-md hover:bg-blue-50 transition-colors text-sm font-medium cursor-pointer"
                   >
                     Copy Code
                   </button>
@@ -452,7 +533,7 @@ export default function WalletTab({ walletInfo }: WalletTabProps) {
                   ))}
                 </div>
                 <div className="mt-6 text-center">
-                  <button className="text-orange-600 hover:text-orange-700 font-medium text-sm">
+                  <button className="text-orange-600 hover:text-orange-700 font-medium text-sm cursor-pointer">
                     View All Transactions →
                   </button>
                 </div>

@@ -11,7 +11,8 @@ import {
   Package,
   MapPin,
   Calendar,
-  DollarSign
+  DollarSign,
+  Trash2
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -39,9 +40,11 @@ interface OrdersTabProps {
   orders: Order[]
   isAdmin: boolean
   onOrderStatusChange: (orderId: string, newStatus: string) => void
+  onOrderDelete?: (orderId: string) => void
+  updatingOrderId?: string | null
 }
 
-export default function OrdersTab({ orders, isAdmin, onOrderStatusChange }: OrdersTabProps) {
+export default function OrdersTab({ orders, isAdmin, onOrderStatusChange, onOrderDelete, updatingOrderId }: OrdersTabProps) {
   const [selectedStatus, setSelectedStatus] = useState("all")
 
   const getStatusIcon = (status: string) => {
@@ -79,7 +82,10 @@ export default function OrdersTab({ orders, isAdmin, onOrderStatusChange }: Orde
     }
   }
 
-  const formatPrice = (price: number) => {
+  const formatPrice = (price: number | undefined | null) => {
+    if (price == null || isNaN(price)) {
+      return '₦0.00'
+    }
     return `₦${price.toLocaleString()}`
   }
 
@@ -171,12 +177,12 @@ export default function OrdersTab({ orders, isAdmin, onOrderStatusChange }: Orde
                       <CardTitle className="text-lg">Order #{order.id.slice(-8)}</CardTitle>
                       <Badge className={`flex items-center space-x-1 px-3 py-1 ${getStatusColor(order.status)}`}>
                         {getStatusIcon(order.status)}
-                        <span className="capitalize">{order.status}</span>
+                        <span className="uppercase">{order.status}</span>
                       </Badge>
                     </div>
                     <div className="text-right">
                       <div className="text-2xl font-bold text-orange-600">
-                        {formatPrice(order.total)}
+                        {formatPrice(order?.total)}
                       </div>
                       <div className="text-sm text-gray-500 flex items-center">
                         <Calendar className="h-4 w-4 mr-1" />
@@ -196,12 +202,12 @@ export default function OrdersTab({ orders, isAdmin, onOrderStatusChange }: Orde
                           <div className="flex-1">
                             <div className="font-medium text-gray-900">{item.name}</div>
                             <div className="text-sm text-gray-600">
-                              {item.quantity} {item.unit} × {formatPrice(item.price)}
+                              {item.quantity} {item.unit} × {formatPrice(item?.price)}
                             </div>
                           </div>
                           <div className="text-right">
                             <div className="font-medium text-gray-900">
-                              {formatPrice(item.quantity * item.price)}
+                              {formatPrice((item?.quantity || 0) * (item?.price || 0))}
                             </div>
                           </div>
                         </div>
@@ -237,26 +243,43 @@ export default function OrdersTab({ orders, isAdmin, onOrderStatusChange }: Orde
 
                   {/* Admin Controls */}
                   {isAdmin && (
-                    <div className="flex items-center justify-between pt-4 border-t border-gray-200">
-                      <div className="text-sm text-gray-600">
-                        Change order status:
+                    <div className="pt-4 border-t border-gray-200 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <div className="text-sm text-gray-600">
+                          Change order status:
+                        </div>
+                        <Select
+                          value={order.status}
+                          onValueChange={(newStatus) => onOrderStatusChange(order.id, newStatus)}
+                          disabled={updatingOrderId === order.id}
+                        >
+                          <SelectTrigger className="w-48">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent className="bg-white border border-gray-200 shadow-lg">
+                            <SelectItem value="pending">Pending</SelectItem>
+                            <SelectItem value="confirmed">Confirmed</SelectItem>
+                            <SelectItem value="processing">Processing</SelectItem>
+                            <SelectItem value="shipped">Shipped</SelectItem>
+                            <SelectItem value="delivered">Delivered</SelectItem>
+                            <SelectItem value="cancelled">Cancelled</SelectItem>
+                          </SelectContent>
+                        </Select>
                       </div>
-                      <Select
-                        value={order.status}
-                        onValueChange={(newStatus) => onOrderStatusChange(order.id, newStatus)}
-                      >
-                        <SelectTrigger className="w-48">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="pending">Pending</SelectItem>
-                          <SelectItem value="confirmed">Confirmed</SelectItem>
-                          <SelectItem value="processing">Processing</SelectItem>
-                          <SelectItem value="shipped">Shipped</SelectItem>
-                          <SelectItem value="delivered">Delivered</SelectItem>
-                          <SelectItem value="cancelled">Cancelled</SelectItem>
-                        </SelectContent>
-                      </Select>
+
+                      {onOrderDelete && (
+                        <div className="flex justify-end">
+                          <Button
+                            onClick={() => onOrderDelete(order.id)}
+                            variant="outline"
+                            size="sm"
+                            className="text-red-600 border-red-600 hover:bg-red-50 hover:border-red-700"
+                          >
+                            <Trash2 className="h-4 w-4 mr-2" />
+                            Delete Order
+                          </Button>
+                        </div>
+                      )}
                     </div>
                   )}
                 </CardContent>

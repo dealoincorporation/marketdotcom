@@ -178,6 +178,7 @@ export default function Home() {
           <motion.div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-gradient-to-r from-orange-100/30 to-yellow-100/30 rounded-full blur-3xl"></motion.div>
         </motion.div>
 
+
         <motion.div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
           <motion.div className="grid lg:grid-cols-2 gap-12 items-center">
             {/* Left Content */}
@@ -187,15 +188,55 @@ export default function Home() {
               transition={{ duration: 0.8 }}
               className="text-center lg:text-left"
             >
-              {/* Badge */}
+              {/* Mobile Image Slider - Shows before headline on mobile */}
               <motion.div
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.2 }}
-                className="inline-flex items-center px-4 py-2 bg-orange-100 text-orange-800 rounded-full text-sm font-medium mb-6"
+                transition={{ duration: 0.8, delay: 0.2 }}
+                className="relative z-10 max-w-lg mx-auto mb-8 lg:hidden"
               >
-                <span className="w-2 h-2 bg-orange-500 rounded-full mr-2 animate-pulse"></span>
-                Nigeria's #1 Agricultural Marketplace
+                <motion.div className="relative">
+                  <motion.div
+                    initial={{ scale: 0.9, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={{ duration: 0.8, delay: 0.4 }}
+                  >
+                    <ImageSlider
+                      images={["/market_image.jpeg", "/cart_image.jpeg", "/vegetables.webp"]}
+                      className="h-64 sm:h-80 w-full"
+                    />
+                  </motion.div>
+
+                  {/* Floating Elements */}
+                  <motion.div
+                    animate={{
+                      y: [0, -10, 0],
+                    }}
+                    transition={{
+                      duration: 3,
+                      repeat: Infinity,
+                      ease: "easeInOut"
+                    }}
+                    className="absolute -top-6 -right-6 w-16 h-16 bg-yellow-400 rounded-full flex items-center justify-center shadow-lg"
+                  >
+                    <span className="text-2xl">🌟</span>
+                  </motion.div>
+
+                  <motion.div
+                    animate={{
+                      y: [0, 10, 0],
+                    }}
+                    transition={{
+                      duration: 4,
+                      repeat: Infinity,
+                      ease: "easeInOut",
+                      delay: 1
+                    }}
+                    className="absolute -bottom-6 -left-6 w-14 h-14 bg-green-500 rounded-full flex items-center justify-center shadow-lg"
+                  >
+                    <span className="text-xl">🥬</span>
+                  </motion.div>
+                </motion.div>
               </motion.div>
 
               {/* Main Headline */}
@@ -218,26 +259,6 @@ export default function Home() {
                 your smart shopping solution. quality foodstuff, daily savings and convenient delivery all in one place
               </motion.p>
 
-              {/* Stats */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, delay: 0.6 }}
-                className="grid grid-cols-3 gap-8 mb-10 lg:justify-start justify-center"
-              >
-                <motion.div className="text-center lg:text-left">
-                  <motion.div className="text-3xl font-bold text-orange-600">500+</motion.div>
-                  <motion.div className="text-sm text-gray-600">Farmers</motion.div>
-                </motion.div>
-                <motion.div className="text-center lg:text-left">
-                  <motion.div className="text-3xl font-bold text-orange-500">10K+</motion.div>
-                  <motion.div className="text-sm text-gray-600">Products</motion.div>
-                </motion.div>
-                <motion.div className="text-center lg:text-left">
-                  <motion.div className="text-3xl font-bold text-orange-700">50K+</motion.div>
-                  <motion.div className="text-sm text-gray-600">Happy Customers</motion.div>
-                </motion.div>
-              </motion.div>
 
               {/* CTA Buttons */}
               <motion.div
@@ -281,12 +302,12 @@ export default function Home() {
               </motion.div>
             </motion.div>
 
-            {/* Right Visual - Image Slider */}
+            {/* Right Visual - Image Slider (Desktop) */}
             <motion.div
               initial={{ opacity: 0, x: 50 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.8, delay: 0.4 }}
-              className="relative"
+              className="relative hidden lg:block"
             >
               <motion.div className="relative">
                 <motion.div
@@ -332,6 +353,7 @@ export default function Home() {
                 </motion.div>
               </motion.div>
             </motion.div>
+
           </motion.div>
         </motion.div>
 
@@ -842,7 +864,7 @@ export default function Home() {
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.4 }}
             viewport={{ once: true }}
-            className="text-center"
+            className="text-center hidden md:block"
           >
             <motion.div className="bg-white/95 backdrop-blur-sm border border-orange-200/50 rounded-3xl p-8 max-w-4xl mx-auto shadow-xl">
               <h3 className="text-2xl font-bold mb-8 text-gray-900">Our Impact So Far</h3>

@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useCartStore } from "@/lib/cart-store"
 import { useAuth } from "@/contexts/AuthContext"
 
@@ -38,6 +39,8 @@ export default function MarketplacePage() {
   const [showFilters, setShowFilters] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [currentImageIndexes, setCurrentImageIndexes] = useState<Record<string, number>>({})
+  const [selectedVariations, setSelectedVariations] = useState<{ [key: string]: string }>({})
+  const [quantities, setQuantities] = useState<{ [key: string]: number }>({})
 
   const { user } = useAuth()
   const { items, addItem, removeItem, getItemQuantity } = useCartStore()
@@ -127,18 +130,96 @@ export default function MarketplacePage() {
     setFilteredProducts(filtered)
   }, [products, selectedCategory, searchQuery])
 
+  // Auto-select first available option for products
+  useEffect(() => {
+    const newSelectedVariations = { ...selectedVariations }
+
+    filteredProducts.forEach(product => {
+      if (!selectedVariations[product.id]) {
+        // If base product has stock, select it
+        if (product.stock > 0) {
+          newSelectedVariations[product.id] = "base"
+        }
+        // Otherwise, find first available variation
+        else if (product.variations && product.variations.length > 0) {
+          const availableVariation = product.variations.find((v: any) => v.stock > 0)
+          if (availableVariation) {
+            newSelectedVariations[product.id] = availableVariation.id
+          }
+        }
+      }
+    })
+
+    if (Object.keys(newSelectedVariations).length !== Object.keys(selectedVariations).length) {
+      setSelectedVariations(newSelectedVariations)
+    }
+  }, [filteredProducts, selectedVariations])
+
   const handleAddToCart = (product: any, quantity: number = 1) => {
+    const selectedVariationId = selectedVariations[product.id]
+    let selectedVariation
+    let isBaseProduct = false
+
+    if (selectedVariationId === "base") {
+      // Base product selected
+      selectedVariation = undefined
+      isBaseProduct = true
+    } else {
+      // Specific variation selected
+      selectedVariation = selectedVariationId
+        ? product.variations.find((v: any) => v.id === selectedVariationId)
+        : undefined
+    }
+
     addItem({
-      id: product.id,
-      name: product.name,
-      price: product.price,
-      image: product.image,
+      productId: product.id,
+      variationId: selectedVariation?.id,
+      name: selectedVariation
+        ? `${product.name} (${selectedVariation.quantity} ${selectedVariation.unit} ${selectedVariation.name})`
+        : product.name,
+      price: selectedVariation?.price || product.price,
+      image: selectedVariation?.image || product.image,
       quantity,
-      unit: product.unit,
+      unit: selectedVariation?.unit || product.unit,
+      variation: selectedVariation,
+      maxQuantity: selectedVariation ? selectedVariation.stock : product.stock,
+      categoryId: product.categoryId,
+      categoryName: product.category?.name,
     })
   }
 
   const cartItemCount = items.reduce((total, item) => total + item.quantity, 0)
+
+  // Auto-select first variation for products with variations
+  useEffect(() => {
+    const newSelections: { [key: string]: string } = {}
+    products.forEach(product => {
+      if (product.variations.length > 0 && !selectedVariations[product.id] && product.variations[0]) {
+        newSelections[product.id] = product.variations[0].id
+      }
+    })
+    if (Object.keys(newSelections).length > 0) {
+      setSelectedVariations(prev => ({ ...prev, ...newSelections }))
+    }
+  }, [products, selectedVariations])
+
+  const handleVariationChange = (productId: string, variationId: string) => {
+    setSelectedVariations(prev => ({
+      ...prev,
+      [productId]: variationId
+    }))
+  }
+
+  const handleQuantityChange = (productId: string, quantity: number) => {
+    setQuantities(prev => ({
+      ...prev,
+      [productId]: Math.max(0, quantity)
+    }))
+  }
+
+  const formatPrice = (price: number) => {
+    return `₦${price.toLocaleString()}`
+  }
 
   // Image slider functions
   const getCurrentImageIndex = (productId: string) => {
@@ -422,7 +503,7 @@ export default function MarketplacePage() {
                                 e.preventDefault()
                                 prevImage(product.id, product.images)
                               }}
-                              className="absolute left-2 top-1/2 -translate-y-1/2 p-1.5 bg-black/50 hover:bg-black/70 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                              className="absolute left-2 top-1/2 -translate-y-1/2 p-1.5 bg-black/40 hover:bg-black/70 text-white rounded-full opacity-70 hover:opacity-100 transition-all duration-200 shadow-lg hover:shadow-xl"
                             >
                               <ChevronLeft className="h-4 w-4" />
                             </button>
@@ -431,12 +512,12 @@ export default function MarketplacePage() {
                                 e.preventDefault()
                                 nextImage(product.id, product.images)
                               }}
-                              className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 bg-black/50 hover:bg-black/70 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                              className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 bg-black/40 hover:bg-black/70 text-white rounded-full opacity-70 hover:opacity-100 transition-all duration-200 shadow-lg hover:shadow-xl"
                             >
                               <ChevronRight className="h-4 w-4" />
                             </button>
                             {/* Image Dots */}
-                            <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex space-x-1 opacity-60 hover:opacity-100 transition-opacity">
                               {product.images.map((image: any, index: number) => (
                                 <button
                                   key={index}
@@ -444,10 +525,10 @@ export default function MarketplacePage() {
                                     e.preventDefault()
                                     setCurrentImageIndex(product.id, index)
                                   }}
-                                  className={`w-2 h-2 rounded-full ${
+                                  className={`w-2 h-2 rounded-full transition-all duration-200 hover:scale-110 ${
                                     index === getCurrentImageIndex(product.id)
-                                      ? 'bg-white'
-                                      : 'bg-white/50'
+                                      ? 'bg-white shadow-lg'
+                                      : 'bg-white/60 hover:bg-white/80'
                                   }`}
                                 />
                               ))}
@@ -460,7 +541,18 @@ export default function MarketplacePage() {
                         <ShoppingBag className="h-12 w-12 text-green-600" />
                       </div>
                     )}
-                    <button className="absolute top-3 right-3 p-2 bg-white/80 backdrop-blur-sm rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
+
+                    {/* Image Count Indicator */}
+                    {product.images && product.images.length > 1 && (
+                      <div className="absolute top-3 right-3 bg-black/60 text-white text-xs px-2 py-1 rounded-full flex items-center space-x-1 backdrop-blur-sm">
+                        <span>{product.images.length}</span>
+                        <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clipRule="evenodd" />
+                        </svg>
+                      </div>
+                    )}
+
+                    <button className="absolute top-3 left-3 p-2 bg-white/80 backdrop-blur-sm rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
                       <Heart className="h-4 w-4 text-gray-600" />
                     </button>
                     {product.stock < 10 && (
@@ -492,36 +584,130 @@ export default function MarketplacePage() {
                       {product.description}
                     </p>
 
+                    {/* Variations */}
+                    {product.variations && product.variations.length > 0 && (
+                      <div className="mb-4 p-3 bg-orange-50 border border-orange-200 rounded-lg">
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Select Option <span className="text-red-500">*</span>
+                        </label>
+                        <Select
+                          value={selectedVariations[product.id] || ""}
+                          onValueChange={(value) => handleVariationChange(product.id, value)}
+                        >
+                          <SelectTrigger className="w-full h-10">
+                            <SelectValue placeholder={product.stock > 0 ? "Standard or choose option" : "Choose an option"} />
+                          </SelectTrigger>
+                          <SelectContent className="bg-white border-gray-300 shadow-lg z-50">
+                            {/* Base product option - if it has stock */}
+                            {product.stock > 0 && (
+                              <SelectItem value="base" className="flex items-center space-x-2 font-medium">
+                                <span>Standard - {formatPrice(product.price)} ({product.stock} left)</span>
+                              </SelectItem>
+                            )}
+                            {/* Variation options */}
+                            {product.variations
+                              .filter((variation: any) => variation.stock > 0) // Only show in-stock variations
+                              .map((variation: any) => {
+                                const displayName = variation.quantity && variation.unit
+                                  ? `${variation.quantity} ${variation.unit} ${variation.name}`
+                                  : variation.name;
+                                return (
+                                  <SelectItem key={variation.id} value={variation.id} className="flex items-center space-x-2">
+                                    {variation.image && (
+                                      <img
+                                        src={variation.image}
+                                        alt={variation.name}
+                                        className="w-6 h-6 object-cover rounded"
+                                      />
+                                    )}
+                                    <span>{displayName} - {formatPrice(variation.price)} ({variation.stock} left)</span>
+                                  </SelectItem>
+                                );
+                              })}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    )}
+
                     <div className="flex items-center justify-between mb-4">
                       <div className="flex flex-col">
                         <span className="text-lg font-bold text-gray-900">
-                          ₦{product.price.toLocaleString()}
+                          {(() => {
+                            const selectedVariationId = selectedVariations[product.id]
+                            const selectedVariation = selectedVariationId
+                              ? product.variations?.find((v: any) => v.id === selectedVariationId)
+                              : null
+                            return formatPrice(selectedVariation?.price || product.price)
+                          })()}
                         </span>
-                        <span className="text-xs text-gray-500">per {product.unit}</span>
+                        <span className="text-xs text-gray-500">per {(() => {
+                          const selectedVariationId = selectedVariations[product.id]
+                          const selectedVariation = selectedVariationId
+                            ? product.variations?.find((v: any) => v.id === selectedVariationId)
+                            : null
+                          return selectedVariation?.unit || product.unit
+                        })()}</span>
                       </div>
                       <Badge
-                        variant={product.stock > 0 ? "default" : "destructive"}
+                        variant={(product.stock > 0 || (product.variations && product.variations.some((v: any) => v.stock > 0))) ? "default" : "destructive"}
                         className="text-xs"
                       >
-                        {product.stock > 0 ? `${product.stock} in stock` : "Out of stock"}
+                        {(product.stock > 0 || (product.variations && product.variations.some((v: any) => v.stock > 0))) ?
+                          (product.variations && product.variations.length > 0 ?
+                            `${product.variations.filter((v: any) => v.stock > 0).length} options available` :
+                            `${product.stock} in stock`) :
+                          "Out of stock"}
                       </Badge>
                     </div>
 
-                    {/* Add to Cart */}
-                    {product.stock > 0 ? (
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-2">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => handleAddToCart(product, 1)}
-                            className="flex-1"
-                          >
-                            <Plus className="h-4 w-4 mr-1" />
-                            Add to Cart
-                          </Button>
-                        </div>
+                    {/* Quantity Selector */}
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center space-x-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleQuantityChange(product.id, (quantities[product.id] || 0) - 1)}
+                          disabled={(quantities[product.id] || 0) <= 0}
+                          className="h-8 w-8 p-0"
+                        >
+                          <Minus className="h-3 w-3" />
+                        </Button>
+                        <span className="w-8 text-center font-medium text-sm">
+                          {quantities[product.id] || 0}
+                        </span>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleQuantityChange(product.id, (quantities[product.id] || 0) + 1)}
+                          className="h-8 w-8 p-0"
+                        >
+                          <Plus className="h-3 w-3" />
+                        </Button>
                       </div>
+                    </div>
+
+                    {/* Add to Cart */}
+                    {(product.stock > 0 || (product.variations && product.variations.some((v: any) => v.stock > 0))) ? (
+                      <Button
+                        onClick={() => {
+                          const quantity = quantities[product.id] || 1
+                          handleAddToCart(product, quantity)
+                        }}
+                        disabled={
+                          (quantities[product.id] || 0) <= 0 ||
+                          // Disable if variations exist but no option selected AND base product not available
+                          (product.variations && product.variations.length > 0 && !selectedVariations[product.id] && product.stock <= 0) ||
+                          // Disable if a variation is selected but out of stock
+                          (selectedVariations[product.id] && selectedVariations[product.id] !== "base" && product.variations.find((v: any) => v.id === selectedVariations[product.id])?.stock === 0)
+                        }
+                        className="w-full bg-orange-600 hover:bg-orange-700"
+                      >
+                        <ShoppingCart className="h-4 w-4 mr-2" />
+                        {(!selectedVariations[product.id] && ((product.variations && product.variations.length > 0 && product.stock <= 0)))
+                          ? "Select Option"
+                          : "Add to Cart"
+                        }
+                      </Button>
                     ) : (
                       <Button disabled className="w-full" size="sm">
                         Out of Stock

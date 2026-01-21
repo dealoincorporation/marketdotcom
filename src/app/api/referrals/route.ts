@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { getUserFromRequest } from "@/lib/auth"
 import { getPrismaClient } from "@/lib/prisma"
+import { generateReferralCode } from "@/lib/helpers"
 
 // Force dynamic rendering to avoid static generation issues
 export const dynamic = 'force-dynamic'
@@ -45,16 +46,26 @@ export async function GET(request: NextRequest) {
     // Get total earnings from referrals
     const totalEarned = referralStats._sum.rewardAmount || 0
 
-    // Get user's referral code
-    const userData = await prisma.user.findUnique({
+    // Get user's referral code, generate one if missing
+    let userData = await prisma.user.findUnique({
       where: { id: user.userId },
       select: {
         referralCode: true
       }
     })
 
+    // Generate referral code if user doesn't have one
+    if (!userData?.referralCode) {
+      const newReferralCode = generateReferralCode()
+      await prisma.user.update({
+        where: { id: user.userId },
+        data: { referralCode: newReferralCode }
+      })
+      userData = { referralCode: newReferralCode }
+    }
+
     const referralData = {
-      code: userData?.referralCode || '',
+      code: userData.referralCode,
       totalReferrals: referralStats._count.id || 0,
       successfulReferrals: successfulReferrals || 0,
       totalEarned: totalEarned

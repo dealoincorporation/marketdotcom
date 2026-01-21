@@ -62,6 +62,7 @@ model User {
   cart          Cart[]
   orders        Order[]
   deliveries    Delivery[]
+  addresses     Address[]
   referrals     User[]   @relation("UserReferrals")
   referredReferrals Referral[] @relation("ReferrerReferrals")
   rewards       Reward[]
@@ -109,10 +110,13 @@ model Product {
 
 model Variation {
   id        String   @id @default(cuid()) @map("_id")
-  name      String   // e.g., "Small", "Large", "Red", etc.
-  type      String   // e.g., "Size", "Color", "Weight"
+  name      String   // e.g., "Mama Gold", "Caprice", "1 Cup", "2 Cups"
+  type      String   // e.g., "Brand", "Size", "Quantity", "Weight"
   price     Float    @default(0)
   stock     Int      @default(0)
+  unit      String?  // e.g., "cup", "kg", "pcs", "pack"
+  quantity  Float?   // e.g., 1, 2, 0.5, 5 (for measurements)
+  image     String?  // Image URL for this variation
   productId String
   product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
 
@@ -316,6 +320,28 @@ model WalletTransaction {
   updatedAt DateTime @updatedAt
 }
 
+model Address {
+  id            String   @id @default(cuid()) @map("_id")
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type          String   // "home", "work", "other"
+  name          String   // e.g., "Home", "Office"
+  address       String   // Full street address
+  city          String
+  state         String
+  postalCode    String?
+  phone         String
+  isDefault     Boolean  @default(false)
+  isVerified    Boolean  @default(false)
+  coordinates   String?  // JSON string for lat/lng
+  deliveryNotes String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, name]) // Prevent duplicate address names per user
+}
+
 model Payment {
   id              String   @id @default(cuid()) @map("_id")
   orderId         String
@@ -341,4 +367,20 @@ model Subscription {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model DeliverySlot {
+  id          String   @id @default(cuid()) @map("_id")
+  date        DateTime
+  timeSlot    String   // e.g., "10:00 AM - 2:00 PM"
+  isAvailable Boolean  @default(true)
+  maxOrders   Int      @default(10) // Maximum orders for this slot
+  currentOrders Int    @default(0) // Current number of orders scheduled
+  price       Float?   // Additional delivery fee for this slot
+  description String?  // Optional description
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([date, timeSlot]) // Prevent duplicate slots for same date/time
 }

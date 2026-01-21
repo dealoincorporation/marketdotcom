@@ -19,6 +19,7 @@ import WalletTab from "./components/WalletTab"
 import AdminTab from "./components/AdminTab"
 import ManageProductsTab from "./components/ManageProductsTab"
 import ManageCategoriesTab from "./components/ManageCategoriesTab"
+import ManageDeliveriesTab from "./components/ManageDeliveriesTab"
 import { ProductForm } from "@/components/forms/product-form"
 
 // Import hooks
@@ -28,7 +29,7 @@ import { useCartStore } from "@/lib/cart-store"
 // Import types
 import { Product } from "@prisma/client"
 
-type DashboardTab = "marketplace" | "orders" | "manage-products" | "manage-categories" | "wallet" | "admin"
+type DashboardTab = "marketplace" | "orders" | "manage-products" | "manage-categories" | "manage-deliveries" | "wallet" | "admin"
 
 function DashboardContent() {
   // Custom hooks
@@ -47,6 +48,7 @@ function DashboardContent() {
   const [selectedVariation, setSelectedVariation] = useState("all")
   const [filteredProducts, setFilteredProducts] = useState<any[]>([])
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const [updatingOrderId, setUpdatingOrderId] = useState<string | null>(null)
 
   const { items, addItem } = useCartStore()
   const router = useRouter()
@@ -78,30 +80,50 @@ function DashboardContent() {
   }, [products, selectedCategory, selectedProduct])
 
   const handleAddToCart = (product: any, variation?: any, quantity: number = 1) => {
+    // Handle base product selection (when variation is "base")
+    let actualVariation = variation
+    if (variation === "base") {
+      actualVariation = undefined
+    }
+
     const cartItem = {
-      id: variation ? `${product.id}-${variation.id}` : product.id,
-      name: variation ? `${product.name} - ${variation.name}` : product.name,
-      price: variation ? variation.price : product.basePrice,
+      id: actualVariation ? `${product.id}-${actualVariation.id}` : `${product.id}-base`,
+      name: actualVariation ? `${product.name} - ${actualVariation.name}` : product.name,
+      price: actualVariation ? actualVariation.price : product.basePrice,
       image: product.image || "/api/placeholder/300/200",
       quantity,
       unit: product.unit,
       productId: product.id,
-      variationId: variation?.id,
+      variationId: actualVariation?.id,
+      variation: actualVariation,
+      isAvailable: product.inStock && (!actualVariation || actualVariation.stock > 0),
+      maxQuantity: actualVariation ? actualVariation.stock : product.stock,
+      categoryId: product.categoryId,
+      categoryName: product.category?.name,
     }
     addItem(cartItem)
   }
 
 
   const handleDeleteProduct = async (productId: string) => {
+    console.log('Delete product clicked for ID:', productId)
+    console.log('User role:', user?.role)
+    console.log('Is admin:', isAdmin)
+
     if (!confirm('Are you sure you want to delete this product?')) return
 
     const success = await deleteProduct(productId)
     if (success) {
+      console.log('Product deleted successfully, refreshing...')
       refreshAll()
+    } else {
+      console.error('Product deletion failed')
+      alert('Failed to delete product. Check console for details.')
     }
   }
 
   const handleOrderStatusChange = async (orderId: string, newStatus: string) => {
+    setUpdatingOrderId(orderId)
     try {
       const response = await fetch('/api/orders', {
         method: 'PUT',
@@ -118,6 +140,34 @@ function DashboardContent() {
       }
     } catch (error) {
       console.error('Error updating order status:', error)
+    } finally {
+      setUpdatingOrderId(null)
+    }
+  }
+
+  const handleOrderDelete = async (orderId: string) => {
+    if (!confirm('Are you sure you want to delete this order? This action cannot be undone.')) {
+      return
+    }
+
+    try {
+      const token = localStorage.getItem('token')
+      const response = await fetch(`/api/orders/${orderId}`, {
+        method: 'DELETE',
+        headers: token ? { 'Authorization': `Bearer ${token}` } : {},
+      })
+
+      if (response.ok) {
+        // Refresh orders
+        refreshAll()
+        alert('Order deleted successfully')
+      } else {
+        const errorData = await response.json()
+        alert(`Failed to delete order: ${errorData.error || 'Unknown error'}`)
+      }
+    } catch (error) {
+      console.error('Error deleting order:', error)
+      alert('Failed to delete order. Please try again.')
     }
   }
 
@@ -184,7 +234,7 @@ function DashboardContent() {
     <>
       <DashboardLayout
         activeTab={activeTab}
-        onTabChange={setActiveTab}
+        onTabChange={(tab) => setActiveTab(tab)}
         isMobileMenuOpen={isMobileMenuOpen}
         setIsMobileMenuOpen={setIsMobileMenuOpen}
       >
@@ -208,6 +258,8 @@ function DashboardContent() {
             orders={orders}
             isAdmin={isAdmin}
             onOrderStatusChange={handleOrderStatusChange}
+            onOrderDelete={handleOrderDelete}
+            updatingOrderId={updatingOrderId}
           />
         )}
 
@@ -236,6 +288,12 @@ function DashboardContent() {
           <ManageCategoriesTab
             categories={categories}
             onRefresh={refreshAll}
+          />
+        )}
+
+        {isAdmin && activeTab === "manage-deliveries" && (
+          <ManageDeliveriesTab
+            isAdmin={isAdmin}
           />
         )}
       </DashboardLayout>

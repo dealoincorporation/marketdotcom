@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { getUserFromRequest } from "@/lib/auth"
 import { getPrismaClient } from "@/lib/prisma"
+import { generateReferralCode } from "@/lib/helpers"
 
 // Force dynamic rendering since this route uses authentication and headers
 export const dynamic = 'force-dynamic'
@@ -18,7 +19,7 @@ export async function GET(request: Request) {
       )
     }
 
-    const user = await prisma.user.findUnique({
+    let user = await prisma.user.findUnique({
       where: { id: authUser.userId },
       select: {
         id: true,
@@ -38,6 +39,27 @@ export async function GET(request: Request) {
         { error: "User not found" },
         { status: 404 }
       )
+    }
+
+    // Generate referral code if user doesn't have one
+    if (!user.referralCode) {
+      const newReferralCode = generateReferralCode()
+      const updatedUser = await prisma.user.update({
+        where: { id: authUser.userId },
+        data: { referralCode: newReferralCode },
+        select: {
+          id: true,
+          walletBalance: true,
+          points: true,
+          referralCode: true,
+          _count: {
+            select: {
+              referrals: true
+            }
+          }
+        }
+      })
+      user = updatedUser
     }
 
     return NextResponse.json({

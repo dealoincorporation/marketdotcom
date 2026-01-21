@@ -51,6 +51,47 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     initializeAuth()
   }, [])
 
+  // Check token expiration every 5 minutes
+  useEffect(() => {
+    if (typeof window === 'undefined' || !token) return
+
+    const checkTokenExpiration = () => {
+      try {
+        // Decode token to check expiration (without full verification)
+        const payload = JSON.parse(atob(token.split('.')[1]))
+        const currentTime = Math.floor(Date.now() / 1000)
+        const timeUntilExpiry = payload.exp - currentTime
+
+        // Warn user if token expires in less than 30 minutes
+        if (timeUntilExpiry > 0 && timeUntilExpiry < 1800) {
+          console.warn(`Token expires in ${Math.floor(timeUntilExpiry / 60)} minutes`)
+          // Could show a toast notification here
+        }
+
+        // If token is already expired, clear it
+        if (timeUntilExpiry <= 0) {
+          console.warn('Token has expired, clearing session')
+          localStorage.removeItem('token')
+          localStorage.removeItem('user')
+          setToken(null)
+          setUser(null)
+          alert('Your session has expired. Please log in again.')
+          window.location.href = '/auth/login'
+        }
+      } catch (error) {
+        console.error('Error checking token expiration:', error)
+      }
+    }
+
+    // Check immediately
+    checkTokenExpiration()
+
+    // Check every 5 minutes
+    const interval = setInterval(checkTokenExpiration, 5 * 60 * 1000)
+
+    return () => clearInterval(interval)
+  }, [token])
+
   const fetchUserData = async (accessToken: string) => {
     try {
       const controller = new AbortController()

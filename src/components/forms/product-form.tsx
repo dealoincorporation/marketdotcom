@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { Upload, X, Plus, Minus } from 'lucide-react'
+import { Upload, X, Plus, Minus, FileText } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -26,6 +26,9 @@ interface ProductFormType {
     name: string
     price: number
     stock: number
+    unit?: string
+    quantity?: number
+    image?: string
   }>
 }
 
@@ -42,6 +45,9 @@ interface Variation {
   name: string
   price: number
   stock: number
+  unit?: string
+  quantity?: number
+  image?: string
 }
 
 export function ProductForm({
@@ -72,6 +78,30 @@ export function ProductForm({
   const [imagePreviews, setImagePreviews] = useState<string[]>(formData.images)
   const [uploadingImages, setUploadingImages] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
+  const [uploadingVariationImages, setUploadingVariationImages] = useState<Record<number, boolean>>({})
+  const [variationImagePreviews, setVariationImagePreviews] = useState<Record<number, string>>(() => {
+    // Initialize previews with existing variation images
+    const previews: Record<number, string> = {}
+    if (initialData?.variations) {
+      initialData.variations.forEach((v: any, i: number) => {
+        if (v.image) {
+          previews[i] = v.image
+        }
+      })
+    }
+    return previews
+  })
+
+  // Cleanup object URLs on unmount
+  useEffect(() => {
+    return () => {
+      Object.values(variationImagePreviews).forEach(url => {
+        if (url && url.startsWith('blob:')) {
+          URL.revokeObjectURL(url)
+        }
+      })
+    }
+  }, [])
 
   const handleInputChange = (field: keyof ProductFormType, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }))
@@ -198,13 +228,197 @@ export function ProductForm({
         i === index ? { ...variation, [field]: value } : variation
       )
     }))
+    // If updating image field, also update preview
+    if (field === 'image' && value) {
+      setVariationImagePreviews(prev => {
+        const newPreviews = { ...prev }
+        // Cleanup old blob URL if exists
+        if (newPreviews[index] && newPreviews[index].startsWith('blob:')) {
+          URL.revokeObjectURL(newPreviews[index])
+        }
+        newPreviews[index] = value
+        return newPreviews
+      })
+    }
   }
 
   const removeVariation = (index: number) => {
+    // Cleanup preview URL if exists
+    if (variationImagePreviews[index]) {
+      URL.revokeObjectURL(variationImagePreviews[index])
+    }
+    setVariationImagePreviews(prev => {
+      const newPreviews = { ...prev }
+      delete newPreviews[index]
+      return newPreviews
+    })
     setFormData(prev => ({
       ...prev,
       variations: prev.variations.filter((_, i) => i !== index)
     }))
+  }
+
+  const handleVariationImageUpload = async (index: number, file: File | undefined) => {
+    if (!file) return
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      alert('File size too large. Please choose an image smaller than 5MB.')
+      return
+    }
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      alert('Please select a valid image file.')
+      return
+    }
+
+    // Create local preview immediately
+    const localPreviewUrl = URL.createObjectURL(file)
+    setVariationImagePreviews(prev => ({ ...prev, [index]: localPreviewUrl }))
+    setUploadingVariationImages(prev => ({ ...prev, [index]: true }))
+
+    try {
+      const formData = new FormData()
+      formData.append('file', file)
+
+      const token = localStorage.getItem('token')
+      const headers: Record<string, string> = {}
+
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`
+      }
+
+      console.log(`Uploading image for variation ${index + 1}: ${file.name}`)
+
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        headers,
+        body: formData,
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Failed to upload image')
+      }
+
+      const data = await response.json()
+      const imageUrl = data.url
+
+      // Update preview with final URL first (before cleanup)
+      setVariationImagePreviews(prev => {
+        const newPreviews = { ...prev }
+        // Cleanup local preview if it exists
+        if (newPreviews[index] && newPreviews[index].startsWith('blob:')) {
+          URL.revokeObjectURL(newPreviews[index])
+        }
+        // Set final URL
+        newPreviews[index] = imageUrl
+        return newPreviews
+      })
+
+      // Update variation with uploaded URL
+      updateVariation(index, 'image', imageUrl)
+
+      console.log(`Image uploaded successfully for variation ${index + 1}`)
+
+    } catch (error) {
+      console.error('Error uploading variation image:', error)
+      alert(`Failed to upload image: ${error instanceof Error ? error.message : 'Unknown error'}. Please try again.`)
+      // Remove preview on error
+      setVariationImagePreviews(prev => {
+        const newPreviews = { ...prev }
+        if (newPreviews[index]) {
+          URL.revokeObjectURL(newPreviews[index])
+        }
+        delete newPreviews[index]
+        return newPreviews
+      })
+    } finally {
+      setUploadingVariationImages(prev => {
+        const newState = { ...prev }
+        delete newState[index]
+        return newState
+      })
+    }
+  }
+
+  const handleBulkVariationImport = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (!file) return
+
+    try {
+      const reader = new FileReader()
+      reader.onload = async (e) => {
+        const csv = e.target?.result as string
+        const lines = csv.split('\n').filter(line => line.trim())
+
+        if (lines.length < 2) {
+          alert('CSV file must have at least a header row and one data row')
+          return
+        }
+
+        // Parse header to understand column order
+        const header = lines[0].toLowerCase().split(',').map(h => h.trim())
+
+        const variationsToAdd: any[] = []
+
+        for (let i = 1; i < lines.length; i++) {
+          const values = lines[i].split(',').map(v => v.trim().replace(/"/g, ''))
+
+          if (values.length < 5) continue // Skip incomplete rows
+
+          const variation: any = {
+            name: values[0] || '',
+            price: parseFloat(values[3]) || 0,
+            stock: parseInt(values[4]) || 0,
+          }
+
+          // Handle quantity and unit
+          if (values[1] && !isNaN(parseFloat(values[1]))) {
+            variation.quantity = parseFloat(values[1])
+          }
+          if (values[2]) {
+            variation.unit = values[2]
+          }
+
+          // Handle image URL if provided
+          if (values[5] && values[5].startsWith('http')) {
+            variation.image = values[5]
+          }
+
+          if (variation.name) {
+            variationsToAdd.push(variation)
+          }
+        }
+
+        if (variationsToAdd.length === 0) {
+          alert('No valid variations found in CSV')
+          return
+        }
+
+        // Confirm import
+        const confirmImport = confirm(`Import ${variationsToAdd.length} variations from CSV?`)
+        if (!confirmImport) return
+
+        // Add all variations
+        const newVariations = [...formData.variations, ...variationsToAdd]
+        setFormData(prev => ({
+          ...prev,
+          variations: newVariations
+        }))
+
+        alert(`Successfully imported ${variationsToAdd.length} variations!`)
+      }
+
+      reader.readAsText(file)
+    } catch (error) {
+      console.error('Error importing variations:', error)
+      alert('Failed to import variations. Please check your CSV format.')
+    }
+
+    // Reset file input
+    event.target.value = ''
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -440,34 +654,125 @@ export function ProductForm({
             <div className="space-y-4">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <Label className="text-base font-semibold">Product Variations</Label>
-                <Button
-                  type="button"
-                  onClick={addVariation}
-                  variant="outline"
-                  size="sm"
-                  className="text-orange-600 border-orange-600 hover:bg-orange-50 w-full sm:w-auto"
-                >
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add Variation
-                </Button>
+                <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+                  <input
+                    type="file"
+                    accept=".csv"
+                    onChange={handleBulkVariationImport}
+                    className="hidden"
+                    id="variation-csv-import"
+                  />
+                  <Button
+                    type="button"
+                    onClick={() => document.getElementById('variation-csv-import')?.click()}
+                    variant="outline"
+                    size="sm"
+                    className="text-blue-600 border-blue-600 hover:bg-blue-50 w-full sm:w-auto"
+                  >
+                    <FileText className="h-4 w-4 mr-2" />
+                    <span className="hidden sm:inline">Import CSV</span>
+                    <span className="sm:hidden">Import</span>
+                  </Button>
+                  <Button
+                    type="button"
+                    onClick={addVariation}
+                    variant="outline"
+                    size="sm"
+                    className="text-orange-600 border-orange-600 hover:bg-orange-50 w-full sm:w-auto"
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    <span className="hidden sm:inline">Add Variation</span>
+                    <span className="sm:hidden">Add</span>
+                  </Button>
+                </div>
+              </div>
+
+              {/* CSV Format Info */}
+              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-xl p-4 shadow-sm">
+                <div className="flex items-start space-x-3">
+                  <div className="flex-shrink-0 w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                    <span className="text-blue-600 text-lg">📄</span>
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-base text-blue-800 mb-2 font-semibold">
+                      CSV Bulk Import Format
+                    </p>
+                    <p className="text-sm text-blue-700 mb-3">
+                      Columns: <code className="bg-white px-2 py-1 rounded font-mono text-xs">Name, Quantity, Unit, Price, Stock, ImageURL</code>
+                    </p>
+                    <p className="text-sm text-blue-600 bg-white/70 rounded-lg p-3 border border-blue-100">
+                      <strong>Example:</strong><br />
+                      <code className="font-mono text-xs">"Mama Gold, 2, kg, 4500, 25, https://example.com/image.jpg"</code>
+                    </p>
+                  </div>
+                </div>
               </div>
 
               {formData.variations.length > 0 && (
-                <div className="space-y-3">
+                <div className="space-y-4">
                   {formData.variations.map((variation, index) => (
-                    <div key={index} className="p-3 sm:p-4 border border-gray-200 rounded-lg">
-                      <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 items-end">
-                        <div className="sm:col-span-5">
-                          <Label className="text-sm font-medium text-gray-700 mb-1 block">Name</Label>
+                    <div key={index} className="p-4 sm:p-6 border-2 border-gray-200 rounded-xl bg-white shadow-sm hover:shadow-md transition-shadow duration-200">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-6 gap-4 items-end">
+                        <div className="col-span-1">
+                          <Label className="text-sm font-medium text-gray-700 mb-2 block">Name</Label>
                           <Input
                             value={variation.name}
                             onChange={(e) => updateVariation(index, 'name', e.target.value)}
-                            placeholder="e.g., Small, Large, Red"
-                            className="w-full"
+                            placeholder="Mama Gold"
+                            className="w-full h-11 text-base bg-white border-2 border-gray-300 focus:border-orange-500 focus:ring-2 focus:ring-orange-200 rounded-lg"
                           />
                         </div>
-                        <div className="sm:col-span-3">
-                          <Label className="text-sm font-medium text-gray-700 mb-1 block">Price (₦)</Label>
+                        <div className="col-span-1 sm:col-span-1 lg:col-span-1 xl:col-span-1">
+                          <Label className="text-sm font-medium text-gray-700 mb-2 block">Quantity</Label>
+                          <Input
+                            type="number"
+                            min="0"
+                            step="0.1"
+                            value={variation.quantity || ""}
+                            onChange={(e) => updateVariation(index, 'quantity', parseFloat(e.target.value) || undefined)}
+                            placeholder="1"
+                            className="w-full h-11 text-base bg-white border-2 border-gray-300 focus:border-orange-500 focus:ring-2 focus:ring-orange-200 rounded-lg"
+                          />
+                        </div>
+                        <div className="col-span-1 sm:col-span-1 lg:col-span-1 xl:col-span-1">
+                          <Label className="text-sm font-medium text-gray-700 mb-2 block">Unit</Label>
+                          <Select
+                            value={variation.unit || ""}
+                            onValueChange={(value) => updateVariation(index, 'unit', value)}
+                          >
+                            <SelectTrigger className="w-full h-11 bg-white border-2 border-gray-300 focus:border-orange-500 focus:ring-2 focus:ring-orange-200 rounded-lg">
+                              <SelectValue placeholder="Select unit" />
+                            </SelectTrigger>
+                            <SelectContent className="bg-white border-2 border-gray-300 shadow-xl max-h-60 overflow-y-auto z-50">
+                              {/* Volume */}
+                              <SelectItem value="ml">ml</SelectItem>
+                              <SelectItem value="l">L</SelectItem>
+                              <SelectItem value="cup">cup</SelectItem>
+                              {/* Weight */}
+                              <SelectItem value="g">g</SelectItem>
+                              <SelectItem value="kg">kg</SelectItem>
+                              <SelectItem value="lb">lb</SelectItem>
+                              <SelectItem value="oz">oz</SelectItem>
+                              {/* Count */}
+                              <SelectItem value="pc">pc</SelectItem>
+                              <SelectItem value="pcs">pcs</SelectItem>
+                              <SelectItem value="pack">pack</SelectItem>
+                              <SelectItem value="dozen">dozen</SelectItem>
+                              {/* Packaging */}
+                              <SelectItem value="bag">bag</SelectItem>
+                              <SelectItem value="box">box</SelectItem>
+                              <SelectItem value="bottle">bottle</SelectItem>
+                              <SelectItem value="can">can</SelectItem>
+                              <SelectItem value="tin">tin</SelectItem>
+                              <SelectItem value="jar">jar</SelectItem>
+                              {/* Other */}
+                              <SelectItem value="roll">roll</SelectItem>
+                              <SelectItem value="set">set</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="col-span-1 sm:col-span-1 lg:col-span-1 xl:col-span-1">
+                          <Label className="text-sm font-medium text-gray-700 mb-2 block">Price (₦)</Label>
                           <Input
                             type="number"
                             min="0"
@@ -475,29 +780,139 @@ export function ProductForm({
                             value={variation.price}
                             onChange={(e) => updateVariation(index, 'price', parseFloat(e.target.value) || 0)}
                             placeholder="0.00"
-                            className="w-full"
+                            className="w-full h-11 text-base bg-white border-2 border-gray-300 focus:border-orange-500 focus:ring-2 focus:ring-orange-200 rounded-lg"
                           />
                         </div>
-                        <div className="sm:col-span-3">
-                          <Label className="text-sm font-medium text-gray-700 mb-1 block">Stock</Label>
+                        <div className="col-span-1 sm:col-span-1 lg:col-span-1 xl:col-span-1">
+                          <Label className="text-sm font-medium text-gray-700 mb-2 block">Stock</Label>
                           <Input
                             type="number"
                             min="0"
                             value={variation.stock}
                             onChange={(e) => updateVariation(index, 'stock', parseInt(e.target.value) || 0)}
                             placeholder="0"
-                            className="w-full"
+                            className="w-full h-11 text-base bg-white border-2 border-gray-300 focus:border-orange-500 focus:ring-2 focus:ring-orange-200 rounded-lg"
                           />
                         </div>
-                        <div className="sm:col-span-1 flex justify-end">
+                        {/* Variation Image Upload - Temporarily commented out */}
+                        {/* <div className="col-span-1 sm:col-span-2 lg:col-span-2 xl:col-span-2">
+                          <Label className="text-sm font-medium text-gray-700 mb-2 block">Variation Image</Label>
+                          <div className="space-y-3">
+                            <div>
+                              <p className="text-sm text-gray-700 mb-1">
+                                Upload high-quality image for this variation
+                              </p>
+                              <p className="text-xs text-gray-500 mb-3">
+                                Recommended size: 800x800px. Max 5MB per file. Formats: JPG, PNG, WebP
+                              </p>
+                            </div>
+
+                            <input
+                              type="file"
+                              accept="image/*"
+                              onChange={(e) => handleVariationImageUpload(index, e.target.files?.[0])}
+                              className="hidden"
+                              id={`variation-image-${index}`}
+                            />
+
+                            <Button
+                              type="button"
+                              variant="outline"
+                              onClick={() => document.getElementById(`variation-image-${index}`)?.click()}
+                              disabled={uploadingVariationImages[index]}
+                              className="flex items-center space-x-2 px-4 py-2 h-11 bg-white border-2 border-gray-300 hover:border-orange-500 hover:bg-orange-50 rounded-lg w-full disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                              {uploadingVariationImages[index] ? (
+                                <>
+                                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-orange-600"></div>
+                                  <span className="text-sm font-medium">Uploading...</span>
+                                </>
+                              ) : (
+                                <>
+                                  <Upload className="h-4 w-4" />
+                                  <span className="text-sm font-medium">Upload Image</span>
+                                </>
+                              )}
+                            </Button>
+
+                            {/* Image Preview - Show when image exists (uploaded or local preview) */}
+                            {/* {(variation.image || variationImagePreviews[index]) && (
+                              <div className="mt-3">
+                                {variation.image && !uploadingVariationImages[index] && (
+                                  <p className="text-sm text-green-600 mb-3">
+                                    ✓ Image uploaded successfully
+                                  </p>
+                                )}
+                                {uploadingVariationImages[index] && (
+                                  <p className="text-sm text-orange-600 mb-3">
+                                    ⏳ Uploading image...
+                                  </p>
+                                )}
+
+                                <div className="bg-white border-2 border-gray-200 rounded-xl p-4 shadow-sm">
+                                  <div className="flex items-start space-x-3">
+                                    <div className="relative group flex-shrink-0">
+                                      <img
+                                        src={variationImagePreviews[index] || variation.image}
+                                        alt={`${variation.name || 'Variation'} image`}
+                                        className="w-20 h-20 sm:w-24 sm:h-24 object-cover rounded-lg border-2 border-gray-300 shadow-md cursor-pointer hover:shadow-lg transition-shadow"
+                                        onClick={() => window.open(variationImagePreviews[index] || variation.image, '_blank')}
+                                      />
+                                      <Button
+                                        type="button"
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() => {
+                                          updateVariation(index, 'image', '')
+                                          setVariationImagePreviews(prev => {
+                                            const newPreviews = { ...prev }
+                                            if (newPreviews[index]) {
+                                              URL.revokeObjectURL(newPreviews[index])
+                                            }
+                                            delete newPreviews[index]
+                                            return newPreviews
+                                          })
+                                        }}
+                                        className="absolute -top-2 -right-2 w-6 h-6 p-0 bg-red-500 hover:bg-red-600 text-white rounded-full shadow-lg opacity-80 hover:opacity-100 transition-opacity"
+                                      >
+                                        <X className="h-3 w-3" />
+                                      </Button>
+                                      <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 rounded-lg transition-all duration-200 flex items-center justify-center">
+                                        <span className="text-white text-xs opacity-0 group-hover:opacity-100 font-medium">Click to enlarge</span>
+                                      </div>
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                      <p className="text-sm text-gray-700 mb-1 font-medium">
+                                        Variation Image Preview
+                                      </p>
+                                      <p className="text-xs text-gray-600 mb-2">
+                                        {uploadingVariationImages[index] 
+                                          ? 'Uploading your image...' 
+                                          : 'Click image to view full size or use the X to remove'}
+                                      </p>
+                                      {!uploadingVariationImages[index] && (
+                                        <div className="flex items-center space-x-4 text-xs text-gray-500">
+                                          <span>800x800px recommended</span>
+                                          <span>•</span>
+                                          <span>JPG, PNG, WebP</span>
+                                        </div>
+                                      )}
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        </div> */}
+                        <div className="col-span-1 sm:col-span-2 lg:col-span-2 xl:col-span-2 flex justify-end items-end pt-6">
                           <Button
                             type="button"
                             onClick={() => removeVariation(index)}
                             variant="outline"
-                            size="sm"
-                            className="text-red-600 border-red-600 hover:bg-red-50 w-full sm:w-auto"
+                            className="text-red-600 border-2 border-red-600 hover:bg-red-50 hover:border-red-700 w-full h-11 rounded-lg font-medium"
                           >
-                            <Minus className="h-4 w-4 sm:mr-0" />
+                            <Minus className="h-4 w-4 mr-2" />
+                            Remove Variation
                           </Button>
                         </div>
                       </div>

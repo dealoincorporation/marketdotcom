@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import Link from "next/link"
 import { useAuth } from "@/contexts/AuthContext"
 import { useRouter } from "next/navigation"
@@ -16,7 +16,9 @@ import {
   Plus,
   Home,
   Building,
-  X
+  X,
+  ChevronDown,
+  AlertTriangle
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -25,9 +27,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Separator } from "@/components/ui/separator"
 import { Badge } from "@/components/ui/badge"
 import { useCartStore } from "@/lib/cart-store"
+import { useAddressStore } from "@/lib/address-store"
 import { toast } from "react-hot-toast"
 
 interface Address {
@@ -46,15 +50,33 @@ interface DeliverySlot {
   id: string
   date: string
   timeSlot: string
-  available: boolean
+  isAvailable: boolean
+  maxOrders: number
+  currentOrders: number
+  price?: number
+  description?: string
+  createdAt: string
+  updatedAt: string
 }
 
 export default function CheckoutPage() {
   const { user } = useAuth()
   const router = useRouter()
   const { items, getTotalItems, getTotalPrice, clearCart } = useCartStore()
+  const {
+    addresses,
+    fetchAddresses,
+    addAddress,
+    updateAddress,
+    deleteAddress,
+    setDefaultAddress,
+    getDefaultAddress,
+    validateAddress,
+    formatAddress
+  } = useAddressStore()
 
   const [loading, setLoading] = useState(false)
+  const [addressesLoaded, setAddressesLoaded] = useState(false)
   const [step, setStep] = useState(1) // 1: Delivery, 2: Payment, 3: Confirmation
 
   // Delivery Information
@@ -81,7 +103,7 @@ export default function CheckoutPage() {
   const [walletBalance, setWalletBalance] = useState(0)
 
   // Mock data
-  const [addresses] = useState<Address[]>([
+  const [mockAddresses] = useState<Address[]>([
     {
       id: "1",
       type: "home",
@@ -106,12 +128,71 @@ export default function CheckoutPage() {
     }
   ])
 
-  const [deliverySlots] = useState<DeliverySlot[]>([
-    { id: "1", date: "2024-01-10", timeSlot: "10:00 AM - 2:00 PM", available: true },
-    { id: "2", date: "2024-01-10", timeSlot: "2:00 PM - 6:00 PM", available: true },
-    { id: "3", date: "2024-01-11", timeSlot: "10:00 AM - 2:00 PM", available: true },
-    { id: "4", date: "2024-01-11", timeSlot: "2:00 PM - 6:00 PM", available: false },
-  ])
+  const [deliverySlots, setDeliverySlots] = useState<DeliverySlot[]>([])
+  const [deliverySlotsLoading, setDeliverySlotsLoading] = useState(true)
+  const [showDeliveryDateDropdown, setShowDeliveryDateDropdown] = useState(false)
+  const [showCreateSlotsModal, setShowCreateSlotsModal] = useState(false)
+  const [slotConfig, setSlotConfig] = useState({
+    daysAhead: 7,
+    timeSlots: [
+      { time: '9:00 AM - 12:00 PM', enabled: true },
+      { time: '12:00 PM - 3:00 PM', enabled: true },
+      { time: '3:00 PM - 6:00 PM', enabled: true },
+      { time: '6:00 PM - 9:00 PM', enabled: true }
+    ],
+    maxOrders: 15,
+    price: ''
+  })
+
+  // Fetch delivery slots function
+  const fetchDeliverySlots = async () => {
+    try {
+      setDeliverySlotsLoading(true)
+      console.log('Fetching delivery slots...')
+      const response = await fetch('/api/delivery-slots')
+      if (response.ok) {
+        const slots = await response.json()
+        setDeliverySlots(slots)
+      } else {
+        console.error('Failed to fetch delivery slots')
+        // Fallback to some default slots if API fails
+        setDeliverySlots([
+          { id: "fallback-1", date: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split('T')[0], timeSlot: "10:00 AM - 2:00 PM", isAvailable: true, maxOrders: 10, currentOrders: 0, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
+          { id: "fallback-2", date: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split('T')[0], timeSlot: "2:00 PM - 6:00 PM", isAvailable: true, maxOrders: 10, currentOrders: 0, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
+        ])
+      }
+    } catch (error) {
+      console.error('Error fetching delivery slots:', error)
+      // Fallback to default slots
+      setDeliverySlots([
+        { id: "fallback-1", date: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split('T')[0], timeSlot: "10:00 AM - 2:00 PM", isAvailable: true, maxOrders: 10, currentOrders: 0, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
+        { id: "fallback-2", date: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split('T')[0], timeSlot: "2:00 PM - 6:00 PM", isAvailable: true, maxOrders: 10, currentOrders: 0, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
+      ])
+    } finally {
+      setDeliverySlotsLoading(false)
+    }
+  }
+
+  // Fetch delivery slots on component mount
+  useEffect(() => {
+    fetchDeliverySlots()
+  }, [])
+
+  // Close dropdown when clicking outside (using a ref-based approach)
+  const dropdownRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node) && showDeliveryDateDropdown) {
+        setShowDeliveryDateDropdown(false)
+      }
+    }
+
+    if (showDeliveryDateDropdown) {
+      document.addEventListener('mousedown', handleClickOutside)
+      return () => document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [showDeliveryDateDropdown])
 
   const totalItems = getTotalItems()
   const subtotal = getTotalPrice()
@@ -130,9 +211,23 @@ export default function CheckoutPage() {
       return
     }
 
-    // Fetch wallet balance
-    fetchWalletBalance()
-  }, [user, items, router])
+    // Fetch addresses and wallet balance
+    const loadData = async () => {
+      await Promise.all([
+        fetchAddresses(),
+        fetchWalletBalance()
+      ])
+      setAddressesLoaded(true)
+
+      // Set default address if available
+      const defaultAddr = getDefaultAddress()
+      if (defaultAddr && !selectedAddress) {
+        setSelectedAddress(defaultAddr.id)
+      }
+    }
+
+    loadData()
+  }, [user, items, router, fetchAddresses, getDefaultAddress])
 
   const fetchWalletBalance = async () => {
     try {
@@ -152,18 +247,105 @@ export default function CheckoutPage() {
   }
 
   const handleAddNewAddress = async () => {
-    // In a real app, this would make an API call
-    console.log("Adding new address:", newAddress)
-    setShowNewAddressForm(false)
-    setNewAddress({
-      type: "home",
-      name: "",
-      address: "",
-      city: "",
-      state: "",
-      postalCode: "",
-      phone: ""
-    })
+    const addressData = {
+      ...newAddress,
+      userId: user?.id,
+      isDefault: addresses.length === 0 // Make first address default
+    }
+
+    const success = await addAddress(addressData)
+    if (success) {
+      setShowNewAddressForm(false)
+      setNewAddress({
+        type: "home",
+        name: "",
+        address: "",
+        city: "",
+        state: "",
+        postalCode: "",
+        phone: ""
+      })
+
+      // Refresh addresses
+      await fetchAddresses()
+
+      // Set as selected if it's the first address
+      if (addresses.length === 0) {
+        await fetchAddresses()
+        // Use getDefaultAddress to find the first/default address
+        const defaultAddr = getDefaultAddress()
+        if (defaultAddr) {
+          setSelectedAddress(defaultAddr.id)
+        }
+      }
+    }
+  }
+
+  const createDeliverySlots = async () => {
+    try {
+      setDeliverySlotsLoading(true)
+      const token = localStorage.getItem('token')
+
+      // Create slots based on configuration
+      const enabledTimeSlots = slotConfig.timeSlots.filter(slot => slot.enabled).map(slot => slot.time)
+
+      const slotsToCreate = []
+      for (let i = 1; i <= slotConfig.daysAhead; i++) {
+        const date = new Date()
+        date.setDate(date.getDate() + i)
+        const dateString = date.toISOString().split('T')[0]
+
+        for (const timeSlot of enabledTimeSlots) {
+          slotsToCreate.push({
+            date: dateString,
+            timeSlot,
+            maxOrders: slotConfig.maxOrders,
+            price: slotConfig.price ? parseFloat(slotConfig.price) : null,
+            description: 'Configured delivery slot'
+          })
+        }
+      }
+
+      // Create slots via API
+      const promises = slotsToCreate.map(slot =>
+        fetch('/api/delivery-slots', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+          },
+          body: JSON.stringify(slot)
+        })
+      )
+
+      const results = await Promise.all(promises)
+      const successCount = results.filter(r => r.ok).length
+
+      if (successCount > 0) {
+        toast.success(`Created ${successCount} delivery slots successfully!`)
+        setShowCreateSlotsModal(false)
+        // Refresh delivery slots
+        try {
+          setDeliverySlotsLoading(true)
+          const response = await fetch('/api/delivery-slots')
+          if (response.ok) {
+            const slots = await response.json()
+            setDeliverySlots(slots)
+          }
+        } catch (error) {
+          console.error('Error refreshing delivery slots:', error)
+        } finally {
+          setDeliverySlotsLoading(false)
+        }
+      } else {
+        toast.error('Failed to create delivery slots')
+      }
+    } catch (error) {
+      console.error('Error creating delivery slots:', error)
+      toast.error('Failed to create delivery slots')
+    } finally {
+      setDeliverySlotsLoading(false)
+    }
   }
 
   const handlePlaceOrder = async () => {
@@ -230,7 +412,7 @@ export default function CheckoutPage() {
           unitPrice: item.price,
           totalPrice: item.price * item.quantity
         })),
-        deliveryAddress: addresses.find(addr => addr.id === selectedAddress),
+        deliveryAddress: addresses.find(addr => addr.id === selectedAddress) || null,
         deliveryDate,
         deliveryTime,
         deliveryNotes,
@@ -583,7 +765,7 @@ export default function CheckoutPage() {
                               <SelectTrigger className="h-12 border-2 focus:border-blue-500">
                                 <SelectValue />
                               </SelectTrigger>
-                              <SelectContent>
+                              <SelectContent className="bg-white border border-gray-200 shadow-lg z-50">
                                 <SelectItem value="home">🏠 Home</SelectItem>
                                 <SelectItem value="work">🏢 Work</SelectItem>
                                 <SelectItem value="other">📍 Other</SelectItem>
@@ -680,7 +862,7 @@ export default function CheckoutPage() {
               </div>
 
               {/* Delivery Schedule - Responsive */}
-              <div className="bg-white/70 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 overflow-hidden">
+              <div className="bg-white/70 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20">
                 <div className="bg-gradient-to-r from-orange-500 to-red-500 p-4 sm:p-6">
                   <h2 className="text-lg sm:text-xl font-bold text-white flex items-center">
                     <Calendar className="h-5 w-5 sm:h-6 sm:w-6 mr-2 sm:mr-3" />
@@ -689,30 +871,105 @@ export default function CheckoutPage() {
                   <p className="text-orange-100 mt-1 text-sm sm:text-base">Choose when you'd like your order delivered</p>
                 </div>
                 <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
+                  {deliverySlots.length === 0 && !deliverySlotsLoading && (
+                    <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
+                      <div className="flex items-start">
+                        <AlertTriangle className="h-5 w-5 text-yellow-600 mt-0.5 mr-2 flex-shrink-0" />
+                        <div className="flex-1">
+                          <h4 className="text-sm font-medium text-yellow-800 mb-1">Delivery dates not available</h4>
+                          <p className="text-xs text-yellow-700 mb-3">
+                            No delivery slots have been configured yet. Configure delivery options to continue with your order.
+                          </p>
+                          <div className="flex flex-col sm:flex-row gap-2">
+                            <Button
+                              onClick={() => setShowCreateSlotsModal(true)}
+                              size="sm"
+                              className="bg-orange-600 hover:bg-orange-700 text-white text-xs px-3 py-1 h-8"
+                            >
+                              <Plus className="h-3 w-3 mr-1" />
+                              Configure Slots
+                            </Button>
+                            {user?.role === 'ADMIN' && (
+                              <Button
+                                onClick={() => window.open('/dashboard?tab=deliveries', '_blank')}
+                                variant="outline"
+                                size="sm"
+                                className="text-xs px-3 py-1 h-8 border-orange-300 text-orange-700 hover:bg-orange-50"
+                              >
+                                Advanced Setup
+                              </Button>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
                   <div className="space-y-3">
                     <Label className="text-sm font-semibold text-gray-700 flex items-center">
                       <Calendar className="h-4 w-4 mr-2 text-orange-600" />
                       Preferred Delivery Date
                     </Label>
-                    <Select value={deliveryDate} onValueChange={setDeliveryDate}>
-                      <SelectTrigger className="h-12 border-2 focus:border-orange-500 bg-white text-sm sm:text-base">
-                        <SelectValue placeholder="Select delivery date" />
-                      </SelectTrigger>
-                      <SelectContent className="bg-white border-2 border-gray-200 shadow-xl max-h-60">
-                        {[...new Set(deliverySlots.map(slot => slot.date))].map(date => (
-                          <SelectItem key={date} value={date} className="h-12 sm:h-14 hover:bg-orange-50 focus:bg-orange-50 cursor-pointer">
-                            <div className="flex flex-col items-start py-1">
-                              <span className="font-medium text-gray-900 text-sm sm:text-base">
-                                {new Date(date).toLocaleDateString('en-US', { weekday: 'long' })}
-                              </span>
-                              <span className="text-xs sm:text-sm text-gray-500">
-                                {new Date(date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
-                              </span>
+                    <div className="relative" ref={dropdownRef}>
+                      <button
+                        type="button"
+                        onClick={() => setShowDeliveryDateDropdown(!showDeliveryDateDropdown)}
+                        disabled={deliverySlotsLoading || deliverySlots.length === 0}
+                        className="w-full h-12 border-2 focus:border-orange-500 bg-white text-sm sm:text-base px-3 py-2 text-left rounded-md flex items-center justify-between hover:border-orange-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        <span className={deliveryDate ? "text-gray-900" : "text-gray-500"}>
+                          {deliverySlotsLoading
+                            ? "Loading delivery dates..."
+                            : deliveryDate
+                            ? `${new Date(deliveryDate).toLocaleDateString('en-US', { weekday: 'long' })}, ${new Date(deliveryDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}`
+                            : deliverySlots.length === 0
+                            ? "No delivery dates available"
+                            : "Select delivery date"
+                          }
+                        </span>
+                        <ChevronDown className="h-4 w-4 text-gray-400" />
+                      </button>
+
+                      {showDeliveryDateDropdown && (
+                        <div className="absolute top-full left-0 right-0 mt-1 bg-white border-2 border-gray-200 rounded-md shadow-2xl z-[9999] max-h-60 overflow-y-auto animate-in fade-in-0 zoom-in-95 duration-200">
+                          {deliverySlotsLoading ? (
+                            <div className="px-3 py-4 text-center text-gray-500 text-sm">
+                              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-orange-500 mx-auto mb-2"></div>
+                              Loading delivery dates...
                             </div>
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                          ) : [...new Set(deliverySlots.map(slot => new Date(slot.date).toISOString().split('T')[0]))].length === 0 ? (
+                            <div className="px-3 py-6 text-center">
+                              <Calendar className="h-8 w-8 text-gray-400 mx-auto mb-2" />
+                              <p className="text-sm text-gray-500 mb-2">No delivery dates available</p>
+                              <p className="text-xs text-gray-400">Please contact support or try again later</p>
+                            </div>
+                          ) : (
+                            [...new Set(deliverySlots.map(slot => new Date(slot.date).toISOString().split('T')[0]))].map(date => (
+                              <button
+                                key={`date-${date}`}
+                                type="button"
+                                onClick={(e) => {
+                                  e.preventDefault()
+                                  e.stopPropagation()
+                                  setDeliveryDate(date)
+                                  setShowDeliveryDateDropdown(false)
+                                }}
+                                className="w-full h-12 sm:h-14 hover:bg-orange-50 focus:bg-orange-50 cursor-pointer px-3 py-2 text-left border-b border-gray-100 last:border-b-0 transition-colors"
+                              >
+                                <div className="flex flex-col items-start">
+                                  <span className="font-medium text-gray-900 text-sm sm:text-base">
+                                    {new Date(date).toLocaleDateString('en-US', { weekday: 'long' })}
+                                  </span>
+                                  <span className="text-xs sm:text-sm text-gray-500">
+                                    {new Date(date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+                                  </span>
+                                </div>
+                              </button>
+                            ))
+                          )}
+                        </div>
+                      )}
+                    </div>
                   </div>
 
                   {deliveryDate && (
@@ -723,8 +980,8 @@ export default function CheckoutPage() {
                       </Label>
                       <RadioGroup value={deliveryTime} onValueChange={setDeliveryTime} className="space-y-2 sm:space-y-3">
                         {deliverySlots
-                          .filter(slot => slot.date === deliveryDate && slot.available)
-                          .map(slot => (
+                          .filter(slot => new Date(slot.date).toISOString().split('T')[0] === deliveryDate && slot.isAvailable && slot.currentOrders < slot.maxOrders)
+                        .map(slot => (
                             <div key={slot.id} className={`p-3 sm:p-4 rounded-xl border-2 transition-all duration-300 cursor-pointer ${
                               deliveryTime === slot.timeSlot
                                 ? 'border-orange-500 bg-gradient-to-r from-orange-50 to-red-50 shadow-lg'
@@ -1273,6 +1530,131 @@ export default function CheckoutPage() {
           </div>
         )}
       </div>
+
+      {/* Create Delivery Slots Modal */}
+      <Dialog open={showCreateSlotsModal} onOpenChange={setShowCreateSlotsModal}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center text-orange-700">
+              <Calendar className="h-5 w-5 mr-2" />
+              Configure Delivery Slots
+            </DialogTitle>
+            <DialogDescription>
+              Customize delivery slots for your store. Choose which days and times to offer delivery.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-6">
+            {/* Days Configuration */}
+            <div className="space-y-3">
+              <Label className="text-sm font-medium text-gray-700">How many days ahead to create slots?</Label>
+              <Select
+                value={slotConfig.daysAhead.toString()}
+                onValueChange={(value) => setSlotConfig(prev => ({ ...prev, daysAhead: parseInt(value) }))}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="3">3 days</SelectItem>
+                  <SelectItem value="7">7 days</SelectItem>
+                  <SelectItem value="14">14 days</SelectItem>
+                  <SelectItem value="30">30 days</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Time Slots Configuration */}
+            <div className="space-y-3">
+              <Label className="text-sm font-medium text-gray-700">Which time slots to offer?</Label>
+              <div className="space-y-2">
+                {slotConfig.timeSlots.map((slot, index) => (
+                  <div key={slot.time} className="flex items-center space-x-3">
+                    <input
+                      type="checkbox"
+                      id={`time-${index}`}
+                      checked={slot.enabled}
+                      onChange={(e) => {
+                        const newTimeSlots = [...slotConfig.timeSlots]
+                        newTimeSlots[index].enabled = e.target.checked
+                        setSlotConfig(prev => ({ ...prev, timeSlots: newTimeSlots }))
+                      }}
+                      className="h-4 w-4 text-orange-600 focus:ring-orange-500 border-gray-300 rounded"
+                    />
+                    <Label htmlFor={`time-${index}`} className="text-sm text-gray-700 cursor-pointer">
+                      {slot.time}
+                    </Label>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Capacity and Pricing */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-3">
+                <Label className="text-sm font-medium text-gray-700">Max Orders per Slot</Label>
+                <Input
+                  type="number"
+                  value={slotConfig.maxOrders}
+                  onChange={(e) => setSlotConfig(prev => ({ ...prev, maxOrders: parseInt(e.target.value) || 10 }))}
+                  min="1"
+                  max="50"
+                  className="h-10"
+                />
+              </div>
+              <div className="space-y-3">
+                <Label className="text-sm font-medium text-gray-700">Extra Fee (₦) <span className="text-gray-500 text-xs">Optional</span></Label>
+                <Input
+                  type="number"
+                  value={slotConfig.price}
+                  onChange={(e) => setSlotConfig(prev => ({ ...prev, price: e.target.value }))}
+                  placeholder="0"
+                  min="0"
+                  step="0.01"
+                  className="h-10"
+                />
+              </div>
+            </div>
+
+            {/* Summary */}
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <h4 className="font-medium text-blue-900 mb-2">Summary:</h4>
+              <p className="text-sm text-blue-800">
+                This will create <strong>{slotConfig.daysAhead * slotConfig.timeSlots.filter(s => s.enabled).length}</strong> delivery slots
+                ({slotConfig.daysAhead} days × {slotConfig.timeSlots.filter(s => s.enabled).length} time slots)
+                starting tomorrow.
+              </p>
+            </div>
+
+            <div className="flex flex-col sm:flex-row gap-3 pt-4">
+              <Button
+                onClick={createDeliverySlots}
+                disabled={deliverySlotsLoading || slotConfig.timeSlots.filter(s => s.enabled).length === 0}
+                className="flex-1 bg-orange-600 hover:bg-orange-700 text-white"
+              >
+                {deliverySlotsLoading ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    Creating Slots...
+                  </>
+                ) : (
+                  <>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Create {slotConfig.daysAhead * slotConfig.timeSlots.filter(s => s.enabled).length} Slots
+                  </>
+                )}
+              </Button>
+              <Button
+                onClick={() => setShowCreateSlotsModal(false)}
+                variant="outline"
+                className="flex-1"
+              >
+                Cancel
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
