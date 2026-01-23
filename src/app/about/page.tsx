@@ -1,121 +1,137 @@
+"use client"
+
 import Link from "next/link"
+import { motion } from "framer-motion"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
+import { Card, CardContent } from "@/components/ui/card"
 import {
   ArrowLeft,
-  Heart,
-  Users,
-  Award,
-  Truck,
-  Shield,
-  Star,
-  Target,
-  Eye,
-  HandHeart,
-  MapPin,
-  Phone,
-  Mail,
-  Clock,
   ShoppingBag,
   PiggyBank,
   Store,
-  CheckCircle,
-  DollarSign,
-  Zap,
+  Truck,
+  Shield,
+  Heart,
+  Users,
+  Award,
+  Clock,
   Calendar,
-  MessageCircle,
-  Instagram,
-  Linkedin
+  CheckCircle,
+  Zap,
+  Target,
+  Eye,
+  Leaf,
+  DollarSign,
+  Package,
+  TrendingUp
 } from "lucide-react"
 
 export default function AboutPage() {
-  const whatWeOffer = [
+  const coreValues = [
     {
-      icon: Truck,
-      title: "Doorstep Delivery",
-      description: "Carefully packed under hygienic conditions, your food essentials are delivered straight to your doorstep—stress-free and at fair prices."
+      icon: Shield,
+      title: "Quality Experience",
+      description: "We source only the freshest produce and highest quality products from trusted suppliers, ensuring every item meets our strict quality standards before reaching your doorstep."
     },
     {
+      icon: DollarSign,
+      title: "Affordability",
+      description: "Through our smart pricing and thrift savings plans, we make quality food accessible to every household without compromising on freshness or value."
+    },
+    {
+      icon: Zap,
+      title: "Convenience",
+      description: "Say goodbye to crowded markets and long queues. Shop from anywhere, anytime, and have everything delivered fresh to your door—saving you time for what matters most."
+    },
+    {
+      icon: Heart,
+      title: "Customer-Centric",
+      description: "Your satisfaction is our priority. We listen, adapt, and continuously improve our services to meet your evolving needs and exceed your expectations."
+    }
+  ]
+
+  const services = [
+    {
       icon: PiggyBank,
-      title: "Daily & Monthly Thrift Plans",
-      description: "Save gradually and receive a well-packaged bundle of food and grocery essentials—delivered monthly or during festive periods. Designed to help you plan ahead, beat price hikes, and shop without stress."
+      title: "Thrift Savings Plans",
+      description: "Our innovative daily and monthly thrift plans allow you to save gradually, making quality food more affordable. Plan ahead, beat price hikes, and receive well-packaged bundles delivered monthly or during festive periods—all without disrupting your budget.",
+      features: [
+        "Daily savings starting from ₦450/day",
+        "Monthly food bundles",
+        "Festive period packages",
+        "Price protection against inflation",
+        "Flexible payment options"
+      ],
+      gradient: "from-green-500 to-emerald-600"
     },
     {
       icon: Store,
       title: "Personal Shopping Services",
-      description: "We shop on your behalf—so you don't have to. From trusted local markets and suppliers, we carefully source fresh produce, packaged, and processed food items—ensuring quality, fair pricing, and reliable delivery."
+      description: "We shop on your behalf—so you don't have to. Our expert team carefully sources fresh produce, packaged goods, and processed food items from trusted local markets and suppliers, ensuring quality, fair pricing, and reliable delivery every time.",
+      features: [
+        "Expert market sourcing",
+        "Quality assurance checks",
+        "Fair pricing guarantee",
+        "Reliable delivery",
+        "Custom shopping lists"
+      ],
+      gradient: "from-blue-500 to-cyan-600"
+    },
+    {
+      icon: Package,
+      title: "Customized Food Packages",
+      description: "Tailored to your family's needs and preferences, our customized food packages help you plan ahead and access fresh food without disruption. Whether it's weekly essentials or monthly bulk orders, we create packages that fit your lifestyle.",
+      features: [
+        "Personalized meal planning",
+        "Family-size packages",
+        "Dietary preferences",
+        "Regular delivery schedules",
+        "Budget-friendly options"
+      ],
+      gradient: "from-purple-500 to-pink-600"
     }
   ]
 
-  const whyChooseUs = [
+  const benefits = [
     {
-      icon: CheckCircle,
-      title: "Reliable Quality, Delivered On Time",
-      description: "Count on Marketdotcom for fresh, high-quality groceries delivered accurately and on schedule—every order, every time."
+      icon: Clock,
+      title: "Save Time",
+      description: "No more spending hours in crowded markets. Shop in minutes and get back to your life."
     },
     {
-      icon: DollarSign,
-      title: "Budget-Smart Food Solutions",
-      description: "Our daily and monthly thrift plans help you save gradually, making quality food more affordable without putting pressure on your finances."
+      icon: TrendingUp,
+      title: "Save Money",
+      description: "Beat price hikes with our thrift plans and get better value through bulk purchasing."
     },
     {
-      icon: Zap,
-      title: "Convenient, Streamlined Shopping",
-      description: "Shop fresh groceries and household essentials from anywhere—home or office—without visiting the market, saving time for what truly matters."
+      icon: Leaf,
+      title: "Fresh Quality",
+      description: "Every product is carefully selected and delivered fresh, ensuring the best quality for your family."
     },
     {
       icon: Calendar,
-      title: "Flexible Delivery Options",
-      description: "Choose delivery that fits your schedule—same-day, next-day, or scheduled delivery—and receive your groceries exactly when you need them."
-    }
-  ]
-
-  const socialLinks = [
-    {
-      icon: MessageCircle,
-      name: "WhatsApp Contact",
-      url: "https://wa.link/ig48j8",
-      color: "hover:text-green-600"
-    },
-    {
-      icon: MessageCircle,
-      name: "WhatsApp Community",
-      url: "https://whatsapp.com/channel/0029VbAyTyFIN9ihlQWcnq3u",
-      color: "hover:text-green-600"
-    },
-    {
-      icon: Instagram,
-      name: "Instagram",
-      url: "https://www.instagram.com/marketdotcom.ng?igsh=MWl2MDZ5dDlxbWN4Zw==",
-      color: "hover:text-pink-600"
-    },
-    {
-      icon: Linkedin,
-      name: "LinkedIn",
-      url: "https://www.linkedin.com/in/marketdotcom-1898093a5/",
-      color: "hover:text-blue-600"
+      title: "Plan Ahead",
+      description: "With our savings plans and scheduled deliveries, you can plan your monthly food budget with confidence."
     }
   ]
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-orange-50 to-yellow-50">
       {/* Header */}
-      <header className="bg-white/80 backdrop-blur-lg shadow-lg border-b border-white/20">
+      <header className="bg-white/80 backdrop-blur-lg shadow-sm border-b border-gray-200 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-20">
+          <div className="flex items-center justify-between h-16">
             <Link href="/">
-              <Button variant="ghost" size="sm">
-                <ArrowLeft className="h-4 w-4 mr-2" />
+              <Button variant="ghost" size="sm" className="flex items-center gap-2">
+                <ArrowLeft className="h-4 w-4" />
                 Back to Home
               </Button>
             </Link>
-
             <div className="flex items-center space-x-3">
-              <div className="p-2 bg-gradient-to-r from-orange-500 to-red-500 rounded-lg">
-                <Heart className="h-6 w-6 text-white" />
+              <div className="p-2 bg-gradient-to-r from-orange-500 to-orange-600 rounded-lg">
+                <Heart className="h-5 w-5 text-white" />
               </div>
-              <span className="text-xl font-bold bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent">
+              <span className="text-lg font-bold bg-gradient-to-r from-orange-600 to-orange-700 bg-clip-text text-transparent">
                 About Marketdotcom
               </span>
             </div>
@@ -123,208 +139,274 @@ export default function AboutPage() {
         </div>
       </header>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        {/* Hero Section */}
-        <div className="text-center mb-16">
-          <h1 className="text-5xl font-bold text-gray-900 mb-6">
-            Welcome to <span className="bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent">Marketdotcom</span>
-          </h1>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto mb-8">
-            Nigeria's most trusted platform for convenient and timely grocery and food essentials shopping, combined with smart savings solutions.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/marketplace">
-              <Button size="lg" className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600">
-                Start Shopping Today
-              </Button>
-            </Link>
-            <Button size="lg" variant="outline">
-              Learn More
-            </Button>
-          </div>
+      {/* Hero Section */}
+      <section className="relative py-20 overflow-hidden">
+        <div className="absolute inset-0">
+          <div className="absolute top-0 left-0 w-96 h-96 bg-orange-200/30 rounded-full blur-3xl"></div>
+          <div className="absolute bottom-0 right-0 w-80 h-80 bg-yellow-200/30 rounded-full blur-3xl"></div>
         </div>
 
-        {/* Vision & Mission */}
-        <div className="grid md:grid-cols-2 gap-8 mb-16">
-          <Card className="hover:shadow-lg transition-shadow duration-300">
-            <CardHeader>
-              <div className="flex items-center space-x-3 mb-4">
-                <div className="p-3 bg-gradient-to-r from-purple-100 to-purple-200 rounded-lg">
-                  <Eye className="h-6 w-6 text-purple-600" />
-                </div>
-                <CardTitle className="text-2xl">Our Vision</CardTitle>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <p className="text-gray-700 text-lg leading-relaxed">
-                To become Nigeria's most trusted platform for convenient and timely grocery and food essentials shopping, combined with smart savings solutions that help households plan ahead.
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card className="hover:shadow-lg transition-shadow duration-300">
-            <CardHeader>
-              <div className="flex items-center space-x-3 mb-4">
-                <div className="p-3 bg-gradient-to-r from-blue-100 to-blue-200 rounded-lg">
-                  <Target className="h-6 w-6 text-blue-600" />
-                </div>
-                <CardTitle className="text-2xl">Our Mission</CardTitle>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <p className="text-gray-700 text-lg leading-relaxed">
-                To deliver a reliable and convenient platform that enables Nigerian households to purchase groceries and food essentials effortlessly, receive orders on time, and build disciplined savings for their everyday and seasonal food needs—through trusted vendors, efficient logistics, and a mobile-first digital experience.
-              </p>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* What We Offer */}
-        <div className="mb-16">
-          <h2 className="text-3xl font-bold text-center text-gray-900 mb-4">What We Offer</h2>
-          <p className="text-center text-gray-600 mb-12 max-w-2xl mx-auto">
-            Comprehensive solutions for all your grocery and food essentials needs
-          </p>
-          <div className="grid md:grid-cols-3 gap-8">
-            {whatWeOffer.map((offer, index) => {
-              const Icon = offer.icon
-              return (
-                <Card key={index} className="text-center hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
-                  <CardContent className="p-6">
-                    <div className="p-4 bg-gradient-to-r from-orange-100 to-red-100 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
-                      <Icon className="h-8 w-8 text-orange-600" />
-                    </div>
-                    <h3 className="text-xl font-semibold text-gray-900 mb-3">{offer.title}</h3>
-                    <p className="text-gray-600">{offer.description}</p>
-                  </CardContent>
-                </Card>
-              )
-            })}
-          </div>
-        </div>
-
-        {/* About Us */}
-        <div className="bg-white rounded-2xl shadow-lg p-8 mb-16">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <div>
-              <h2 className="text-3xl font-bold text-gray-900 mb-6">About Marketdotcom</h2>
-              <div className="space-y-4 text-gray-700">
-                <p>
-                  Marketdotcom was founded to solve the common problem of time-consuming, fragmented monthly food shopping. By consolidating all essential items in one place, we aim to provide convenience, affordability and quality experience.
-                </p>
-                <p>
-                  Through our thrift savings plans, personal shopping services, and customized food packages, customers can plan ahead, save gradually, and access fresh food without disruption.
-                </p>
-              </div>
+        <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+          >
+            <div className="inline-flex items-center px-4 py-2 bg-orange-100 text-orange-800 rounded-full text-sm font-medium mb-6">
+              <span className="w-2 h-2 bg-orange-500 rounded-full mr-2 animate-pulse"></span>
+              Our Story
             </div>
-            <div className="relative">
-              <div className="aspect-square bg-gradient-to-br from-orange-200 to-red-200 rounded-2xl flex items-center justify-center">
-                <div className="text-center">
-                  <Award className="h-16 w-16 text-orange-600 mx-auto mb-4" />
-                  <p className="text-orange-800 font-semibold">Solving Real Problems</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Why Marketdotcom? */}
-        <div className="mb-16">
-          <h2 className="text-3xl font-bold text-center text-gray-900 mb-4">Why Marketdotcom?</h2>
-          <p className="text-center text-gray-600 mb-12 max-w-2xl mx-auto">
-            Discover what makes us Nigeria's most trusted grocery shopping platform
-          </p>
-          <div className="grid md:grid-cols-2 gap-8">
-            {whyChooseUs.map((reason, index) => {
-              const Icon = reason.icon
-              return (
-                <Card key={index} className="hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
-                  <CardContent className="p-6">
-                    <div className="flex items-start space-x-4">
-                      <div className="p-3 bg-gradient-to-r from-green-100 to-green-200 rounded-lg flex-shrink-0">
-                        <Icon className="h-6 w-6 text-green-600" />
-                      </div>
-                      <div>
-                        <h3 className="text-xl font-semibold text-gray-900 mb-3">{reason.title}</h3>
-                        <p className="text-gray-600">{reason.description}</p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              )
-            })}
-          </div>
-        </div>
-
-
-        {/* Contact & Social Links */}
-        <Card className="bg-gradient-to-r from-orange-50 to-red-50 border-orange-200">
-          <CardContent className="p-8">
-            <div className="text-center mb-8">
-              <HandHeart className="h-12 w-12 text-orange-600 mx-auto mb-4" />
-              <h2 className="text-3xl font-bold text-gray-900 mb-4">Connect With Us</h2>
-              <p className="text-gray-700 max-w-2xl mx-auto">
-                Join our community and experience the convenience of fresh grocery delivery with our smart savings solutions.
-              </p>
-            </div>
-
-            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-              {socialLinks.map((social, index) => {
-                const Icon = social.icon
-                return (
-                  <a
-                    key={index}
-                    href={social.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className={`flex items-center space-x-3 p-4 bg-white rounded-lg shadow-sm hover:shadow-md transition-all duration-300 ${social.color}`}
-                  >
-                    <Icon className="h-6 w-6" />
-                    <span className="font-medium">{social.name}</span>
-                  </a>
-                )
-              })}
-            </div>
-
-            <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
+            <h1 className="text-5xl lg:text-6xl font-bold text-gray-900 mb-6 leading-tight">
+              About <span className="text-orange-600">Marketdotcom</span>
+            </h1>
+            <p className="text-xl lg:text-2xl text-gray-700 mb-8 leading-relaxed max-w-3xl mx-auto">
+              Marketdotcom was founded to solve the common problem of time-consuming, fragmented monthly food shopping. By consolidating all essential items in one place, we aim to provide convenience, affordability and quality experience.
+            </p>
+            <p className="text-lg text-gray-600 mb-10 leading-relaxed max-w-3xl mx-auto">
+              Through our thrift savings plans, personal shopping services, and customized food packages, customers can plan ahead, save gradually, and access fresh food without disruption.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link href="/marketplace">
-                <Button size="lg" className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600">
-                  Start Shopping Now
+                <Button size="lg" className="bg-orange-600 hover:bg-orange-700 text-white px-8 py-6 text-lg">
+                  <ShoppingBag className="mr-2 h-5 w-5" />
+                  Start Shopping
                 </Button>
               </Link>
               <Link href="/auth/register">
-                <Button size="lg" variant="outline">
+                <Button size="lg" variant="outline" className="border-2 border-orange-300 hover:bg-orange-50 px-8 py-6 text-lg">
                   Join Our Community
                 </Button>
               </Link>
             </div>
+          </motion.div>
+        </div>
+      </section>
 
-            <div className="grid md:grid-cols-3 gap-6 text-center">
-              <div className="flex flex-col items-center space-y-2">
-                <MapPin className="h-6 w-6 text-orange-600" />
-                <div>
-                  <h4 className="font-semibold text-gray-900">Address</h4>
-                  <p className="text-gray-600 text-sm">Road 4, Glorious Estate, Badore Ajah Lagos State.</p>
-                </div>
-              </div>
-              <div className="flex flex-col items-center space-y-2">
-                <Mail className="h-6 w-6 text-orange-600" />
-                <div>
-                  <h4 className="font-semibold text-gray-900">Email</h4>
-                  <p className="text-gray-600 text-sm">marketdotcominfo@gmail.com</p>
-                </div>
-              </div>
-              <div className="flex flex-col items-center space-y-2">
-                <Phone className="h-6 w-6 text-orange-600" />
-                <div>
-                  <h4 className="font-semibold text-gray-900">Phone</h4>
-                  <p className="text-gray-600 text-sm">08138353576</p>
-                </div>
-              </div>
+      {/* Core Values */}
+      <section className="py-20 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+            viewport={{ once: true }}
+            className="text-center mb-16"
+          >
+            <h2 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-4">
+              What We <span className="text-orange-600">Stand For</span>
+            </h2>
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+              Our core values guide everything we do, ensuring you get the best shopping experience possible
+            </p>
+          </motion.div>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {coreValues.map((value, index) => {
+              const Icon = value.icon
+              return (
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6, delay: index * 0.1 }}
+                  viewport={{ once: true }}
+                >
+                  <Card className="h-full hover:shadow-xl transition-all duration-300 border-2 border-transparent hover:border-orange-200">
+                    <CardContent className="p-6 text-center">
+                      <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-orange-100 to-orange-200 rounded-2xl mb-4">
+                        <Icon className="h-8 w-8 text-orange-600" />
+                      </div>
+                      <h3 className="text-xl font-bold text-gray-900 mb-3">{value.title}</h3>
+                      <p className="text-gray-600 leading-relaxed">{value.description}</p>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              )
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* Our Services */}
+      <section className="py-20 bg-gradient-to-br from-orange-50 to-yellow-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+            viewport={{ once: true }}
+            className="text-center mb-16"
+          >
+            <div className="inline-flex items-center px-4 py-2 bg-orange-100 text-orange-800 rounded-full text-sm font-medium mb-6">
+              <span className="w-2 h-2 bg-orange-500 rounded-full mr-2 animate-pulse"></span>
+              Our Solutions
             </div>
-          </CardContent>
-        </Card>
-      </div>
+            <h2 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-4">
+              How We <span className="text-orange-600">Help You</span>
+            </h2>
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+              Comprehensive solutions designed to make your food shopping experience seamless and affordable
+            </p>
+          </motion.div>
+
+          <div className="space-y-12">
+            {services.map((service, index) => {
+              const Icon = service.icon
+              return (
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.8, delay: index * 0.2 }}
+                  viewport={{ once: true }}
+                >
+                  <Card className="overflow-hidden border-2 border-gray-200 hover:shadow-2xl transition-all duration-300">
+                    <div className="grid md:grid-cols-2 gap-0">
+                      <div className={`bg-gradient-to-r ${service.gradient} p-8 md:p-12 flex items-center justify-center`}>
+                        <div className="text-center text-white">
+                          <div className="inline-flex items-center justify-center w-20 h-20 bg-white/20 backdrop-blur-sm rounded-2xl mb-6">
+                            <Icon className="h-10 w-10" />
+                          </div>
+                          <h3 className="text-3xl font-bold mb-4">{service.title}</h3>
+                        </div>
+                      </div>
+                      <CardContent className="p-8 md:p-12">
+                        <p className="text-lg text-gray-700 mb-6 leading-relaxed">{service.description}</p>
+                        <ul className="space-y-3">
+                          {service.features.map((feature, featureIndex) => (
+                            <li key={featureIndex} className="flex items-start space-x-3">
+                              <CheckCircle className="h-5 w-5 text-orange-600 mt-0.5 flex-shrink-0" />
+                              <span className="text-gray-700">{feature}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </CardContent>
+                    </div>
+                  </Card>
+                </motion.div>
+              )
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* Benefits Section */}
+      <section className="py-20 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+            viewport={{ once: true }}
+            className="text-center mb-16"
+          >
+            <h2 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-4">
+              Why Choose <span className="text-orange-600">Marketdotcom</span>
+            </h2>
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+              Experience the benefits of smart shopping with our comprehensive platform
+            </p>
+          </motion.div>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {benefits.map((benefit, index) => {
+              const Icon = benefit.icon
+              return (
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  whileInView={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.6, delay: index * 0.1 }}
+                  viewport={{ once: true }}
+                >
+                  <Card className="h-full text-center hover:shadow-xl transition-all duration-300 hover:-translate-y-2 border-2 border-transparent hover:border-orange-200">
+                    <CardContent className="p-6">
+                      <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-orange-100 to-yellow-100 rounded-2xl mb-4">
+                        <Icon className="h-8 w-8 text-orange-600" />
+                      </div>
+                      <h3 className="text-xl font-bold text-gray-900 mb-3">{benefit.title}</h3>
+                      <p className="text-gray-600">{benefit.description}</p>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              )
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* Vision & Mission */}
+      <section className="py-20 bg-gradient-to-br from-gray-900 via-gray-800 to-black text-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid md:grid-cols-2 gap-12">
+            <motion.div
+              initial={{ opacity: 0, x: -30 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.8 }}
+              viewport={{ once: true }}
+            >
+              <div className="flex items-center space-x-4 mb-6">
+                <div className="p-3 bg-orange-600/20 rounded-xl">
+                  <Eye className="h-8 w-8 text-orange-400" />
+                </div>
+                <h2 className="text-3xl font-bold">Our Vision</h2>
+              </div>
+              <p className="text-lg text-gray-300 leading-relaxed">
+                To become Nigeria's most trusted platform for convenient and timely grocery and food essentials shopping, combined with smart savings solutions that help households plan ahead and access quality food without disruption.
+              </p>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, x: 30 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.8 }}
+              viewport={{ once: true }}
+            >
+              <div className="flex items-center space-x-4 mb-6">
+                <div className="p-3 bg-orange-600/20 rounded-xl">
+                  <Target className="h-8 w-8 text-orange-400" />
+                </div>
+                <h2 className="text-3xl font-bold">Our Mission</h2>
+              </div>
+              <p className="text-lg text-gray-300 leading-relaxed">
+                To deliver a reliable and convenient platform that enables Nigerian households to purchase groceries and food essentials effortlessly, receive orders on time, and build disciplined savings for their everyday and seasonal food needs—through trusted vendors, efficient logistics, and a mobile-first digital experience.
+              </p>
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className="py-20 bg-gradient-to-r from-orange-600 to-orange-700 text-white">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+            viewport={{ once: true }}
+          >
+            <h2 className="text-4xl lg:text-5xl font-bold mb-6">
+              Ready to Transform Your Shopping Experience?
+            </h2>
+            <p className="text-xl text-orange-100 mb-10 max-w-2xl mx-auto">
+              Join thousands of satisfied customers who have discovered the convenience of smart shopping with Marketdotcom
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Link href="/marketplace">
+                <Button size="lg" className="bg-white text-orange-600 hover:bg-orange-50 px-8 py-6 text-lg font-semibold">
+                  <ShoppingBag className="mr-2 h-5 w-5" />
+                  Start Shopping Now
+                </Button>
+              </Link>
+              <Link href="/auth/register">
+                <Button size="lg" variant="outline" className="border-2 border-white text-white hover:bg-white hover:text-orange-600 px-8 py-6 text-lg font-semibold">
+                  Join Our Community
+                </Button>
+              </Link>
+            </div>
+          </motion.div>
+        </div>
+      </section>
     </div>
   )
 }

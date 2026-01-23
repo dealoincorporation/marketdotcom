@@ -440,16 +440,14 @@ export default function MarketplaceTab({
             product={product}
             selectedVariationId={selectedVariations[product.id]}
             onVariationChange={(value) => handleVariationChange(product.id, value)}
-            quantity={quantities[product.id] ?? 1}
-            onQuantityChange={(next) => handleQuantityChange(product.id, next)}
             onAddToCart={(variationId) => {
-              const quantity = quantities[product.id] ?? 1
               const variation =
                 variationId && variationId !== "base"
                   ? product.variations.find((v) => v.id === variationId)
-                      : undefined
-                    onAddToCart(product, variation, quantity)
-                  }}
+                  : undefined
+              // Quantity is now selected via dropdown in the component, default to 1
+              onAddToCart(product, variation, 1)
+            }}
           />
         ))}
       </div>

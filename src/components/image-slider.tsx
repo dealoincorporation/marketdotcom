@@ -13,6 +13,7 @@ export function ImageSlider({ images, className = "" }: ImageSliderProps) {
   const [currentIndex, setCurrentIndex] = useState(0)
 
   useEffect(() => {
+    if (!images?.length || images.length <= 1) return
     const interval = setInterval(() => {
       setCurrentIndex((prevIndex) => (prevIndex + 1) % images.length)
     }, 4000) // Change image every 4 seconds

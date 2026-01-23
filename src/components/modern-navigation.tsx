@@ -28,7 +28,7 @@ export function ModernNavigation() {
 
   const navItems = [
     { name: "Marketplace", href: "/marketplace", external: true },
-    { name: "About", href: "#about", external: false },
+    { name: "About", href: "/about", external: false },
     { name: "Services", href: "#services", external: false },
     { name: "Testimonials", href: "#testimonials", external: false },
   ]

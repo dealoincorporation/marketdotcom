@@ -1,6 +1,58 @@
 import { NextRequest, NextResponse } from "next/server"
 import { getUserFromRequest } from "@/lib/auth"
 import { getPrismaClient } from "@/lib/prisma"
+import { z } from "zod"
+
+function parseImagesField(imageField: unknown): string[] {
+  if (typeof imageField !== "string" || !imageField) return []
+  try {
+    const parsed = JSON.parse(imageField)
+    if (!Array.isArray(parsed)) return []
+    const cleaned = parsed
+      .filter((v) => typeof v === "string")
+      .map((v) => v.trim())
+      .filter(Boolean)
+    return Array.from(new Set(cleaned)).slice(0, 10)
+  } catch {
+    return []
+  }
+}
+
+const VariationInputSchema = z
+  .object({
+    id: z.string().optional(),
+    name: z.string().trim().min(1),
+    type: z.string().optional(),
+    price: z.union([z.number(), z.string()]).transform((v) => Number(v)),
+    stock: z.union([z.number(), z.string()]).transform((v) => Number.parseInt(String(v)) || 0),
+    unit: z.string().optional().nullable(),
+    quantity: z.union([z.number(), z.string()]).optional().nullable().transform((v) => {
+      if (v === undefined || v === null || v === "") return null
+      const n = Number(v)
+      return Number.isFinite(n) ? n : null
+    }),
+    image: z.string().optional().nullable(),
+  })
+  .strict()
+
+const ProductInputSchema = z
+  .object({
+    name: z.string().trim().min(1),
+    groupName: z.string().optional().nullable(),
+    description: z.string().optional().default(""),
+    basePrice: z.union([z.number(), z.string()]).transform((v) => Number(v)),
+    categoryId: z.string().trim().min(1),
+    stock: z.union([z.number(), z.string()]).transform((v) => Number.parseInt(String(v)) || 0),
+    unit: z.string().optional().default("piece"),
+    inStock: z.boolean().optional(),
+    images: z
+      .array(z.string())
+      .optional()
+      .default([])
+      .transform((arr) => Array.from(new Set(arr.map((s) => s.trim()).filter(Boolean))).slice(0, 10)),
+    variations: z.array(VariationInputSchema).optional().default([]),
+  })
+  .strict()
 
 // GET /api/products/[id] - Get a specific product
 export async function GET(
@@ -28,7 +80,7 @@ export async function GET(
     // Transform product to handle images array
     const transformedProduct = {
       ...product,
-      images: product.image ? JSON.parse(product.image) : []
+      images: parseImagesField(product.image)
     }
 
     return NextResponse.json(transformedProduct)
@@ -59,10 +111,18 @@ export async function PUT(
 
     const { id } = await params
     const body = await request.json()
-    const { name, groupName, description, basePrice, categoryId, stock, unit, inStock, images, variations } = body
+    const parsed = ProductInputSchema.safeParse(body)
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: "Invalid product payload", details: parsed.error.flatten() },
+        { status: 400 }
+      )
+    }
 
-    const parsedStock = Number.parseInt(stock) || 0
-    const incomingVariations: any[] = Array.isArray(variations) ? variations : []
+    const { name, groupName, description, basePrice, categoryId, stock, unit, images, variations } = parsed.data
+
+    const parsedStock = stock
+    const incomingVariations: any[] = variations
     const hasInStockVariation = incomingVariations.some(v => (Number.parseInt(v?.stock) || 0) > 0)
     const derivedInStock = parsedStock > 0 || hasInStockVariation
 
@@ -72,7 +132,7 @@ export async function PUT(
         name,
         groupName: groupName?.trim() || null,
         description,
-        basePrice: parseFloat(basePrice),
+        basePrice: basePrice, // Already validated as number by Zod
         categoryId,
         stock: parsedStock,
         unit,
@@ -115,7 +175,7 @@ export async function PUT(
     })
 
     const transformed = updated
-      ? { ...updated, images: updated.image ? JSON.parse(updated.image) : [] }
+      ? { ...updated, images: parseImagesField(updated.image) }
       : null
 
     return NextResponse.json(transformed ?? product)

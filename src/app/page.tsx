@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { TestimonialsCarousel } from "@/components/testimonials-carousel"
 import { ModernNavigation } from "@/components/modern-navigation"
 import { ImageSlider } from "@/components/image-slider"
+import { MarketplacePreview } from "@/components/marketplace/MarketplacePreview"
 import { ShoppingBag, Truck, Wallet, Gift, Star, Shield, Users, Heart, Leaf, Award, Facebook, Instagram, Linkedin, PiggyBank, Store, AlertTriangle, Code, Terminal, ShoppingCart, Clock, Calendar } from "lucide-react"
 
 export default function Home() {
@@ -380,6 +381,8 @@ export default function Home() {
           </motion.div>
         </motion.div>
       </section>
+
+      <MarketplacePreview />
 
       {/* About Section */}
       <section id="about" className="py-24 bg-gradient-to-br from-white to-orange-50 relative overflow-hidden">
@@ -1043,7 +1046,7 @@ export default function Home() {
                   <ul className="space-y-3">
                     {[
                       { name: "Marketplace", href: "/marketplace" },
-                      { name: "About Us", href: "#about" },
+                      { name: "About Us", href: "/about" },
                       { name: "Services", href: "#services" },
                       { name: "Testimonials", href: "#testimonials" },
                       { name: "Sign In", href: "/auth/login" }

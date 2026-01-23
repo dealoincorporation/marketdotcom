@@ -36,12 +36,15 @@ export default function MarketplacePage() {
   const [filteredProducts, setFilteredProducts] = useState<any[]>([])
   const [selectedCategory, setSelectedCategory] = useState("all")
   const [searchQuery, setSearchQuery] = useState("")
+  const [inStockOnly, setInStockOnly] = useState(true)
+  const [sortBy, setSortBy] = useState<"recommended" | "price_asc" | "price_desc" | "name_asc">("recommended")
+  const [minPrice, setMinPrice] = useState<string>("")
+  const [maxPrice, setMaxPrice] = useState<string>("")
   const [isLoading, setIsLoading] = useState(true)
   const [showFilters, setShowFilters] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [currentImageIndexes, setCurrentImageIndexes] = useState<Record<string, number>>({})
   const [selectedVariations, setSelectedVariations] = useState<{ [key: string]: string }>({})
-  const [quantities, setQuantities] = useState<{ [key: string]: number }>({})
 
   const { user } = useAuth()
   const { items, addItem, removeItem, getItemQuantity } = useCartStore()
@@ -126,35 +129,50 @@ export default function MarketplacePage() {
       )
     }
 
-    setFilteredProducts(filtered)
-  }, [products, selectedCategory, searchQuery])
-
-  // Auto-select first available option for products
-  useEffect(() => {
-    const newSelectedVariations = { ...selectedVariations }
-
-    filteredProducts.forEach(product => {
-      if (!selectedVariations[product.id]) {
-        // If base product has stock, select it
-        if (product.stock > 0) {
-          newSelectedVariations[product.id] = "base"
-        }
-        // Otherwise, find first available variation
-        else if (product.variations && product.variations.length > 0) {
-          const availableVariation = product.variations.find((v: any) => v.stock > 0)
-          if (availableVariation) {
-            newSelectedVariations[product.id] = availableVariation.id
-          }
-        }
+    const getPriceRange = (product: MarketplaceProduct) => {
+      const prices: number[] = []
+      if ((product.stock || 0) > 0) prices.push(product.basePrice)
+      for (const v of product.variations || []) {
+        if ((v.stock || 0) > 0) prices.push(v.price)
       }
-    })
-
-    if (Object.keys(newSelectedVariations).length !== Object.keys(selectedVariations).length) {
-      setSelectedVariations(newSelectedVariations)
+      if (prices.length === 0) prices.push(product.basePrice)
+      return { min: Math.min(...prices), max: Math.max(...prices) }
     }
-  }, [filteredProducts, selectedVariations])
 
-  const handleAddToCart = (product: MarketplaceProduct, variationId: string | undefined, quantity: number = 1) => {
+    // In-stock toggle (treat any in-stock variation as in-stock)
+    if (inStockOnly) {
+      filtered = filtered.filter((p) => {
+        const hasBase = (p.stock || 0) > 0
+        const hasVar = (p.variations || []).some((v) => (v.stock || 0) > 0)
+        return hasBase || hasVar
+      })
+    }
+
+    // Price range filter
+    const min = minPrice.trim() ? Number(minPrice) : undefined
+    const max = maxPrice.trim() ? Number(maxPrice) : undefined
+    if ((min !== undefined && !Number.isNaN(min)) || (max !== undefined && !Number.isNaN(max))) {
+      filtered = filtered.filter((p) => {
+        const range = getPriceRange(p)
+        if (min !== undefined && !Number.isNaN(min) && range.max < min) return false
+        if (max !== undefined && !Number.isNaN(max) && range.min > max) return false
+        return true
+      })
+    }
+
+    // Sorting
+    if (sortBy === "name_asc") {
+      filtered = [...filtered].sort((a, b) => a.name.localeCompare(b.name))
+    } else if (sortBy === "price_asc") {
+      filtered = [...filtered].sort((a, b) => getPriceRange(a).min - getPriceRange(b).min)
+    } else if (sortBy === "price_desc") {
+      filtered = [...filtered].sort((a, b) => getPriceRange(b).max - getPriceRange(a).max)
+    }
+
+    setFilteredProducts(filtered)
+  }, [products, selectedCategory, searchQuery, inStockOnly, minPrice, maxPrice, sortBy])
+
+  const handleAddToCart = (product: MarketplaceProduct, variationId: string | undefined) => {
     const selectedVariation =
       variationId && variationId !== "base"
         ? product.variations.find((v: any) => v.id === variationId)
@@ -168,7 +186,7 @@ export default function MarketplacePage() {
         : product.name,
       price: selectedVariation?.price || product.basePrice,
       image: selectedVariation?.image || product.images?.[0] || "/api/placeholder/300/200",
-      quantity,
+      quantity: 1,
       unit: selectedVariation?.unit || product.unit,
       variation: selectedVariation ? {
         id: selectedVariation.id,
@@ -185,30 +203,10 @@ export default function MarketplacePage() {
 
   const cartItemCount = items.reduce((total, item) => total + item.quantity, 0)
 
-  // Auto-select first variation for products with variations
-  useEffect(() => {
-    const newSelections: { [key: string]: string } = {}
-    products.forEach(product => {
-      if (product.variations.length > 0 && !selectedVariations[product.id] && product.variations[0]) {
-        newSelections[product.id] = product.variations[0].id
-      }
-    })
-    if (Object.keys(newSelections).length > 0) {
-      setSelectedVariations(prev => ({ ...prev, ...newSelections }))
-    }
-  }, [products, selectedVariations])
-
   const handleVariationChange = (productId: string, variationId: string) => {
     setSelectedVariations(prev => ({
       ...prev,
       [productId]: variationId
-    }))
-  }
-
-  const handleQuantityChange = (productId: string, quantity: number) => {
-    setQuantities(prev => ({
-      ...prev,
-      [productId]: Math.max(1, quantity)
     }))
   }
 
@@ -404,6 +402,50 @@ export default function MarketplacePage() {
               Filters
             </Button>
 
+            {/* Sort + Stock + Price (Desktop) */}
+            <div className="hidden lg:flex items-center gap-3">
+              <div className="w-48">
+                <Select value={sortBy} onValueChange={(v: any) => setSortBy(v)}>
+                  <SelectTrigger className="h-12">
+                    <SelectValue placeholder="Sort" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="recommended">Recommended</SelectItem>
+                    <SelectItem value="price_asc">Price: Low to High</SelectItem>
+                    <SelectItem value="price_desc">Price: High to Low</SelectItem>
+                    <SelectItem value="name_asc">Name: A-Z</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <label className="flex items-center gap-2 text-sm text-gray-700 select-none">
+                <input
+                  type="checkbox"
+                  checked={inStockOnly}
+                  onChange={(e) => setInStockOnly(e.target.checked)}
+                  className="h-4 w-4"
+                />
+                In stock
+              </label>
+
+              <div className="flex items-center gap-2">
+                <Input
+                  value={minPrice}
+                  onChange={(e) => setMinPrice(e.target.value)}
+                  inputMode="numeric"
+                  placeholder="Min ₦"
+                  className="h-12 w-28"
+                />
+                <Input
+                  value={maxPrice}
+                  onChange={(e) => setMaxPrice(e.target.value)}
+                  inputMode="numeric"
+                  placeholder="Max ₦"
+                  className="h-12 w-28"
+                />
+              </div>
+            </div>
+
             {/* Category Filters - Desktop */}
             <div className="hidden lg:flex items-center space-x-2 overflow-x-auto">
               {categories.map((category) => (
@@ -429,6 +471,52 @@ export default function MarketplacePage() {
               className="lg:hidden mt-4 pt-4 border-t bg-white/95 backdrop-blur-sm rounded-lg shadow-lg border border-gray-200"
             >
               <div className="px-4 pb-4">
+                <div className="grid grid-cols-1 gap-3 mb-4">
+                  <div>
+                    <p className="text-sm font-semibold text-gray-900 mb-2">Sort</p>
+                    <Select value={sortBy} onValueChange={(v: any) => setSortBy(v)}>
+                      <SelectTrigger className="h-11">
+                        <SelectValue placeholder="Sort" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="recommended">Recommended</SelectItem>
+                        <SelectItem value="price_asc">Price: Low to High</SelectItem>
+                        <SelectItem value="price_desc">Price: High to Low</SelectItem>
+                        <SelectItem value="name_asc">Name: A-Z</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <label className="flex items-center gap-2 text-sm text-gray-700 select-none">
+                    <input
+                      type="checkbox"
+                      checked={inStockOnly}
+                      onChange={(e) => setInStockOnly(e.target.checked)}
+                      className="h-4 w-4"
+                    />
+                    In stock only
+                  </label>
+
+                  <div>
+                    <p className="text-sm font-semibold text-gray-900 mb-2">Price range</p>
+                    <div className="flex items-center gap-2">
+                      <Input
+                        value={minPrice}
+                        onChange={(e) => setMinPrice(e.target.value)}
+                        inputMode="numeric"
+                        placeholder="Min ₦"
+                        className="h-11"
+                      />
+                      <Input
+                        value={maxPrice}
+                        onChange={(e) => setMaxPrice(e.target.value)}
+                        inputMode="numeric"
+                        placeholder="Max ₦"
+                        className="h-11"
+                      />
+                    </div>
+                  </div>
+                </div>
                 <h3 className="text-sm font-semibold text-gray-900 mb-3">Filter by Category</h3>
                 <div className="flex flex-wrap gap-2">
                   {categories.map((category) => (
@@ -483,11 +571,8 @@ export default function MarketplacePage() {
                   product={product}
                   selectedVariationId={selectedVariations[product.id]}
                   onVariationChange={(value) => handleVariationChange(product.id, value)}
-                  quantity={quantities[product.id] ?? 1}
-                  onQuantityChange={(next) => handleQuantityChange(product.id, next)}
                   onAddToCart={(variationId) => {
-                    const qty = quantities[product.id] ?? 1
-                    handleAddToCart(product, variationId, qty)
+                    handleAddToCart(product, variationId)
                   }}
                 />
               </motion.div>

@@ -4,6 +4,7 @@ import "../../public/fonts/modern-fonts.css";
 import { Providers } from "@/components/providers";
 import { Toaster } from "react-hot-toast";
 import { WhatsAppFloat } from "@/components/ui/whatsapp-float";
+import { Footer } from "@/components/footer";
 
 // 🔥 ULTRA MODERN FONTS: Space Grotesk
 // 2024's coolest typography for premium marketplace - loads from Google Fonts

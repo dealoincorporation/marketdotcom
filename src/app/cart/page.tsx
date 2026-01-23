@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import Link from "next/link"
 import { motion } from "framer-motion"
 import { useAuth } from "@/contexts/AuthContext"
@@ -23,11 +23,14 @@ import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { useCartStore } from "@/lib/cart-store"
 import { useRouter } from "next/navigation"
+import { getEstimatedDeliveryTime } from "@/lib/helpers"
 
 export default function CartPage() {
   const { user } = useAuth()
   const router = useRouter()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [recommended, setRecommended] = useState<any[]>([])
+  const [recommendedLoading, setRecommendedLoading] = useState(true)
   const {
     items,
     updateQuantity,
@@ -41,6 +44,32 @@ export default function CartPage() {
   const totalPrice = getTotalPrice()
   const deliveryFee = totalPrice > 10000 ? 0 : 1500 // Free delivery over ₦10,000
   const finalTotal = totalPrice + deliveryFee
+  const eta = getEstimatedDeliveryTime()
+
+  // Load recommended add-ons (simple: in-stock products not already in cart).
+  // We link to PDP so user can pick quantity.
+  useEffect(() => {
+    let cancelled = false
+    async function load() {
+      setRecommendedLoading(true)
+      try {
+        const res = await fetch("/api/products?inStock=true", { cache: "no-store" })
+        const data = res.ok ? await res.json() : []
+        const list = Array.isArray(data) ? data : []
+        const inCart = new Set(items.map((i) => i.productId))
+        const next = list.filter((p: any) => p?.id && !inCart.has(p.id)).slice(0, 4)
+        if (!cancelled) setRecommended(next)
+      } catch {
+        if (!cancelled) setRecommended([])
+      } finally {
+        if (!cancelled) setRecommendedLoading(false)
+      }
+    }
+    load()
+    return () => {
+      cancelled = true
+    }
+  }, [items])
 
   const handleCheckout = () => {
     if (!user) {
@@ -302,6 +331,53 @@ export default function CartPage() {
                 </Button>
               </div>
             </div>
+
+            {/* Recommended add-ons */}
+            <div className="mt-6">
+              <div className="flex items-end justify-between gap-3 mb-3">
+                <div>
+                  <h2 className="text-lg font-bold text-gray-900">Recommended add-ons</h2>
+                  <p className="text-sm text-gray-600">Quick picks to complete your cart.</p>
+                </div>
+                <Link href="/marketplace">
+                  <Button variant="outline" size="sm">
+                    Browse more
+                  </Button>
+                </Link>
+              </div>
+
+              {recommendedLoading ? (
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  {Array.from({ length: 4 }).map((_, i) => (
+                    <div key={i} className="h-36 rounded-xl bg-white border border-gray-200 animate-pulse" />
+                  ))}
+                </div>
+              ) : recommended.length === 0 ? (
+                <div className="bg-white border border-gray-200 rounded-xl p-4 text-sm text-gray-600">
+                  No recommendations right now.
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  {recommended.map((p: any) => {
+                    const img = Array.isArray(p.images) && p.images[0] ? p.images[0] : "/api/placeholder/300/200"
+                    const price = typeof p.basePrice === "number" ? `₦${p.basePrice.toLocaleString()}` : ""
+                    return (
+                      <Link key={p.id} href={`/marketplace/${p.id}`} className="block">
+                        <div className="bg-white border border-gray-200 rounded-xl overflow-hidden hover:shadow-md transition-shadow">
+                          <div className="h-20 bg-gray-100">
+                            <img src={img} alt={p.name || "Product"} className="w-full h-full object-cover" />
+                          </div>
+                          <div className="p-2">
+                            <p className="text-sm font-semibold text-gray-900 truncate">{p.name}</p>
+                            <p className="text-xs text-orange-600 font-bold mt-1">{price}</p>
+                          </div>
+                        </div>
+                      </Link>
+                    )
+                  })}
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Order Summary */}
@@ -386,6 +462,10 @@ export default function CartPage() {
                     <span className="font-medium">Delivery Information</span>
                   </div>
                   <ul className="text-xs text-gray-600 space-y-1 bg-white p-3 rounded-lg border border-orange-100">
+                    <li className="flex items-center space-x-2">
+                      <div className="w-1.5 h-1.5 bg-orange-400 rounded-full"></div>
+                      <span>Estimated delivery time: {eta}</span>
+                    </li>
                     <li className="flex items-center space-x-2">
                       <div className="w-1.5 h-1.5 bg-orange-400 rounded-full"></div>
                       <span>Orders delivered within 4 hours</span>
