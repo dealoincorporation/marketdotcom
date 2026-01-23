@@ -359,7 +359,7 @@ export default function CartPage() {
               ) : (
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                   {recommended.map((p: any) => {
-                    const img = Array.isArray(p.images) && p.images[0] ? p.images[0] : "/api/placeholder/300/200"
+                    const img = Array.isArray(p.images) && p.images[0] ? p.images[0] : "/market_image.jpeg"
                     const price = typeof p.basePrice === "number" ? `₦${p.basePrice.toLocaleString()}` : ""
                     return (
                       <Link key={p.id} href={`/marketplace/${p.id}`} className="block">

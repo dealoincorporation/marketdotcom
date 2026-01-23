@@ -122,7 +122,27 @@ export default function ManageProductsTab({
   const inStockProducts = products.filter(p => p.inStock).length
   const outOfStockProducts = products.filter(p => !p.inStock).length
   const lowStockProducts = products.filter(p => p.stock < 10).length
-  const totalValue = products.reduce((sum, p) => sum + (p.basePrice * p.stock), 0)
+  
+  // Calculate total value: For products with variations, sum all variation values
+  // For products without variations, use basePrice * stock
+  const totalValue = products.reduce((sum, product) => {
+    // If product has variations, calculate value from all variations
+    if (product.variations && Array.isArray(product.variations) && product.variations.length > 0) {
+      const variationsValue = product.variations.reduce(
+        (variationSum, variation) => {
+          const price = variation.price || 0
+          const stock = variation.stock || 0
+          return variationSum + (price * stock)
+        },
+        0
+      )
+      return sum + variationsValue
+    }
+    // If no variations, use base price and stock
+    const basePrice = product.basePrice || 0
+    const stock = product.stock || 0
+    return sum + (basePrice * stock)
+  }, 0)
 
   // CSV Export Function
   const exportToCSV = () => {

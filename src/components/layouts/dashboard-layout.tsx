@@ -1,11 +1,10 @@
 'use client'
 
-import { useState, useEffect, ReactNode } from 'react'
+import { useState, ReactNode } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import {
-  ShoppingBag,
   Package,
   Truck,
   Wallet,
@@ -59,27 +58,179 @@ export function DashboardLayout({
   setIsMobileMenuOpen,
 }: DashboardLayoutProps) {
   const { user, logout } = useAuth()
-  const { items, getTotalItems, getTotalPrice, addItem, removeItem, updateQuantity, clearCart } = useCartStore()
+  const { items, getTotalItems, getTotalPrice, updateQuantity, clearCart } = useCartStore()
   const router = useRouter()
   const totalItems = getTotalItems()
   const [isCartOpen, setIsCartOpen] = useState(false)
 
-  // Debug cart state changes
-  useEffect(() => {
-    console.log('Cart open state changed:', isCartOpen)
-  }, [isCartOpen])
+  const SidebarInner = (props: { showClose: boolean }) => {
+    const { showClose } = props
+    return (
+      <>
+        <div className="flex-shrink-0 p-4 md:p-6 border-b border-gray-200 bg-gradient-to-br from-white to-gray-50">
+          <div className="flex items-center justify-between mb-4 md:mb-6">
+            <h2 className="text-lg md:text-xl font-bold text-gray-900">Dashboard</h2>
+            {showClose && (
+              <button
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="md:hidden p-1 rounded-md text-gray-500 hover:text-gray-700 hover:bg-gray-100"
+                aria-label="Close menu"
+                type="button"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            )}
+          </div>
+          <div className="flex items-center space-x-3">
+            <div className="w-10 h-10 bg-gradient-to-br from-orange-400 to-red-500 rounded-full flex items-center justify-center shadow-md flex-shrink-0">
+              <span className="text-white font-semibold text-sm md:text-lg">
+                {getInitials(user?.name || user?.email || 'U')}
+              </span>
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold text-gray-900 truncate">{user?.name || 'User'}</p>
+              <p className="text-xs text-gray-500 truncate">{user?.email}</p>
+            </div>
+          </div>
+        </div>
+
+        <nav className="flex-1 overflow-y-auto px-3 md:px-4 py-4 space-y-1 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
+          <Link
+            href="/"
+            onClick={() => setIsMobileMenuOpen(false)}
+            className="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-left transition-all duration-200 text-gray-600 hover:bg-gray-50 hover:text-gray-900 active:bg-gray-100"
+          >
+            <ArrowLeft className="h-5 w-5 flex-shrink-0" />
+            <span className="font-medium">Back to Home</span>
+          </Link>
+
+          <div className="border-t border-gray-200 pt-3 mt-3 space-y-1">
+            {navigationItems.map((item) => {
+              const Icon = item.icon
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => {
+                    onTabChange(item.id)
+                    setIsMobileMenuOpen(false)
+                  }}
+                  className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-left transition-all duration-200 cursor-pointer touch-manipulation ${
+                    activeTab === item.id
+                      ? 'bg-gradient-to-r from-orange-50 to-red-50 text-orange-600 border-l-4 border-orange-600 shadow-sm font-semibold'
+                      : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900 active:bg-gray-100'
+                  }`}
+                  type="button"
+                >
+                  <Icon className="h-5 w-5 flex-shrink-0" />
+                  <span className="text-sm md:text-base">{item.label}</span>
+                </button>
+              )
+            })}
+
+            {user?.role === 'ADMIN' && (
+              <>
+                <div className="pt-3 mt-3 border-t border-gray-200">
+                  <p className="px-4 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">Admin</p>
+                </div>
+
+                <button
+                  onClick={() => {
+                    onTabChange('admin')
+                    setIsMobileMenuOpen(false)
+                  }}
+                  className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-left transition-all duration-200 cursor-pointer touch-manipulation ${
+                    activeTab === 'admin'
+                      ? 'bg-gradient-to-r from-orange-50 to-red-50 text-orange-600 border-l-4 border-orange-600 shadow-sm font-semibold'
+                      : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900 active:bg-gray-100'
+                  }`}
+                  type="button"
+                >
+                  <Settings className="h-5 w-5 flex-shrink-0" />
+                  <span className="text-sm md:text-base">Admin Panel</span>
+                </button>
+
+                <button
+                  onClick={() => {
+                    onTabChange('manage-products')
+                    setIsMobileMenuOpen(false)
+                  }}
+                  className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-left transition-all duration-200 cursor-pointer touch-manipulation ${
+                    activeTab === 'manage-products'
+                      ? 'bg-gradient-to-r from-orange-50 to-red-50 text-orange-600 border-l-4 border-orange-600 shadow-sm font-semibold'
+                      : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900 active:bg-gray-100'
+                  }`}
+                  type="button"
+                >
+                  <Box className="h-5 w-5 flex-shrink-0" />
+                  <span className="text-sm md:text-base">Manage Products</span>
+                </button>
+
+                <button
+                  onClick={() => {
+                    onTabChange('manage-categories')
+                    setIsMobileMenuOpen(false)
+                  }}
+                  className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-left transition-all duration-200 cursor-pointer touch-manipulation ${
+                    activeTab === 'manage-categories'
+                      ? 'bg-gradient-to-r from-orange-50 to-red-50 text-orange-600 border-l-4 border-orange-600 shadow-sm font-semibold'
+                      : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900 active:bg-gray-100'
+                  }`}
+                  type="button"
+                >
+                  <Package className="h-5 w-5 flex-shrink-0" />
+                  <span className="text-sm md:text-base">Manage Categories</span>
+                </button>
+
+                <button
+                  onClick={() => {
+                    onTabChange('manage-deliveries')
+                    setIsMobileMenuOpen(false)
+                  }}
+                  className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-left transition-all duration-200 cursor-pointer touch-manipulation ${
+                    activeTab === 'manage-deliveries'
+                      ? 'bg-gradient-to-r from-orange-50 to-red-50 text-orange-600 border-l-4 border-orange-600 shadow-sm font-semibold'
+                      : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900 active:bg-gray-100'
+                  }`}
+                  type="button"
+                >
+                  <Truck className="h-5 w-5 flex-shrink-0" />
+                  <span className="text-sm md:text-base">Manage Deliveries</span>
+                </button>
+              </>
+            )}
+          </div>
+
+          <div className="flex-shrink-0 border-t border-gray-200 pt-3 mt-auto px-3 md:px-4 pb-4">
+            <button
+              onClick={() => {
+                logout()
+                router.push('/')
+                setIsMobileMenuOpen(false)
+              }}
+              className="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-left transition-all duration-200 text-red-600 hover:bg-red-50 hover:text-red-700 active:bg-red-100 cursor-pointer touch-manipulation"
+              type="button"
+            >
+              <LogOut className="h-5 w-5 flex-shrink-0" />
+              <span className="text-sm md:text-base font-medium">Sign Out</span>
+            </button>
+          </div>
+        </nav>
+      </>
+    )
+  }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-      {/* Header */}
-      <header className="bg-white shadow-lg border-b border-gray-200 relative z-[60]">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex flex-col">
+      {/* Header - Fixed at top */}
+      <header className="bg-white shadow-md border-b border-gray-200 sticky top-0 z-50 flex-shrink-0">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center space-x-4">
               {/* Mobile menu button */}
               <button
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                className="md:hidden p-2 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100 cursor-pointer relative z-[61]"
+                className="md:hidden p-2 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100 cursor-pointer transition-colors"
+                aria-label="Toggle menu"
               >
                 {isMobileMenuOpen ? (
                   <X className="h-6 w-6" />
@@ -88,7 +239,7 @@ export function DashboardLayout({
                 )}
               </button>
 
-              <Link href="/" className="flex items-center space-x-3 relative z-[61]">
+              <Link href="/" className="flex items-center space-x-3">
                 <motion.div
                   whileHover={{ scale: 1.05 }}
                   className="flex items-center space-x-3"
@@ -96,7 +247,7 @@ export function DashboardLayout({
                   <img
                     src="/mrktdotcom-logo.png"
                     alt="Marketdotcom Logo"
-                    className="h-24 w-24 object-contain"
+                    className="h-16 w-16 sm:h-20 sm:w-20 md:h-24 md:w-24 object-contain"
                   />
                   <span className="hidden md:block text-xl font-bold text-gray-900">Marketdotcom</span>
                 </motion.div>
@@ -112,37 +263,10 @@ export function DashboardLayout({
               </div>
 
               {/* Mobile Cart Button */}
-              <div className="lg:hidden relative z-[61]">
+              <div className="lg:hidden relative">
                 <button
-                  onClick={(e) => {
-                    e.preventDefault()
-                    e.stopPropagation()
-                    console.log('Cart button clicked!')
-                    setIsCartOpen(true)
-                  }}
-                  onMouseDown={(e) => {
-                    e.preventDefault()
-                    e.stopPropagation()
-                  }}
-                  onTouchStart={(e) => {
-                    e.preventDefault()
-                    e.stopPropagation()
-                    console.log('Cart button touch start')
-                    const target = e.currentTarget
-                    target.style.transform = 'scale(0.95)'
-                    target.style.opacity = '0.8'
-                  }}
-                  onTouchEnd={(e) => {
-                    e.preventDefault()
-                    e.stopPropagation()
-                    console.log('Cart button touch end')
-                    const target = e.currentTarget
-                    target.style.transform = 'scale(1)'
-                    target.style.opacity = '1'
-                    setIsCartOpen(true)
-                  }}
+                  onClick={() => setIsCartOpen(true)}
                   className="relative bg-white hover:bg-orange-50 border-2 border-gray-300 hover:border-orange-300 rounded-md p-3 cursor-pointer active:scale-95 transition-all duration-150 active:bg-orange-100 min-w-[48px] min-h-[48px] flex items-center justify-center touch-manipulation pointer-events-auto"
-                  style={{ WebkitTapHighlightColor: 'transparent', touchAction: 'manipulation' }}
                   type="button"
                 >
                   <ShoppingCart className="h-5 w-5 pointer-events-none" />
@@ -173,166 +297,39 @@ export function DashboardLayout({
         </div>
       </header>
 
-      <div className="flex h-[calc(100vh-64px)]">
-        {/* Mobile Sidebar Overlay - Removed for transparency */}
-        {/* {isMobileMenuOpen && (
-          <div
-            className="fixed inset-0 bg-black bg-opacity-5 z-40 md:hidden"
-            onClick={() => setIsMobileMenuOpen(false)}
-          />
-        )} */}
-
-        {/* Sidebar */}
-        <motion.div
-          initial={{ x: 0 }}
-          animate={{ x: 0 }}
-          className={`fixed md:relative z-[55] md:z-auto w-64 bg-white shadow-xl border-r border-gray-200 h-full flex flex-col ${
-            isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
-          }`}
+      {/* Mobile Sidebar Drawer */}
+      <div
+        className={`fixed inset-0 z-[60] md:hidden ${isMobileMenuOpen ? '' : 'pointer-events-none'}`}
+        aria-hidden={!isMobileMenuOpen}
+      >
+        <div
+          className={`absolute inset-0 bg-black/50 transition-opacity duration-200 ${isMobileMenuOpen ? 'opacity-100' : 'opacity-0'}`}
+          onClick={() => setIsMobileMenuOpen(false)}
+        />
+        <aside
+          className={`absolute left-0 top-16 bottom-0 w-72 max-w-[85vw] bg-white shadow-xl border-r border-gray-200 transform transition-transform duration-300 ${
+            isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
+          } flex flex-col`}
         >
-            {/* Fixed Header */}
-            <div className="flex-shrink-0 p-6 border-b border-gray-200">
-              <h2 className="text-xl font-bold text-gray-900 mb-4">Dashboard</h2>
-              <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 bg-gradient-to-br from-orange-400 to-red-500 rounded-full flex items-center justify-center shadow-md">
-                  <span className="text-white font-semibold text-lg">
-                    {user?.name?.charAt(0) || user?.email?.charAt(0) || 'U'}
-                  </span>
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-gray-900 truncate">
-                    {user?.name || 'User'}
-                  </p>
-                  <p className="text-xs text-gray-500 truncate">
-                    {user?.email}
-                  </p>
-                </div>
-              </div>
-            </div>
+          <SidebarInner showClose />
+        </aside>
+      </div>
 
-          {/* Scrollable Navigation */}
-          <nav className="flex-1 overflow-y-auto px-4 py-4 space-y-2 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 pb-6">
-            <Link
-              href="/"
-              className="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-left transition-all duration-200 text-gray-600 hover:bg-gray-50 hover:text-gray-900"
-            >
-              <ArrowLeft className="h-5 w-5" />
-              <span>Back to Home</span>
-            </Link>
-
-            <div className="border-t border-gray-200 pt-4 space-y-1">
-              {navigationItems.map((item) => {
-                const Icon = item.icon
-                return (
-                  <button
-                    key={item.id}
-                    onClick={() => {
-                      onTabChange(item.id)
-                      setIsMobileMenuOpen(false)
-                    }}
-                    className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-left transition-all duration-200 cursor-pointer ${
-                      activeTab === item.id
-                        ? 'bg-gradient-to-r from-orange-50 to-red-50 text-orange-600 border-r-4 border-orange-600 shadow-sm'
-                        : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-                    }`}
-                  >
-                    <Icon className="h-5 w-5" />
-                    <span>{item.label}</span>
-                  </button>
-                )
-              })}
-
-              {/* Admin Panel - conditionally rendered */}
-              {user?.role === 'ADMIN' && (
-                <>
-                  <button
-                    onClick={() => {
-                      onTabChange('admin')
-                      setIsMobileMenuOpen(false)
-                    }}
-                    className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-left transition-all duration-200 cursor-pointer ${
-                      activeTab === 'admin'
-                        ? 'bg-gradient-to-r from-orange-50 to-red-50 text-orange-600 border-r-4 border-orange-600 shadow-sm'
-                        : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-                    }`}
-                  >
-                    <Settings className="h-5 w-5" />
-                    <span>Admin Panel</span>
-                  </button>
-
-                  <button
-                    onClick={() => {
-                      onTabChange('manage-products')
-                      setIsMobileMenuOpen(false)
-                    }}
-                    className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-left transition-all duration-200 cursor-pointer ${
-                      activeTab === 'manage-products'
-                        ? 'bg-gradient-to-r from-orange-50 to-red-50 text-orange-600 border-r-4 border-orange-600 shadow-sm'
-                        : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-                    }`}
-                  >
-                    <Box className="h-5 w-5" />
-                    <span>Manage Products</span>
-                  </button>
-
-                  <button
-                    onClick={() => {
-                      onTabChange('manage-categories')
-                      setIsMobileMenuOpen(false)
-                    }}
-                    className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-left transition-all duration-200 cursor-pointer ${
-                      activeTab === 'manage-categories'
-                        ? 'bg-gradient-to-r from-orange-50 to-red-50 text-orange-600 border-r-4 border-orange-600 shadow-sm'
-                        : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-                    }`}
-                  >
-                    <Package className="h-5 w-5" />
-                    <span>Manage Categories</span>
-                  </button>
-
-                  <button
-                    onClick={() => {
-                      onTabChange('manage-deliveries')
-                      setIsMobileMenuOpen(false)
-                    }}
-                    className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-left transition-all duration-200 cursor-pointer ${
-                      activeTab === 'manage-deliveries'
-                        ? 'bg-gradient-to-r from-orange-50 to-red-50 text-orange-600 border-r-4 border-orange-600 shadow-sm'
-                        : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-                    }`}
-                  >
-                    <Truck className="h-5 w-5" />
-                    <span>Manage Deliveries</span>
-                  </button>
-                </>
-              )}
-            </div>
-
-            {/* Sign Out Section */}
-            <div className="border-t border-gray-200 pt-4 px-4">
-              <button
-                onClick={() => {
-                  logout()
-                  router.push('/')
-                }}
-                className="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-left transition-all duration-200 text-red-600 hover:bg-red-50 hover:text-red-700 cursor-pointer"
-              >
-                <LogOut className="h-5 w-5" />
-                <span>Sign Out</span>
-              </button>
-            </div>
-          </nav>
-        </motion.div>
+      <div className="flex flex-1 relative min-h-0">
+        {/* Desktop Sidebar (fixed, always visible) */}
+        <aside className="hidden md:flex fixed left-0 top-16 bottom-0 w-64 bg-white shadow-sm border-r border-gray-200 flex-col z-40">
+          <SidebarInner showClose={false} />
+        </aside>
 
         {/* Main Content */}
-        <div className="flex-1 overflow-auto md:ml-0 pb-20 md:pb-0">
+        <div className="flex-1 overflow-y-auto min-w-0 pb-20 md:pb-0 md:ml-64">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
             className="p-4 sm:p-6 lg:p-8"
           >
-            <div className="max-w-7xl mx-auto">
+            <div className="max-w-7xl mx-auto w-full">
               {/* Welcome Banner */}
               {user && (
                 <motion.div
@@ -345,7 +342,7 @@ export function DashboardLayout({
                     <div className="flex items-center">
                       <div className="flex-1">
                         <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
-                          Welcome back, {user.name || 'Valued Customer'}! 🎉
+                          Welcome back, {user.name || 'Valued Customer'}!
                         </h1>
                         <p className="text-gray-600 text-sm sm:text-base leading-relaxed">
                           Great to see you here!
@@ -363,46 +360,62 @@ export function DashboardLayout({
       </div>
 
       {/* Bottom Navigation - Mobile Only */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-[60] shadow-lg">
-        <div className={`grid ${user?.role === 'ADMIN' ? 'grid-cols-4' : 'grid-cols-3'} h-16`}>
-          {navigationItems.map((item) => {
-            const Icon = item.icon
-            return (
-              <button
-                key={item.id}
-                onClick={() => {
-                  onTabChange(item.id)
-                  setIsMobileMenuOpen(false)
-                }}
-                className={`flex flex-col items-center justify-center space-y-1 transition-all duration-200 cursor-pointer ${
-                  activeTab === item.id
-                    ? 'text-orange-600 bg-orange-50'
-                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
-                }`}
-              >
-                <Icon className="h-5 w-5" />
-                <span className="text-xs font-medium">{item.label}</span>
-              </button>
-            )
-          })}
-          {user?.role === 'ADMIN' && (
+      <nav className="fixed bottom-0 left-0 right-0 z-[60] md:hidden bg-white/95 backdrop-blur border-t border-gray-200">
+        <div className="max-w-7xl mx-auto px-2 py-2">
+          <div className="grid grid-cols-4 gap-1">
             <button
               onClick={() => {
-                onTabChange('manage-products')
+                onTabChange('marketplace')
                 setIsMobileMenuOpen(false)
               }}
-              className={`flex flex-col items-center justify-center space-y-1 transition-all duration-200 cursor-pointer ${
-                activeTab === 'manage-products'
-                  ? 'text-orange-600 bg-orange-50'
-                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+              className={`flex flex-col items-center justify-center py-2 rounded-lg transition-colors ${
+                activeTab === 'marketplace' ? 'text-orange-600 bg-orange-50' : 'text-gray-600 hover:bg-gray-50'
               }`}
+              type="button"
             >
-              <Box className="h-5 w-5" />
-              <span className="text-xs font-medium">Manage</span>
+              <Package className="h-5 w-5" />
+              <span className="text-[11px] font-medium mt-1">Shop</span>
             </button>
-          )}
+
+            <button
+              onClick={() => {
+                onTabChange('orders')
+                setIsMobileMenuOpen(false)
+              }}
+              className={`flex flex-col items-center justify-center py-2 rounded-lg transition-colors ${
+                activeTab === 'orders' ? 'text-orange-600 bg-orange-50' : 'text-gray-600 hover:bg-gray-50'
+              }`}
+              type="button"
+            >
+              <Truck className="h-5 w-5" />
+              <span className="text-[11px] font-medium mt-1">Orders</span>
+            </button>
+
+            <button
+              onClick={() => {
+                onTabChange('wallet')
+                setIsMobileMenuOpen(false)
+              }}
+              className={`flex flex-col items-center justify-center py-2 rounded-lg transition-colors ${
+                activeTab === 'wallet' ? 'text-orange-600 bg-orange-50' : 'text-gray-600 hover:bg-gray-50'
+              }`}
+              type="button"
+            >
+              <Wallet className="h-5 w-5" />
+              <span className="text-[11px] font-medium mt-1">Wallet</span>
+            </button>
+
+            <button
+              onClick={() => setIsMobileMenuOpen(true)}
+              className="flex flex-col items-center justify-center py-2 rounded-lg transition-colors text-gray-600 hover:bg-gray-50"
+              type="button"
+            >
+              <Menu className="h-5 w-5" />
+              <span className="text-[11px] font-medium mt-1">Menu</span>
+            </button>
+          </div>
         </div>
-      </div>
+      </nav>
 
       {/* Mobile Cart Drawer */}
       {isCartOpen && (

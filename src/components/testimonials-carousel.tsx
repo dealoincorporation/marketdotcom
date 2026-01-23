@@ -11,35 +11,35 @@ const testimonials = [
     role: "Student, UI",
     text: "Marketdotcom has transformed how I shop for groceries. The thrift plan is a game-changer for my monthly budget!",
     rating: 5,
-    avatar: "SO"
+    image: "/sarah.jpeg"
   },
   {
     name: "Michael T.",
     role: "Family Man",
     text: "The quality of foodstuff is always top-notch, and delivery is prompt. Best decision I made for my family!",
     rating: 5,
-    avatar: "MT"
+    image: "/michael.jpeg"
   },
   {
     name: "Ben A.",
     role: "NYSC Member",
     text: "As a corp member, the student packages have been a lifesaver. Affordable and convenient!",
     rating: 5,
-    avatar: "BA"
+    image: "/ben.jpeg"
   },
   {
     name: "Grace K.",
     role: "Working Professional",
     text: "The personal shopping service saves me so much time. Fresh produce delivered right to my door!",
     rating: 5,
-    avatar: "GK"
+    image: "/grace.jpeg"
   },
   {
     name: "David L.",
     role: "Restaurant Owner",
     text: "Consistent quality and reliable delivery. Marketdotcom is now our primary supplier for fresh ingredients.",
     rating: 5,
-    avatar: "DL"
+    image: "/david.jpeg"
   }
 ]
 
@@ -126,8 +126,12 @@ export function TestimonialsCarousel() {
 
               {/* Author Info */}
               <div className="flex items-center justify-center space-x-4">
-                <div className="w-16 h-16 bg-gradient-to-r from-orange-500 to-orange-600 rounded-full flex items-center justify-center text-white font-bold text-lg shadow-lg">
-                  {testimonials[currentIndex].avatar}
+                <div className="w-16 h-16 rounded-full overflow-hidden border-4 border-orange-200 shadow-lg flex-shrink-0">
+                  <img
+                    src={testimonials[currentIndex].image}
+                    alt={testimonials[currentIndex].name}
+                    className="w-full h-full object-cover"
+                  />
                 </div>
                 <div className="text-left">
                   <h4 className="font-bold text-gray-900 text-lg">

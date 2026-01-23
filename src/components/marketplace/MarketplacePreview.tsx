@@ -131,11 +131,7 @@ export function MarketplacePreview(props: { limit?: number }) {
                   <Link href="/marketplace" className="block">
                     <Card className="h-full hover:shadow-lg transition-shadow border-orange-100 bg-white/90">
                       <div className="relative h-28 sm:h-32 bg-gray-100 rounded-t-lg overflow-hidden">
-                        {img ? (
-                          <img src={img} alt={p.name} className="w-full h-full object-cover" />
-                        ) : (
-                          <div className="w-full h-full bg-gradient-to-br from-orange-100 to-yellow-100" />
-                        )}
+                        <img src={img || "/market_image.jpeg"} alt={p.name} className="w-full h-full object-cover" />
                         <div className="absolute top-2 left-2">
                           <Badge variant={inStock ? "default" : "secondary"} className="text-[10px]">
                             {inStock ? "Available" : "Unavailable"}

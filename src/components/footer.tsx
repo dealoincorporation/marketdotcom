@@ -473,11 +473,7 @@ export function Footer() {
                   © 2025 - 2026 Marketdotcom. All rights reserved.
                 </p>
                 <motion.div className="flex items-center space-x-4 text-xs text-gray-500">
-                  <a href="/privacy" className="hover:text-orange-400 transition-colors">Privacy Policy</a>
-                  <span>•</span>
-                  <a href="/terms" className="hover:text-orange-400 transition-colors">Terms of Service</a>
-                  <span>•</span>
-                  <a href="/cookies" className="hover:text-orange-400 transition-colors">Cookie Policy</a>
+                  <Link href="/help" className="hover:text-orange-400 transition-colors">Help Center</Link>
                 </motion.div>
               </motion.div>
 

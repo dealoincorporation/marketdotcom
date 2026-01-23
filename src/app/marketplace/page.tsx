@@ -36,18 +36,14 @@ export default function MarketplacePage() {
   const [filteredProducts, setFilteredProducts] = useState<any[]>([])
   const [selectedCategory, setSelectedCategory] = useState("all")
   const [searchQuery, setSearchQuery] = useState("")
-  const [inStockOnly, setInStockOnly] = useState(true)
   const [sortBy, setSortBy] = useState<"recommended" | "price_asc" | "price_desc" | "name_asc">("recommended")
   const [minPrice, setMinPrice] = useState<string>("")
   const [maxPrice, setMaxPrice] = useState<string>("")
   const [isLoading, setIsLoading] = useState(true)
   const [showFilters, setShowFilters] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-  const [currentImageIndexes, setCurrentImageIndexes] = useState<Record<string, number>>({})
-  const [selectedVariations, setSelectedVariations] = useState<{ [key: string]: string }>({})
-
   const { user } = useAuth()
-  const { items, addItem, removeItem, getItemQuantity } = useCartStore()
+  const { items } = useCartStore()
 
   const isAdmin = user?.role === "ADMIN"
 
@@ -139,15 +135,6 @@ export default function MarketplacePage() {
       return { min: Math.min(...prices), max: Math.max(...prices) }
     }
 
-    // In-stock toggle (treat any in-stock variation as in-stock)
-    if (inStockOnly) {
-      filtered = filtered.filter((p) => {
-        const hasBase = (p.stock || 0) > 0
-        const hasVar = (p.variations || []).some((v) => (v.stock || 0) > 0)
-        return hasBase || hasVar
-      })
-    }
-
     // Price range filter
     const min = minPrice.trim() ? Number(minPrice) : undefined
     const max = maxPrice.trim() ? Number(maxPrice) : undefined
@@ -161,7 +148,10 @@ export default function MarketplacePage() {
     }
 
     // Sorting
-    if (sortBy === "name_asc") {
+    if (sortBy === "recommended") {
+      // Recommended: Keep original order (or could be based on popularity/stock)
+      // Already sorted by default order from API
+    } else if (sortBy === "name_asc") {
       filtered = [...filtered].sort((a, b) => a.name.localeCompare(b.name))
     } else if (sortBy === "price_asc") {
       filtered = [...filtered].sort((a, b) => getPriceRange(a).min - getPriceRange(b).min)
@@ -170,73 +160,10 @@ export default function MarketplacePage() {
     }
 
     setFilteredProducts(filtered)
-  }, [products, selectedCategory, searchQuery, inStockOnly, minPrice, maxPrice, sortBy])
-
-  const handleAddToCart = (product: MarketplaceProduct, variationId: string | undefined) => {
-    const selectedVariation =
-      variationId && variationId !== "base"
-        ? product.variations.find((v: any) => v.id === variationId)
-        : undefined
-
-    addItem({
-      productId: product.id,
-      variationId: selectedVariation?.id,
-      name: selectedVariation
-        ? `${product.name} (${selectedVariation.quantity ?? ""} ${selectedVariation.unit ?? ""} ${selectedVariation.name})`.replace(/\s+/g, " ").trim()
-        : product.name,
-      price: selectedVariation?.price || product.basePrice,
-      image: selectedVariation?.image || product.images?.[0] || "/api/placeholder/300/200",
-      quantity: 1,
-      unit: selectedVariation?.unit || product.unit,
-      variation: selectedVariation ? {
-        id: selectedVariation.id,
-        name: selectedVariation.name,
-        type: (selectedVariation as any).type || 'Size',
-        price: selectedVariation.price,
-        stock: selectedVariation.stock,
-      } : undefined,
-      maxQuantity: selectedVariation ? selectedVariation.stock : product.stock,
-      categoryId: product.categoryId,
-      categoryName: product.category?.name,
-    })
-  }
+  }, [products, selectedCategory, searchQuery, minPrice, maxPrice, sortBy])
 
   const cartItemCount = items.reduce((total, item) => total + item.quantity, 0)
 
-  const handleVariationChange = (productId: string, variationId: string) => {
-    setSelectedVariations(prev => ({
-      ...prev,
-      [productId]: variationId
-    }))
-  }
-
-  const formatPrice = (price: number) => {
-    return `₦${price.toLocaleString()}`
-  }
-
-  // Image slider functions
-  const getCurrentImageIndex = (productId: string) => {
-    return currentImageIndexes[productId] || 0
-  }
-
-  const setCurrentImageIndex = (productId: string, index: number) => {
-    setCurrentImageIndexes(prev => ({
-      ...prev,
-      [productId]: index
-    }))
-  }
-
-  const nextImage = (productId: string, images: string[]) => {
-    const currentIndex = getCurrentImageIndex(productId)
-    const nextIndex = (currentIndex + 1) % images.length
-    setCurrentImageIndex(productId, nextIndex)
-  }
-
-  const prevImage = (productId: string, images: string[]) => {
-    const currentIndex = getCurrentImageIndex(productId)
-    const prevIndex = currentIndex === 0 ? images.length - 1 : currentIndex - 1
-    setCurrentImageIndex(productId, prevIndex)
-  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -406,43 +333,46 @@ export default function MarketplacePage() {
             <div className="hidden lg:flex items-center gap-3">
               <div className="w-48">
                 <Select value={sortBy} onValueChange={(v: any) => setSortBy(v)}>
-                  <SelectTrigger className="h-12">
+                  <SelectTrigger className="h-12 bg-white border-gray-300">
                     <SelectValue placeholder="Sort" />
                   </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="recommended">Recommended</SelectItem>
-                    <SelectItem value="price_asc">Price: Low to High</SelectItem>
-                    <SelectItem value="price_desc">Price: High to Low</SelectItem>
-                    <SelectItem value="name_asc">Name: A-Z</SelectItem>
+                  <SelectContent className="bg-white border-gray-300 shadow-lg z-50">
+                    <SelectItem value="recommended" className="cursor-pointer hover:bg-gray-100">Recommended</SelectItem>
+                    <SelectItem value="price_asc" className="cursor-pointer hover:bg-gray-100">Price: Low to High</SelectItem>
+                    <SelectItem value="price_desc" className="cursor-pointer hover:bg-gray-100">Price: High to Low</SelectItem>
+                    <SelectItem value="name_asc" className="cursor-pointer hover:bg-gray-100">Name: A-Z</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
-              <label className="flex items-center gap-2 text-sm text-gray-700 select-none">
-                <input
-                  type="checkbox"
-                  checked={inStockOnly}
-                  onChange={(e) => setInStockOnly(e.target.checked)}
-                  className="h-4 w-4"
-                />
-                In stock
-              </label>
-
               <div className="flex items-center gap-2">
-                <Input
-                  value={minPrice}
-                  onChange={(e) => setMinPrice(e.target.value)}
-                  inputMode="numeric"
-                  placeholder="Min ₦"
-                  className="h-12 w-28"
-                />
-                <Input
-                  value={maxPrice}
-                  onChange={(e) => setMaxPrice(e.target.value)}
-                  inputMode="numeric"
-                  placeholder="Max ₦"
-                  className="h-12 w-28"
-                />
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">₦</span>
+                  <Input
+                    value={minPrice}
+                    onChange={(e) => {
+                      const value = e.target.value.replace(/[^0-9]/g, '')
+                      setMinPrice(value)
+                    }}
+                    inputMode="numeric"
+                    placeholder="Min"
+                    className="h-12 w-32 pl-8 bg-white border-gray-300"
+                  />
+                </div>
+                <span className="text-gray-500">-</span>
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">₦</span>
+                  <Input
+                    value={maxPrice}
+                    onChange={(e) => {
+                      const value = e.target.value.replace(/[^0-9]/g, '')
+                      setMaxPrice(value)
+                    }}
+                    inputMode="numeric"
+                    placeholder="Max"
+                    className="h-12 w-32 pl-8 bg-white border-gray-300"
+                  />
+                </div>
               </div>
             </div>
 
@@ -475,45 +405,48 @@ export default function MarketplacePage() {
                   <div>
                     <p className="text-sm font-semibold text-gray-900 mb-2">Sort</p>
                     <Select value={sortBy} onValueChange={(v: any) => setSortBy(v)}>
-                      <SelectTrigger className="h-11">
+                      <SelectTrigger className="h-11 bg-white border-gray-300">
                         <SelectValue placeholder="Sort" />
                       </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="recommended">Recommended</SelectItem>
-                        <SelectItem value="price_asc">Price: Low to High</SelectItem>
-                        <SelectItem value="price_desc">Price: High to Low</SelectItem>
-                        <SelectItem value="name_asc">Name: A-Z</SelectItem>
+                      <SelectContent className="bg-white border-gray-300 shadow-lg z-50">
+                        <SelectItem value="recommended" className="cursor-pointer hover:bg-gray-100">Recommended</SelectItem>
+                        <SelectItem value="price_asc" className="cursor-pointer hover:bg-gray-100">Price: Low to High</SelectItem>
+                        <SelectItem value="price_desc" className="cursor-pointer hover:bg-gray-100">Price: High to Low</SelectItem>
+                        <SelectItem value="name_asc" className="cursor-pointer hover:bg-gray-100">Name: A-Z</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
 
-                  <label className="flex items-center gap-2 text-sm text-gray-700 select-none">
-                    <input
-                      type="checkbox"
-                      checked={inStockOnly}
-                      onChange={(e) => setInStockOnly(e.target.checked)}
-                      className="h-4 w-4"
-                    />
-                    In stock only
-                  </label>
-
                   <div>
                     <p className="text-sm font-semibold text-gray-900 mb-2">Price range</p>
                     <div className="flex items-center gap-2">
-                      <Input
-                        value={minPrice}
-                        onChange={(e) => setMinPrice(e.target.value)}
-                        inputMode="numeric"
-                        placeholder="Min ₦"
-                        className="h-11"
-                      />
-                      <Input
-                        value={maxPrice}
-                        onChange={(e) => setMaxPrice(e.target.value)}
-                        inputMode="numeric"
-                        placeholder="Max ₦"
-                        className="h-11"
-                      />
+                      <div className="relative flex-1">
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">₦</span>
+                        <Input
+                          value={minPrice}
+                          onChange={(e) => {
+                            const value = e.target.value.replace(/[^0-9]/g, '')
+                            setMinPrice(value)
+                          }}
+                          inputMode="numeric"
+                          placeholder="Min"
+                          className="h-11 pl-8 bg-white border-gray-300"
+                        />
+                      </div>
+                      <span className="text-gray-500">-</span>
+                      <div className="relative flex-1">
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">₦</span>
+                        <Input
+                          value={maxPrice}
+                          onChange={(e) => {
+                            const value = e.target.value.replace(/[^0-9]/g, '')
+                            setMaxPrice(value)
+                          }}
+                          inputMode="numeric"
+                          placeholder="Max"
+                          className="h-11 pl-8 bg-white border-gray-300"
+                        />
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -569,11 +502,6 @@ export default function MarketplacePage() {
               >
                 <MarketplaceProductCard
                   product={product}
-                  selectedVariationId={selectedVariations[product.id]}
-                  onVariationChange={(value) => handleVariationChange(product.id, value)}
-                  onAddToCart={(variationId) => {
-                    handleAddToCart(product, variationId)
-                  }}
                 />
               </motion.div>
             ))}

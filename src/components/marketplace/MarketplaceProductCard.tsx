@@ -77,33 +77,21 @@ function resolveSelectedOption(product: MarketplaceProduct, selectedId: string |
 export function MarketplaceProductCard(props: {
   product: MarketplaceProduct
   selectedVariationId?: string
-  onVariationChange: (variationId: string) => void
-  onAddToCart: (variationId?: string) => void
+  onVariationChange?: (variationId: string) => void
+  onAddToCart?: (variationId?: string) => void
 }) {
-  const { product, selectedVariationId, onVariationChange, onAddToCart } = props
+  const { product } = props
   const [imageIndex, setImageIndex] = React.useState(0)
 
-  const { options, selected } = React.useMemo(
-    () => resolveSelectedOption(product, selectedVariationId),
-    [product, selectedVariationId]
+  const { options } = React.useMemo(
+    () => resolveSelectedOption(product, props.selectedVariationId),
+    [product, props.selectedVariationId]
   )
 
   const hasVariations = product.variations.length > 0
   const inStockVariations = product.variations.filter((v) => v.stock > 0)
   const hasVariationChoices = inStockVariations.length > 0
   const isActuallyInStock = product.stock > 0 || hasVariationChoices
-  const requiresSelection = hasVariations && hasVariationChoices
-  const hasSelection = Boolean(selectedVariationId)
-
-  const effectiveVariationId = selectedVariationId
-  const canAddToCart =
-    isActuallyInStock &&
-    (!requiresSelection || hasSelection) &&
-    (effectiveVariationId === "base"
-      ? product.stock > 0
-      : effectiveVariationId
-        ? (product.variations.find((v) => v.id === effectiveVariationId)?.stock || 0) > 0
-        : false)
 
   const normalizedImages = React.useMemo(() => {
     const images = Array.isArray(product.images) ? product.images : []
@@ -126,17 +114,23 @@ export function MarketplaceProductCard(props: {
 
   return (
     <motion.div initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.2 }}>
-      <Card className="h-full hover:shadow-lg transition-shadow duration-300">
-        <Link href={`/marketplace/${product.id}`} className="block">
+      <Link 
+        href={`/marketplace/${product.id}`} 
+        className="block w-full h-full"
+        onClick={(e) => {
+          // Ensure link works on all devices, including mobile
+          e.stopPropagation()
+        }}
+      >
+        <Card className="h-full hover:shadow-lg active:shadow-md transition-all duration-200 cursor-pointer touch-manipulation select-none">
           <div className="relative h-36 sm:h-44 lg:h-52 bg-gray-100 overflow-hidden rounded-t-lg">
-            {currentImage ? (
-              <img src={currentImage} alt={product.name} className="w-full h-full object-cover" />
-            ) : (
-              <div className="w-full h-full bg-gradient-to-br from-orange-100 to-red-100 flex items-center justify-center">
-                <Package className="h-12 w-12 sm:h-16 sm:w-16 text-orange-400" />
-              </div>
-            )}
+            <img 
+              src={currentImage || "/market_image.jpeg"} 
+              alt={product.name} 
+              className="w-full h-full object-cover pointer-events-none" 
+            />
 
+            {/* Image navigation - hidden on mobile, visible on desktop */}
             {normalizedImages?.length > 1 && (
               <>
                 <button
@@ -146,7 +140,7 @@ export function MarketplaceProductCard(props: {
                     e.stopPropagation()
                     setImageIndex((prev) => (prev === 0 ? normalizedImages.length - 1 : prev - 1))
                   }}
-                  className="absolute left-2 top-1/2 -translate-y-1/2 p-1.5 bg-black/40 hover:bg-black/70 text-white rounded-full opacity-80 transition-all duration-200"
+                  className="hidden md:flex absolute left-2 top-1/2 -translate-y-1/2 p-1.5 bg-black/40 hover:bg-black/70 text-white rounded-full opacity-80 transition-all duration-200 z-10 pointer-events-auto"
                   aria-label="Previous image"
                 >
                   <ChevronLeft className="h-4 w-4" />
@@ -158,104 +152,61 @@ export function MarketplaceProductCard(props: {
                     e.stopPropagation()
                     setImageIndex((prev) => (prev + 1) % normalizedImages.length)
                   }}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 bg-black/40 hover:bg-black/70 text-white rounded-full opacity-80 transition-all duration-200"
+                  className="hidden md:flex absolute right-2 top-1/2 -translate-y-1/2 p-1.5 bg-black/40 hover:bg-black/70 text-white rounded-full opacity-80 transition-all duration-200 z-10 pointer-events-auto"
                   aria-label="Next image"
                 >
                   <ChevronRight className="h-4 w-4" />
                 </button>
 
-                <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex space-x-1">
+                {/* Image indicators - show on all devices but don't block clicks */}
+                <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex space-x-1 z-10 pointer-events-none">
                   {normalizedImages.map((_, idx) => (
-                    <button
-                      type="button"
+                    <div
                       key={idx}
-                      onClick={(e) => {
-                        e.preventDefault()
-                        e.stopPropagation()
-                        setImageIndex(idx)
-                      }}
-                      className={`w-2 h-2 rounded-full transition-all ${idx === imageIndex ? "bg-white" : "bg-white/60 hover:bg-white/80"}`}
-                      aria-label={`View image ${idx + 1}`}
+                      className={`w-2 h-2 rounded-full transition-all ${idx === imageIndex ? "bg-white" : "bg-white/60"}`}
+                      aria-label={`Image ${idx + 1} of ${normalizedImages.length}`}
                     />
                   ))}
                 </div>
               </>
             )}
           </div>
-        </Link>
 
-        <CardContent className="p-4">
-          <div className="flex items-start justify-between gap-3">
-            <div className="min-w-0">
-              <Link href={`/marketplace/${product.id}`} className="block">
-                <h3 className="font-semibold text-gray-900 text-base sm:text-lg leading-tight truncate hover:underline">
+          <CardContent className="p-4">
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <h3 className="font-semibold text-gray-900 text-base sm:text-lg leading-tight truncate">
                   {product.name}
                 </h3>
-              </Link>
-              <p className="text-gray-600 text-xs sm:text-sm mt-1 line-clamp-2">{product.description}</p>
+                <p className="text-gray-600 text-xs sm:text-sm mt-1 line-clamp-2">{product.description}</p>
+              </div>
+              <Badge variant={isActuallyInStock ? "default" : "secondary"} className="shrink-0 text-xs">
+                {isActuallyInStock ? "In Stock" : "Out of Stock"}
+              </Badge>
             </div>
-            <Badge variant={isActuallyInStock ? "default" : "secondary"} className="shrink-0 text-xs">
-              {isActuallyInStock ? "In Stock" : "Out of Stock"}
-            </Badge>
-          </div>
 
-          <div className="mt-4 flex items-end justify-between">
-            <div className="flex flex-col">
-              <span className="text-xl sm:text-2xl font-bold text-orange-600">
-                {selected ? formatPrice(selected.price) : priceLabel}
-              </span>
-            </div>
-            <div className="text-xs sm:text-sm text-gray-600 text-right">
-              <div>
-                <span className="font-medium">Category:</span> {product.category.name}
+            <div className="mt-4 flex items-end justify-between">
+              <div className="flex flex-col">
+                <span className="text-xl sm:text-2xl font-bold text-orange-600">
+                  {priceLabel}
+                </span>
+                {priceLabel.includes(' - ') && (
+                  <span className="text-xs text-gray-500 mt-1">Price range</span>
+                )}
+              </div>
+              <div className="text-xs sm:text-sm text-gray-600 text-right">
+                <div>
+                  <span className="font-medium">Category:</span> {product.category.name}
+                </div>
               </div>
             </div>
-          </div>
 
-          {hasVariationChoices && (
-            <div className="mt-4 p-3 bg-orange-50 border border-orange-200 rounded-lg">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Select Quantity {requiresSelection && <span className="text-red-500">*</span>}
-              </label>
-
-              <Select value={selectedVariationId || ""} onValueChange={onVariationChange}>
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder={requiresSelection ? "Choose quantity" : "Choose quantity"} />
-                </SelectTrigger>
-                <SelectContent position="popper" sideOffset={6} collisionPadding={12} className="bg-white border-gray-300 shadow-lg pointer-events-auto">
-                  {options.length === 0 ? (
-                    <SelectItem value="none" disabled>
-                      No options available
-                    </SelectItem>
-                  ) : (
-                    options.map((opt) => (
-                      <SelectItem key={opt.id} value={opt.id} className="flex items-center gap-2">
-                        {"image" in opt && opt.image ? (
-                          <img src={opt.image} alt="" className="w-6 h-6 object-cover rounded" />
-                        ) : null}
-                        <span className="font-medium">{opt.label}</span>
-                        <span className="text-gray-500">
-                          - {formatPrice(opt.price)}
-                        </span>
-                      </SelectItem>
-                    ))
-                  )}
-                </SelectContent>
-              </Select>
+            <div className="mt-4 pt-4 border-t border-gray-100">
+              <p className="text-xs text-gray-500 text-center">Tap to view details & add to cart</p>
             </div>
-          )}
-
-          <Button
-            type="button"
-            onClick={() => onAddToCart(effectiveVariationId)}
-            disabled={!canAddToCart}
-            className="w-full mt-4 bg-orange-600 hover:bg-orange-700"
-          >
-            <ShoppingCart className="h-4 w-4 mr-2" />
-            {!hasVariations ? "Add to Cart" : !hasSelection && requiresSelection ? "Select Quantity" : "Add to Cart"}
-          </Button>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      </Link>
     </motion.div>
   )
 }

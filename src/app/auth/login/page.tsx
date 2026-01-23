@@ -16,22 +16,9 @@ function LoginForm() {
   const [password, setPassword] = useState("")
   const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
-  const [rememberMe, setRememberMe] = useState(false)
   const router = useRouter()
   const searchParams = useSearchParams()
   const { login, user } = useAuth()
-
-  // Load saved credentials on component mount
-  useEffect(() => {
-    const savedEmail = localStorage.getItem("rememberedEmail")
-    const savedPassword = localStorage.getItem("rememberedPassword")
-
-    if (savedEmail && savedPassword) {
-      setEmail(savedEmail)
-      setPassword(savedPassword)
-      setRememberMe(true)
-    }
-  }, [])
 
   // Redirect authenticated users away from login page
   useEffect(() => {
@@ -47,18 +34,9 @@ function LoginForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    // Handle remember me functionality
-    if (rememberMe) {
-      localStorage.setItem("rememberedEmail", email)
-      localStorage.setItem("rememberedPassword", password)
-    } else {
-      localStorage.removeItem("rememberedEmail")
-      localStorage.removeItem("rememberedPassword")
-    }
-
     try {
       setLoading(true)
-      await login(email, password, rememberMe)
+      await login(email, password)
       toast.success('Login successful!')
       router.push(searchParams.get('redirect') || '/dashboard')
     } catch (error: any) {
@@ -152,20 +130,6 @@ function LoginForm() {
               {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
             </button>
           </div>
-        </div>
-
-        {/* Remember me checkbox */}
-        <div className="flex items-center space-x-3">
-          <input
-            id="rememberMe"
-            type="checkbox"
-            checked={rememberMe}
-            onChange={(e) => setRememberMe(e.target.checked)}
-            className="h-4 w-4 text-orange-600 border-gray-300 rounded focus:ring-orange-500"
-          />
-          <label htmlFor="rememberMe" className="text-sm text-gray-600">
-            Remember me for 30 days
-          </label>
         </div>
 
         <Button

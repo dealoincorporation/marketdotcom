@@ -147,17 +147,9 @@ export function AuthLayout({ children, title, subtitle }: AuthLayoutProps) {
                     <span>Home</span>
                   </Link>
                   <span>•</span>
-                  <a href="/terms" className="hover:text-orange-600 transition-colors">
-                    Terms of Service
-                  </a>
-                  <span>•</span>
-                  <a href="/privacy" className="hover:text-orange-600 transition-colors">
-                    Privacy Policy
-                  </a>
-                  <span>•</span>
-                  <a href="/help" className="hover:text-orange-600 transition-colors">
+                  <Link href="/help" className="hover:text-orange-600 transition-colors">
                     Help Center
-                  </a>
+                  </Link>
                 </div>
                 <p className="text-xs text-gray-500">
                   © 2025 Marketdotcom. All rights reserved.
