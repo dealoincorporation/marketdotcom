@@ -361,7 +361,7 @@ export default function MarketplaceProductDetailsPage() {
                     className="fixed inset-0 z-40"
                     onClick={() => setIsCartOpen(false)}
                   />
-                  <div className="absolute bottom-full right-0 mb-2 w-80 max-h-96 bg-white rounded-lg shadow-xl border border-gray-200 z-50 overflow-hidden flex flex-col">
+                  <div className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[90vw] max-w-md max-h-[80vh] bg-white rounded-lg shadow-xl border border-gray-200 z-50 overflow-hidden flex flex-col">
                     {/* Cart Header */}
                     <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-gradient-to-r from-orange-500 to-red-500 text-white">
                       <h3 className="font-bold text-sm flex items-center">

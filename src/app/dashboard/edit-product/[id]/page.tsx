@@ -10,6 +10,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { ProductForm } from "@/components/forms/product-form"
 import { useDashboard } from "@/hooks/useDashboard"
 import { useProducts } from "@/hooks/useProducts"
+import toast from "react-hot-toast"
 
 export default function EditProductPage() {
   const router = useRouter()
@@ -57,13 +58,44 @@ export default function EditProductPage() {
     try {
       const updatedProduct = await updateProduct(productId, productData)
       if (updatedProduct) {
-        // Success - redirect back to manage products
-        router.push("/dashboard?tab=manage-products")
+        // Success toast notification
+        toast.success(`Product "${productData.name}" updated successfully!`, {
+          duration: 4000,
+          icon: '✅',
+          style: {
+            borderRadius: '10px',
+            background: '#333',
+            color: '#fff',
+          },
+        })
+        // Redirect back to manage products after a short delay
+        setTimeout(() => {
+          router.push("/dashboard?tab=manage-products")
+        }, 500)
       } else {
-        // Handle error
+        // Error toast notification
+        toast.error("Failed to update product. Please try again.", {
+          duration: 4000,
+          icon: '❌',
+          style: {
+            borderRadius: '10px',
+            background: '#333',
+            color: '#fff',
+          },
+        })
         console.error("Failed to update product")
       }
     } catch (error) {
+      // Error toast notification
+      toast.error(error instanceof Error ? error.message : "An error occurred while updating the product.", {
+        duration: 4000,
+        icon: '❌',
+        style: {
+          borderRadius: '10px',
+          background: '#333',
+          color: '#fff',
+        },
+      })
       console.error("Error updating product:", error)
     }
   }

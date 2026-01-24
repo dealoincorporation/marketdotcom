@@ -11,6 +11,7 @@ import { ProductForm } from "@/components/forms/product-form"
 import { useDashboard } from "@/hooks/useDashboard"
 import { useProducts } from "@/hooks/useProducts"
 import { Product } from "@prisma/client"
+import toast from "react-hot-toast"
 
 export default function AddProductPage() {
   const router = useRouter()
@@ -21,13 +22,44 @@ export default function AddProductPage() {
     try {
       const newProduct = await createProduct(productData)
       if (newProduct) {
-        // Success - redirect back to manage products
-        router.push("/dashboard?tab=manage-products")
+        // Success toast notification
+        toast.success(`Product "${productData.name}" added successfully!`, {
+          duration: 4000,
+          icon: '✅',
+          style: {
+            borderRadius: '10px',
+            background: '#333',
+            color: '#fff',
+          },
+        })
+        // Redirect back to manage products after a short delay
+        setTimeout(() => {
+          router.push("/dashboard?tab=manage-products")
+        }, 500)
       } else {
-        // Handle error
+        // Error toast notification
+        toast.error("Failed to create product. Please try again.", {
+          duration: 4000,
+          icon: '❌',
+          style: {
+            borderRadius: '10px',
+            background: '#333',
+            color: '#fff',
+          },
+        })
         console.error("Failed to create product")
       }
     } catch (error) {
+      // Error toast notification
+      toast.error(error instanceof Error ? error.message : "An error occurred while creating the product.", {
+        duration: 4000,
+        icon: '❌',
+        style: {
+          borderRadius: '10px',
+          background: '#333',
+          color: '#fff',
+        },
+      })
       console.error("Error creating product:", error)
     }
   }
