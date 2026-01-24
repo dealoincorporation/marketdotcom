@@ -73,7 +73,7 @@ export function ModernNavigation() {
               <img
                 src="/mrktdotcom-logo.png"
                 alt="Marketdotcom Logo"
-                className="h-24 w-24 object-contain"
+                className="h-28 w-28 sm:h-32 sm:w-32 md:h-36 md:w-36 lg:h-40 lg:w-40 object-contain"
               />
               <div>
                 <span className={`text-xl lg:text-2xl font-bold transition-colors ${

@@ -473,10 +473,10 @@ export default function ServicesPage() {
                 </Button>
               </Link>
             </div>
-            <div className="mt-8 flex items-center justify-center gap-6 text-orange-100">
+            <div className="mt-8 flex items-center justify-center gap-6 text-orange-100 flex-wrap">
               <div className="flex items-center gap-2">
                 <Phone className="h-5 w-5" />
-                <span>Call us: +234 XXX XXX XXXX</span>
+                <span>Call us: +234 813 835 3576</span>
               </div>
               <div className="flex items-center gap-2">
                 <Mail className="h-5 w-5" />

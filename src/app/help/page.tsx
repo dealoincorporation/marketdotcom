@@ -354,7 +354,7 @@ export default function HelpPage() {
                 </div>
                 <h3 className="text-xl font-bold text-gray-900 mb-2">Call Us</h3>
                 <p className="text-gray-600 mb-4">Speak directly with our team</p>
-                <p className="text-orange-600 font-semibold">+234 XXX XXX XXXX</p>
+                <p className="text-orange-600 font-semibold">+234 813 835 3576</p>
                 <p className="text-sm text-gray-500 mt-2">Mon-Sat, 8 AM - 6 PM</p>
               </CardContent>
             </Card>

@@ -171,7 +171,7 @@ export default function Home() {
       <ModernNavigation />
 
       {/* Modern Hero Section */}
-      <section className="relative min-h-screen flex items-center overflow-hidden bg-gradient-to-br from-slate-50 via-white to-blue-50 pt-16 lg:pt-20">
+      <section className="relative min-h-screen flex items-center overflow-hidden bg-gradient-to-br from-slate-50 via-white to-blue-50 pt-16 lg:pt-20 pb-24">
         {/* Background Elements */}
         <motion.div className="absolute inset-0">
           <motion.div className="absolute top-20 left-10 w-72 h-72 bg-gradient-to-r from-orange-400/20 to-red-500/20 rounded-full blur-3xl"></motion.div>
@@ -255,7 +255,7 @@ export default function Home() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, delay: 0.5 }}
-                className="text-xl text-gray-600 mb-8 max-w-2xl"
+                className="text-xl text-gray-600 mb-6 max-w-2xl"
               >
                 your smart shopping solution. quality foodstuff, daily savings and convenient delivery all in one place
               </motion.p>
@@ -266,7 +266,7 @@ export default function Home() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, delay: 0.7 }}
-                className="flex flex-col sm:flex-row gap-4 lg:justify-start justify-center"
+                className="flex flex-col sm:flex-row gap-4 lg:justify-start justify-center mb-6"
               >
                 <Link href="/marketplace">
                   <Button size="lg" className="bg-orange-600 hover:bg-orange-700 text-white px-8 py-4 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300">
@@ -286,7 +286,7 @@ export default function Home() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, delay: 0.8 }}
-                className="flex items-center justify-center lg:justify-start mt-12 space-x-8"
+                className="flex items-center justify-center lg:justify-start mt-6 sm:mt-8 space-x-8"
               >
                 <motion.div className="flex items-center space-x-2">
                   <Shield className="h-5 w-5 text-orange-600" />

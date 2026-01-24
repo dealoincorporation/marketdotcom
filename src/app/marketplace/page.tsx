@@ -176,7 +176,7 @@ export default function MarketplacePage() {
               <img
                 src="/mrktdotcom-logo.png"
                 alt="Marketdotcom Logo"
-                className="h-16 w-16 sm:h-20 sm:w-20 lg:h-24 lg:w-24 object-contain"
+                className="h-20 w-20 sm:h-24 sm:w-24 md:h-28 md:w-28 lg:h-32 lg:w-32 object-contain"
               />
               <div className="flex flex-col">
                 <span className="text-lg font-bold text-gray-900 hidden sm:block">Marketplace</span>

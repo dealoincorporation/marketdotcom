@@ -563,10 +563,10 @@ export default function CheckoutPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 overflow-x-hidden">
       {/* Modern Responsive Header */}
       <header className="bg-white/80 backdrop-blur-lg shadow-lg border-b border-white/20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8">
           {/* Mobile Layout */}
           <div className="md:hidden py-4 space-y-4">
             <div className="flex items-center justify-between">
@@ -670,7 +670,7 @@ export default function CheckoutPage() {
         </div>
       </header>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-6 sm:py-8 md:py-12 overflow-x-hidden">
         {step === 1 && (
           <div className="grid lg:grid-cols-3 gap-12">
             {/* Delivery Information */}
@@ -678,21 +678,21 @@ export default function CheckoutPage() {
               {/* Delivery Address */}
               <div className="bg-white/70 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 overflow-hidden">
                 <div className="bg-gradient-to-r from-orange-500 to-red-500 p-6">
-                  <h2 className="text-xl font-bold text-white flex items-center">
-                    <MapPin className="h-6 w-6 mr-3" />
-                    Choose Delivery Address
+                  <h2 className="text-lg sm:text-xl font-bold text-white flex items-center">
+                    <MapPin className="h-5 w-5 sm:h-6 sm:w-6 mr-2 sm:mr-3 flex-shrink-0" />
+                    <span className="break-words">Choose Delivery Address</span>
                   </h2>
-                  <p className="text-orange-100 mt-1">Select where you'd like your order delivered</p>
+                  <p className="text-orange-100 mt-1 text-sm sm:text-base">Select where you'd like your order delivered</p>
                 </div>
                 <div className="p-6">
                   <RadioGroup value={selectedAddress} onValueChange={setSelectedAddress} className="space-y-3 sm:space-y-4">
                     {addresses.map(address => (
-                      <div key={address.id} className={`relative p-4 sm:p-6 rounded-xl border-2 transition-all duration-300 cursor-pointer ${
+                      <div key={address.id} className={`relative p-3 sm:p-4 md:p-6 rounded-xl border-2 transition-all duration-300 cursor-pointer ${
                         selectedAddress === address.id
                           ? 'border-orange-500 bg-gradient-to-r from-orange-50 to-red-50 shadow-lg'
                           : 'border-gray-200 hover:border-gray-300 hover:shadow-md'
                       }`}>
-                        <div className="flex items-start space-x-3 sm:space-x-4">
+                        <div className="flex items-start space-x-2 sm:space-x-3 md:space-x-4">
                           <RadioGroupItem
                             value={address.id}
                             id={address.id}
@@ -702,7 +702,7 @@ export default function CheckoutPage() {
                             <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
                               <div className="flex-1 min-w-0">
                                 <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-3 mb-2 gap-2">
-                                  <span className="font-bold text-base sm:text-lg text-gray-900 truncate">{address.name}</span>
+                                  <span className="font-bold text-base sm:text-lg text-gray-900 break-words">{address.name}</span>
                                   <div className="flex items-center space-x-2">
                                     {address.isDefault && (
                                       <Badge className="bg-gradient-to-r from-green-500 to-emerald-500 text-white border-0 shadow-sm text-xs">
@@ -718,10 +718,10 @@ export default function CheckoutPage() {
                                     </div>
                                   </div>
                                 </div>
-                                <p className="text-gray-700 font-medium mb-1 text-sm sm:text-base leading-tight">{address.address}</p>
+                                <p className="text-gray-700 font-medium mb-1 text-sm sm:text-base leading-tight break-words">{address.address}</p>
                                 <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4">
-                                  <p className="text-gray-600 text-xs sm:text-sm">{address.city}, {address.state}</p>
-                                  <p className="text-gray-600 text-xs sm:text-sm font-medium">{address.phone}</p>
+                                  <p className="text-gray-600 text-xs sm:text-sm break-words">{address.city}, {address.state}</p>
+                                  <p className="text-gray-600 text-xs sm:text-sm font-medium break-all">{address.phone}</p>
                                 </div>
                               </div>
                             </div>
@@ -864,11 +864,11 @@ export default function CheckoutPage() {
               {/* Delivery Schedule - Responsive */}
               <div className="bg-white/70 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20">
                 <div className="bg-gradient-to-r from-orange-500 to-red-500 p-4 sm:p-6">
-                  <h2 className="text-lg sm:text-xl font-bold text-white flex items-center">
-                    <Calendar className="h-5 w-5 sm:h-6 sm:w-6 mr-2 sm:mr-3" />
-                    <span className="text-sm sm:text-base">Schedule Your Delivery</span>
+                  <h2 className="text-lg sm:text-xl font-bold text-white flex items-center flex-wrap">
+                    <Calendar className="h-5 w-5 sm:h-6 sm:w-6 mr-2 sm:mr-3 flex-shrink-0" />
+                    <span className="break-words">Schedule Your Delivery</span>
                   </h2>
-                  <p className="text-orange-100 mt-1 text-sm sm:text-base">Choose when you'd like your order delivered</p>
+                  <p className="text-orange-100 mt-1 text-sm sm:text-base break-words">Choose when you'd like your order delivered</p>
                 </div>
                 <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
                   {deliverySlots.length === 0 && !deliverySlotsLoading && (
@@ -915,9 +915,9 @@ export default function CheckoutPage() {
                         type="button"
                         onClick={() => setShowDeliveryDateDropdown(!showDeliveryDateDropdown)}
                         disabled={deliverySlotsLoading || deliverySlots.length === 0}
-                        className="w-full h-12 border-2 focus:border-orange-500 bg-white text-sm sm:text-base px-3 py-2 text-left rounded-md flex items-center justify-between hover:border-orange-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="w-full h-12 border-2 focus:border-orange-500 bg-white text-sm sm:text-base px-3 py-2 text-left rounded-md flex items-center justify-between hover:border-orange-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed min-w-0"
                       >
-                        <span className={deliveryDate ? "text-gray-900" : "text-gray-500"}>
+                        <span className={`${deliveryDate ? "text-gray-900" : "text-gray-500"} break-words text-left`}>
                           {deliverySlotsLoading
                             ? "Loading delivery dates..."
                             : deliveryDate
@@ -956,11 +956,11 @@ export default function CheckoutPage() {
                                 }}
                                 className="w-full h-12 sm:h-14 hover:bg-orange-50 focus:bg-orange-50 cursor-pointer px-3 py-2 text-left border-b border-gray-100 last:border-b-0 transition-colors"
                               >
-                                <div className="flex flex-col items-start">
-                                  <span className="font-medium text-gray-900 text-sm sm:text-base">
+                                <div className="flex flex-col items-start min-w-0 w-full">
+                                  <span className="font-medium text-gray-900 text-sm sm:text-base break-words">
                                     {new Date(date).toLocaleDateString('en-US', { weekday: 'long' })}
                                   </span>
-                                  <span className="text-xs sm:text-sm text-gray-500">
+                                  <span className="text-xs sm:text-sm text-gray-500 break-words">
                                     {new Date(date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
                                   </span>
                                 </div>
@@ -1008,8 +1008,8 @@ export default function CheckoutPage() {
                   )}
 
                   <div className="space-y-3">
-                    <Label htmlFor="deliveryNotes" className="text-sm font-semibold text-gray-700 flex items-center">
-                      📝 Delivery Notes <span className="text-gray-500 ml-1">(Optional)</span>
+                    <Label htmlFor="deliveryNotes" className="text-sm font-semibold text-gray-700 flex items-center flex-wrap">
+                      <span className="break-words">📝 Delivery Notes</span> <span className="text-gray-500 ml-1">(Optional)</span>
                     </Label>
                     <Textarea
                       id="deliveryNotes"
@@ -1017,33 +1017,33 @@ export default function CheckoutPage() {
                       onChange={(e) => setDeliveryNotes(e.target.value)}
                       placeholder="Any special instructions for delivery..."
                       rows={3}
-                      className="border-2 focus:border-orange-500 resize-none bg-white text-sm sm:text-base min-h-[80px] sm:min-h-[100px]"
+                      className="border-2 focus:border-orange-500 resize-none bg-white text-sm sm:text-base min-h-[80px] sm:min-h-[100px] w-full"
                     />
                   </div>
 
-                  <div className="bg-gradient-to-r from-orange-50 to-red-50 border border-orange-200 rounded-xl p-4 sm:p-5">
-                    <div className="flex items-start space-x-3 sm:space-x-4">
+                  <div className="bg-gradient-to-r from-orange-50 to-red-50 border border-orange-200 rounded-xl p-3 sm:p-4 md:p-5">
+                    <div className="flex items-start space-x-2 sm:space-x-3 md:space-x-4">
                       <div className="p-2 sm:p-3 bg-orange-100 rounded-xl flex-shrink-0">
-                        <Truck className="h-5 w-5 sm:h-6 sm:w-6 text-orange-600" />
+                        <Truck className="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6 text-orange-600" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <h3 className="font-bold text-orange-900 mb-2 text-sm sm:text-base">🚚 Delivery Information</h3>
+                        <h3 className="font-bold text-orange-900 mb-2 text-sm sm:text-base break-words">🚚 Delivery Information</h3>
                         <ul className="text-xs sm:text-sm text-orange-800 space-y-1 sm:space-y-1.5">
-                          <li className="flex items-center">
-                            <Check className="h-3 w-3 sm:h-4 sm:w-4 mr-2 text-orange-600 flex-shrink-0" />
-                            <span className="truncate">Orders delivered within 4 hours of scheduled time</span>
+                          <li className="flex items-start">
+                            <Check className="h-3 w-3 sm:h-4 sm:w-4 mr-2 text-orange-600 flex-shrink-0 mt-0.5" />
+                            <span className="break-words">Orders delivered within 4 hours of scheduled time</span>
                           </li>
-                          <li className="flex items-center">
-                            <Check className="h-3 w-3 sm:h-4 sm:w-4 mr-2 text-orange-600 flex-shrink-0" />
-                            <span className="truncate">Place orders before 10 AM for same-day delivery</span>
+                          <li className="flex items-start">
+                            <Check className="h-3 w-3 sm:h-4 sm:w-4 mr-2 text-orange-600 flex-shrink-0 mt-0.5" />
+                            <span className="break-words">Place orders before 10 AM for same-day delivery</span>
                           </li>
-                          <li className="flex items-center">
-                            <Check className="h-3 w-3 sm:h-4 sm:w-4 mr-2 text-orange-600 flex-shrink-0" />
-                            <span className="truncate">Orders after 3 PM delivered next day</span>
+                          <li className="flex items-start">
+                            <Check className="h-3 w-3 sm:h-4 sm:w-4 mr-2 text-orange-600 flex-shrink-0 mt-0.5" />
+                            <span className="break-words">Orders after 3 PM delivered next day</span>
                           </li>
-                          <li className="flex items-center">
-                            <Check className="h-3 w-3 sm:h-4 sm:w-4 mr-2 text-orange-600 flex-shrink-0" />
-                            <span className="truncate">SMS & email updates on delivery status</span>
+                          <li className="flex items-start">
+                            <Check className="h-3 w-3 sm:h-4 sm:w-4 mr-2 text-orange-600 flex-shrink-0 mt-0.5" />
+                            <span className="break-words">SMS & email updates on delivery status</span>
                           </li>
                         </ul>
                       </div>

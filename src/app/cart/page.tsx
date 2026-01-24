@@ -125,7 +125,7 @@ export default function CartPage() {
               <img
                 src="/mrktdotcom-logo.png"
                 alt="Marketdotcom Logo"
-                className="h-20 w-20 sm:h-28 sm:w-28 lg:h-32 lg:w-32 object-contain"
+                className="h-24 w-24 sm:h-32 sm:w-32 md:h-36 md:w-36 lg:h-40 lg:w-40 object-contain"
               />
               <span className="text-lg font-bold text-gray-900 hidden sm:block">Cart</span>
             </Link>
@@ -237,8 +237,12 @@ export default function CartPage() {
                   >
                     <div className="flex flex-col sm:flex-row gap-4">
                       {/* Product Image */}
-                      <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-green-100 to-blue-100 rounded-lg flex items-center justify-center flex-shrink-0 mx-auto sm:mx-0">
-                        <ShoppingBag className="h-6 w-6 sm:h-8 sm:w-8 text-green-600" />
+                      <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-lg flex items-center justify-center flex-shrink-0 mx-auto sm:mx-0 overflow-hidden bg-gray-100">
+                        <img
+                          src={item.image || "/market_image.jpeg"}
+                          alt={item.name}
+                          className="w-full h-full object-cover"
+                        />
                       </div>
 
                       {/* Product Details */}
