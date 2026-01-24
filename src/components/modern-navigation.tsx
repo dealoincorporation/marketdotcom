@@ -48,7 +48,7 @@ export function ModernNavigation() {
       initial={{ y: -100 }}
       animate={{ y: 0 }}
       transition={{ duration: 0.6 }}
-      className={`fixed top-0 w-full z-50 transition-all duration-500 ${
+      className={`fixed top-0 w-full z-[100] transition-all duration-500 ${
         isScrolled
           ? "bg-white/90 backdrop-blur-xl shadow-2xl border-b border-white/30"
           : "bg-transparent backdrop-blur-sm"

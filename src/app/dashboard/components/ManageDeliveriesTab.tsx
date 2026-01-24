@@ -20,6 +20,8 @@ import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { NotificationModal } from "@/components/ui/notification-modal"
+import { useNotification } from "@/hooks/useNotification"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
 
@@ -41,6 +43,7 @@ interface ManageDeliveriesTabProps {
 }
 
 export default function ManageDeliveriesTab({ isAdmin }: ManageDeliveriesTabProps) {
+  const { notification, showConfirmPromise, closeNotification } = useNotification()
   const [slots, setSlots] = useState<DeliverySlot[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -143,7 +146,11 @@ export default function ManageDeliveriesTab({ isAdmin }: ManageDeliveriesTabProp
   }
 
   const handleDelete = async (slotId: string) => {
-    if (!confirm('Are you sure you want to delete this delivery slot?')) return
+    const confirmed = await showConfirmPromise(
+      'Delete Delivery Slot',
+      'Are you sure you want to delete this delivery slot?'
+    )
+    if (!confirmed) return
 
     try {
       const token = localStorage.getItem('token')
@@ -615,6 +622,17 @@ export default function ManageDeliveriesTab({ isAdmin }: ManageDeliveriesTabProp
           )}
         </CardContent>
       </Card>
+
+      <NotificationModal
+        isOpen={notification.isOpen}
+        type={notification.type}
+        title={notification.title}
+        message={notification.message}
+        onConfirm={notification.onConfirm}
+        onCancel={notification.onCancel}
+        confirmText={notification.confirmText}
+        cancelText={notification.cancelText}
+      />
     </motion.div>
   )
 }

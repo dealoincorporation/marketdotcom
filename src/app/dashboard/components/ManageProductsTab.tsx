@@ -26,6 +26,8 @@ import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { NotificationModal } from "@/components/ui/notification-modal"
+import { useNotification } from "@/hooks/useNotification"
 
 interface Product {
   id: string
@@ -69,6 +71,7 @@ export default function ManageProductsTab({
   onDeleteProduct,
   onToggleStockStatus,
 }: ManageProductsTabProps) {
+  const { notification, showConfirm, showConfirmPromise, showError, showSuccess, closeNotification } = useNotification()
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedCategory, setSelectedCategory] = useState("all")
   const [stockFilter, setStockFilter] = useState("all")
@@ -187,7 +190,7 @@ export default function ManageProductsTab({
       const expectedHeaders = ['Name', 'Description', 'Category', 'Price', 'Stock', 'Unit', 'In Stock']
 
       if (!expectedHeaders.every(h => headers.includes(h))) {
-        alert('Invalid CSV format. Expected headers: ' + expectedHeaders.join(', '))
+        showError('Invalid CSV Format', 'Expected headers: ' + expectedHeaders.join(', '))
         return
       }
 
@@ -201,7 +204,7 @@ export default function ManageProductsTab({
         // Find category by name
         const category = categories.find(c => c.name.toLowerCase() === categoryName.toLowerCase())
         if (!category) {
-          alert(`Category "${categoryName}" not found. Skipping product "${name}".`)
+          showError('Category Not Found', `Category "${categoryName}" not found. Skipping product "${name}".`)
           continue
         }
 
@@ -218,7 +221,10 @@ export default function ManageProductsTab({
 
       // Import the products via API
       if (productsToImport.length > 0) {
-        const confirmImport = confirm(`Import ${productsToImport.length} products?`)
+        const confirmImport = await showConfirmPromise(
+          'Import Products',
+          `Import ${productsToImport.length} products?`
+        )
         if (confirmImport) {
           try {
             const token = localStorage.getItem('token')
@@ -234,17 +240,17 @@ export default function ManageProductsTab({
             const result = await response.json()
 
             if (response.ok) {
-              alert(`Successfully imported ${result.created} products!${result.errors > 0 ? ` (${result.errors} errors)` : ''}`)
+              showSuccess('Import Successful', `Successfully imported ${result.created} products!${result.errors > 0 ? ` (${result.errors} errors)` : ''}`)
               if (result.errors > 0) {
                 console.log('Import errors:', result.errorDetails)
               }
               window.location.reload() // Refresh to show new products
             } else {
-              alert('Import failed: ' + (result.error || 'Unknown error'))
+              showError('Import Failed', 'Import failed: ' + (result.error || 'Unknown error'))
             }
           } catch (error) {
             console.error('Import error:', error)
-            alert('Import failed. Please try again.')
+            showError('Import Failed', 'Import failed. Please try again.')
           }
         }
       }
@@ -273,7 +279,7 @@ export default function ManageProductsTab({
 
   const handleBulkEdit = () => {
     if (selectedProducts.length === 0) {
-      alert('Please select products to edit')
+      showError('No Selection', 'Please select products to edit')
       return
     }
     setShowBulkEdit(true)
@@ -286,11 +292,14 @@ export default function ManageProductsTab({
     if (bulkEditData.inStock !== null) updates.inStock = bulkEditData.inStock
 
     if (Object.keys(updates).length === 0) {
-      alert('Please specify at least one field to update')
+      showError('No Changes', 'Please specify at least one field to update')
       return
     }
 
-    const confirmUpdate = confirm(`Update ${selectedProducts.length} products?`)
+    const confirmUpdate = await showConfirmPromise(
+      'Update Products',
+      `Update ${selectedProducts.length} products?`
+    )
     if (!confirmUpdate) return
 
     try {
@@ -310,7 +319,7 @@ export default function ManageProductsTab({
       window.location.reload() // TODO: Replace with proper refresh
     } catch (error) {
       console.error('Bulk edit error:', error)
-      alert('Error updating products')
+      showError('Update Failed', 'Error updating products')
     }
   }
 
@@ -856,6 +865,17 @@ export default function ManageProductsTab({
           </Card>
         </div>
       )}
+
+      <NotificationModal
+        isOpen={notification.isOpen}
+        type={notification.type}
+        title={notification.title}
+        message={notification.message}
+        onConfirm={notification.onConfirm}
+        onCancel={notification.onCancel}
+        confirmText={notification.confirmText}
+        cancelText={notification.cancelText}
+      />
     </motion.div>
   )
 }

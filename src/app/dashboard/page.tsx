@@ -11,6 +11,8 @@ import { DashboardLayout } from "@/components/layouts/dashboard-layout"
 import { Loading } from "@/components/ui/loading"
 import { Error } from "@/components/ui/error"
 import { User } from "lucide-react"
+import { NotificationModal } from "@/components/ui/notification-modal"
+import { useNotification } from "@/hooks/useNotification"
 
 // Import components
 import MarketplaceTab from "./components/MarketplaceTab"
@@ -40,6 +42,7 @@ function DashboardContent() {
   const orders = rawOrders as any[]
   const categories = rawCategories as any[]
   const { createProduct, updateProduct, deleteProduct } = useProducts(products)
+  const { notification, showConfirm, showError, showSuccess, closeNotification } = useNotification()
 
   // UI state
   const [activeTab, setActiveTab] = useState<DashboardTab>("marketplace")
@@ -115,16 +118,20 @@ function DashboardContent() {
     console.log('User role:', user?.role)
     console.log('Is admin:', isAdmin)
 
-    if (!confirm('Are you sure you want to delete this product?')) return
-
-    const success = await deleteProduct(productId)
-    if (success) {
-      console.log('Product deleted successfully, refreshing...')
-      refreshAll()
-    } else {
-      console.error('Product deletion failed')
-      alert('Failed to delete product. Check console for details.')
-    }
+    showConfirm(
+      'Delete Product',
+      'Are you sure you want to delete this product? This action cannot be undone.',
+      async () => {
+        const success = await deleteProduct(productId)
+        if (success) {
+          console.log('Product deleted successfully, refreshing...')
+          refreshAll()
+        } else {
+          console.error('Product deletion failed')
+          showError('Delete Failed', 'Failed to delete product. Check console for details.')
+        }
+      }
+    )
   }
 
   const handleOrderStatusChange = async (orderId: string, newStatus: string) => {
@@ -151,29 +158,31 @@ function DashboardContent() {
   }
 
   const handleOrderDelete = async (orderId: string) => {
-    if (!confirm('Are you sure you want to delete this order? This action cannot be undone.')) {
-      return
-    }
+    showConfirm(
+      'Delete Order',
+      'Are you sure you want to delete this order? This action cannot be undone.',
+      async () => {
+        try {
+          const token = localStorage.getItem('token')
+          const response = await fetch(`/api/orders/${orderId}`, {
+            method: 'DELETE',
+            headers: token ? { 'Authorization': `Bearer ${token}` } : {},
+          })
 
-    try {
-      const token = localStorage.getItem('token')
-      const response = await fetch(`/api/orders/${orderId}`, {
-        method: 'DELETE',
-        headers: token ? { 'Authorization': `Bearer ${token}` } : {},
-      })
-
-      if (response.ok) {
-        // Refresh orders
-        refreshAll()
-        alert('Order deleted successfully')
-      } else {
-        const errorData = await response.json()
-        alert(`Failed to delete order: ${errorData.error || 'Unknown error'}`)
+          if (response.ok) {
+            // Refresh orders
+            refreshAll()
+            showSuccess('Order Deleted', 'Order deleted successfully')
+          } else {
+            const errorData = await response.json()
+            showError('Delete Failed', `Failed to delete order: ${errorData.error || 'Unknown error'}`)
+          }
+        } catch (error) {
+          console.error('Error deleting order:', error)
+          showError('Delete Failed', 'Failed to delete order. Please try again.')
+        }
       }
-    } catch (error) {
-      console.error('Error deleting order:', error)
-      alert('Failed to delete order. Please try again.')
-    }
+    )
   }
 
   const handleToggleStockStatus = async (product: any) => {
@@ -305,6 +314,16 @@ function DashboardContent() {
         )}
       </DashboardLayout>
 
+      <NotificationModal
+        isOpen={notification.isOpen}
+        type={notification.type}
+        title={notification.title}
+        message={notification.message}
+        onConfirm={notification.onConfirm}
+        onCancel={notification.onCancel}
+        confirmText={notification.confirmText}
+        cancelText={notification.cancelText}
+      />
     </>
   )
 }

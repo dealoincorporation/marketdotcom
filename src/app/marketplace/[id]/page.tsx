@@ -88,7 +88,7 @@ export default function MarketplaceProductDetailsPage() {
 
   const [product, setProduct] = React.useState<Product | null>(null)
   const [isLoading, setIsLoading] = React.useState(true)
-  const [selectedIds, setSelectedIds] = React.useState<Set<string>>(new Set())
+  const [selectedVariations, setSelectedVariations] = React.useState<Map<string, number>>(new Map()) // Map of variationId -> quantity
   const [heroIndex, setHeroIndex] = React.useState(0)
   const [isCartOpen, setIsCartOpen] = React.useState(false)
 
@@ -118,61 +118,80 @@ export default function MarketplaceProductDetailsPage() {
 
   const options = React.useMemo(() => (product ? buildOptions(product) : []), [product])
   const selectedOptions = React.useMemo(() => 
-    options.filter((o) => selectedIds.has(o.id)), 
-    [options, selectedIds]
+    options.filter((o) => selectedVariations.has(o.id)), 
+    [options, selectedVariations]
   )
-  const canAdd = selectedIds.size > 0 && Boolean(product)
+  const canAdd = selectedVariations.size > 0 && Boolean(product)
 
   const toggleSelection = (optionId: string) => {
-    setSelectedIds((prev) => {
-      const newSet = new Set(prev)
-      if (newSet.has(optionId)) {
-        newSet.delete(optionId)
+    setSelectedVariations((prev) => {
+      const newMap = new Map(prev)
+      if (newMap.has(optionId)) {
+        newMap.delete(optionId)
       } else {
-        newSet.add(optionId)
+        newMap.set(optionId, 1) // Default quantity is 1
       }
-      return newSet
+      return newMap
     })
+  }
+
+  const updateVariationQuantity = (optionId: string, quantity: number) => {
+    if (quantity <= 0) {
+      setSelectedVariations((prev) => {
+        const newMap = new Map(prev)
+        newMap.delete(optionId)
+        return newMap
+      })
+    } else {
+      setSelectedVariations((prev) => {
+        const newMap = new Map(prev)
+        const option = options.find(o => o.id === optionId)
+        const variation = optionId !== "base" ? product?.variations.find((v) => v.id === optionId) : undefined
+        const maxQty = variation ? variation.stock : (product?.stock || 0)
+        newMap.set(optionId, Math.min(quantity, maxQty))
+        return newMap
+      })
+    }
   }
 
   const handleAdd = async () => {
     if (!product) return
-    if (selectedIds.size === 0) return
+    if (selectedVariations.size === 0) return
 
     let addedCount = 0
-    for (const optionId of selectedIds) {
+    for (const [optionId, quantity] of selectedVariations.entries()) {
       const variation = optionId !== "base" ? product.variations.find((v) => v.id === optionId) : undefined
 
       const success = await addItem({
-        productId: product.id,
-        variationId: variation?.id,
-        name: variation
+      productId: product.id,
+      variationId: variation?.id,
+      name: variation
           ? `${product.name} - ${variation.quantity ?? ""}${variation.unit ?? ""} ${variation.name}`.replace(/\s+/g, " ").trim()
-          : product.name,
-        price: variation?.price || product.basePrice,
-        image: (variation?.image || product.images?.[0] || "/market_image.jpeg") as string,
-        quantity: 1,
-        unit: (variation?.unit || product.unit) as string,
-        variation: variation
-          ? {
-              id: variation.id,
-              name: variation.name,
-              type: "Quantity",
-              price: variation.price,
-              stock: variation.stock,
-            }
-          : undefined,
-        maxQuantity: variation ? variation.stock : product.stock,
-        categoryId: (product as any).categoryId,
-        categoryName: product.category?.name,
-      })
+        : product.name,
+      price: variation?.price || product.basePrice,
+      image: (variation?.image || product.images?.[0] || "/market_image.jpeg") as string,
+        quantity: quantity, // Use the selected quantity
+      unit: (variation?.unit || product.unit) as string,
+      variation: variation
+        ? {
+            id: variation.id,
+            name: variation.name,
+            type: "Quantity",
+            price: variation.price,
+            stock: variation.stock,
+          }
+        : undefined,
+      maxQuantity: variation ? variation.stock : product.stock,
+      categoryId: (product as any).categoryId,
+      categoryName: product.category?.name,
+    })
       
       if (success) addedCount++
     }
     
     if (addedCount > 0) {
       setIsCartOpen(true)
-      setSelectedIds(new Set()) // Clear selections after adding
+      setSelectedVariations(new Map()) // Clear selections after adding
       // Auto-close after 5 seconds
       setTimeout(() => setIsCartOpen(false), 5000)
     }
@@ -275,47 +294,97 @@ export default function MarketplaceProductDetailsPage() {
 
               <div className="space-y-3">
                 <label className="text-sm font-medium text-gray-700">Select Quantities (You can select multiple)</label>
-                {options.length === 0 ? (
+                    {options.length === 0 ? (
                   <p className="text-sm text-gray-500 py-4 text-center">No options available</p>
                 ) : (
                   <div className="space-y-2 max-h-64 overflow-y-auto">
                     {options.map((opt) => {
-                      const isSelected = selectedIds.has(opt.id)
+                      const isSelected = selectedVariations.has(opt.id)
+                      const quantity = selectedVariations.get(opt.id) || 0
+                      const variation = opt.id !== "base" ? product?.variations.find((v) => v.id === opt.id) : undefined
+                      const maxQty = variation ? variation.stock : (product?.stock || 0)
+                      
                       return (
-                        <button
+                        <div
                           key={opt.id}
-                          type="button"
-                          onClick={() => toggleSelection(opt.id)}
-                          className={`w-full flex items-center justify-between p-3 rounded-lg border-2 transition-all ${
+                          className={`w-full p-3 rounded-lg border-2 transition-all ${
                             isSelected
                               ? "border-orange-500 bg-orange-50"
-                              : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
+                              : "border-gray-200"
                           }`}
                         >
-                          <div className="flex items-center gap-3 flex-1 min-w-0">
-                            <div className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 ${
-                              isSelected
-                                ? "border-orange-500 bg-orange-500"
-                                : "border-gray-300"
-                            }`}>
-                              {isSelected && <Check className="h-3 w-3 text-white" />}
-                            </div>
-                            <div className="flex-1 min-w-0 text-left">
-                              <span className="font-medium text-gray-900">{opt.label}</span>
-                            </div>
+                          <div className="flex items-center justify-between mb-2">
+                            <button
+                              type="button"
+                              onClick={() => toggleSelection(opt.id)}
+                              className="flex items-center gap-3 flex-1 min-w-0"
+                            >
+                              <div className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 ${
+                                isSelected
+                                  ? "border-orange-500 bg-orange-500"
+                                  : "border-gray-300"
+                              }`}>
+                                {isSelected && <Check className="h-3 w-3 text-white" />}
+                              </div>
+                              <div className="flex-1 min-w-0 text-left">
+                                <span className="font-medium text-gray-900">{opt.label}</span>
+                              </div>
+                              <span className="text-sm font-semibold text-orange-600 ml-3 flex-shrink-0">
+                                {formatPrice(opt.price)}
+                              </span>
+                            </button>
                           </div>
-                          <span className="text-sm font-semibold text-orange-600 ml-3 flex-shrink-0">
-                            {formatPrice(opt.price)}
-                          </span>
-                        </button>
+                          {isSelected && (
+                            <div className="flex items-center gap-2 mt-2 pt-2 border-t border-orange-200">
+                              <span className="text-xs text-gray-600 flex-shrink-0">Quantity:</span>
+                              <div className="flex items-center gap-1 flex-1">
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    updateVariationQuantity(opt.id, quantity - 1)
+                                  }}
+                                  className="p-1 hover:bg-orange-100 rounded transition-colors"
+                                  aria-label="Decrease quantity"
+                                >
+                                  <Minus className="h-4 w-4 text-orange-600" />
+                                </button>
+                                <input
+                                  type="number"
+                                  min="1"
+                                  max={maxQty}
+                                  value={quantity}
+                                  onChange={(e) => {
+                                    const val = parseInt(e.target.value) || 1
+                                    updateVariationQuantity(opt.id, Math.min(Math.max(1, val), maxQty))
+                                  }}
+                                  className="w-16 text-center text-sm font-medium border border-orange-300 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-orange-500"
+                                />
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    updateVariationQuantity(opt.id, Math.min(quantity + 1, maxQty))
+                                  }}
+                                  className="p-1 hover:bg-orange-100 rounded transition-colors"
+                                  aria-label="Increase quantity"
+                                  disabled={quantity >= maxQty}
+                                >
+                                  <Plus className="h-4 w-4 text-orange-600" />
+                                </button>
+                              </div>
+                              <span className="text-xs text-gray-500 flex-shrink-0">Max: {maxQty}</span>
+                            </div>
+                          )}
+                        </div>
                       )
                     })}
                   </div>
                 )}
-                {selectedIds.size > 0 && (
+                {selectedVariations.size > 0 && (
                   <div className="pt-2 border-t border-gray-200">
                     <p className="text-xs text-gray-600">
-                      {selectedIds.size} {selectedIds.size === 1 ? "item" : "items"} selected
+                      {Array.from(selectedVariations.values()).reduce((sum, qty) => sum + qty, 0)} total items selected
                     </p>
                   </div>
                 )}
@@ -331,10 +400,10 @@ export default function MarketplaceProductDetailsPage() {
           <div className="min-w-0">
             <p className="text-sm font-semibold text-gray-900 truncate">{product.name}</p>
             <p className="text-xs text-gray-600">
-              {selectedOptions.length === 1 
-                ? formatPrice(selectedOptions[0].price)
-                : selectedOptions.length > 1
-                ? `${selectedOptions.length} items selected`
+              {selectedVariations.size === 1 
+                ? `${selectedVariations.values().next().value} × ${formatPrice(selectedOptions[0].price)}`
+                : selectedVariations.size > 1
+                ? `${Array.from(selectedVariations.values()).reduce((sum, qty) => sum + qty, 0)} items selected`
                 : computeRangeLabel(product)}
             </p>
           </div>
@@ -452,9 +521,12 @@ export default function MarketplaceProductDetailsPage() {
             <Button onClick={handleAdd} disabled={!canAdd} className="bg-orange-600 hover:bg-orange-700">
               <ShoppingCart className="h-4 w-4 mr-2" />
               {canAdd 
-                ? selectedIds.size > 1 
-                  ? `Add ${selectedIds.size} items to cart`
-                  : "Add to cart"
+                ? (() => {
+                    const totalQty = Array.from(selectedVariations.values()).reduce((sum, qty) => sum + qty, 0)
+                    return totalQty > 1 
+                      ? `Add ${totalQty} items to cart`
+                      : "Add to cart"
+                  })()
                 : "Select quantity"}
             </Button>
           </div>

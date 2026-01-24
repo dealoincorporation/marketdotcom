@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import Link from "next/link"
-import { motion } from "framer-motion"
+import { motion, AnimatePresence } from "framer-motion"
 import { ShoppingBag, Search, Filter, ShoppingCart, Heart, Star, Plus, Minus, Menu, X, ChevronLeft, ChevronRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -40,7 +40,7 @@ export default function MarketplacePage() {
   const [minPrice, setMinPrice] = useState<string>("")
   const [maxPrice, setMaxPrice] = useState<string>("")
   const [isLoading, setIsLoading] = useState(true)
-  const [showFilters, setShowFilters] = useState(false)
+  const [filtersExpanded, setFiltersExpanded] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const { user } = useAuth()
   const { items } = useCartStore()
@@ -168,7 +168,7 @@ export default function MarketplacePage() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Sticky Header */}
-      <header className="sticky top-0 z-50 bg-white shadow-sm border-b backdrop-blur-sm bg-white/95">
+      <header className="sticky top-0 z-[100] bg-white shadow-sm border-b backdrop-blur-sm bg-white/95">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
@@ -305,10 +305,10 @@ export default function MarketplacePage() {
       </header>
 
       {/* Sticky Search and Filters */}
-      <div className="sticky top-16 z-40 bg-white border-b shadow-sm backdrop-blur-sm bg-white/95">
+      <div className="sticky top-16 z-[90] bg-white border-b shadow-sm backdrop-blur-sm bg-white/95">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex flex-col lg:flex-row gap-4">
-            {/* Search */}
+          {/* Search Bar - Always Visible */}
+          <div className="flex items-center gap-3 mb-3">
             <div className="flex-1 relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
               <Input
@@ -319,157 +319,129 @@ export default function MarketplacePage() {
               />
             </div>
 
-            {/* Filter Toggle */}
+            {/* Filter Toggle Button - Always Visible */}
             <Button
               variant="outline"
-              onClick={() => setShowFilters(!showFilters)}
-              className="lg:hidden"
+              onClick={() => setFiltersExpanded(!filtersExpanded)}
+              className="flex items-center gap-2"
             >
-              <Filter className="h-4 w-4 mr-2" />
-              Filters
+              <Filter className="h-4 w-4" />
+              <span className="hidden sm:inline">Filters</span>
+              {(selectedCategory !== "all" || minPrice || maxPrice || sortBy !== "recommended") && (
+                <Badge className="ml-1 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs">
+                  {[
+                    selectedCategory !== "all" ? 1 : 0,
+                    minPrice ? 1 : 0,
+                    maxPrice ? 1 : 0,
+                    sortBy !== "recommended" ? 1 : 0,
+                  ].reduce((a, b) => a + b, 0)}
+                </Badge>
+              )}
             </Button>
-
-            {/* Sort + Stock + Price (Desktop) */}
-            <div className="hidden lg:flex items-center gap-3">
-              <div className="w-48">
-                <Select value={sortBy} onValueChange={(v: any) => setSortBy(v)}>
-                  <SelectTrigger className="h-12 bg-white border-gray-300">
-                    <SelectValue placeholder="Sort" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-white border-gray-300 shadow-lg z-50">
-                    <SelectItem value="recommended" className="cursor-pointer hover:bg-gray-100">Recommended</SelectItem>
-                    <SelectItem value="price_asc" className="cursor-pointer hover:bg-gray-100">Price: Low to High</SelectItem>
-                    <SelectItem value="price_desc" className="cursor-pointer hover:bg-gray-100">Price: High to Low</SelectItem>
-                    <SelectItem value="name_asc" className="cursor-pointer hover:bg-gray-100">Name: A-Z</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">₦</span>
-                  <Input
-                    value={minPrice}
-                    onChange={(e) => {
-                      const value = e.target.value.replace(/[^0-9]/g, '')
-                      setMinPrice(value)
-                    }}
-                    inputMode="numeric"
-                    placeholder="Min"
-                    className="h-12 w-32 pl-8 bg-white border-gray-300"
-                  />
-                </div>
-                <span className="text-gray-500">-</span>
-                <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">₦</span>
-                  <Input
-                    value={maxPrice}
-                    onChange={(e) => {
-                      const value = e.target.value.replace(/[^0-9]/g, '')
-                      setMaxPrice(value)
-                    }}
-                    inputMode="numeric"
-                    placeholder="Max"
-                    className="h-12 w-32 pl-8 bg-white border-gray-300"
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Category Filters - Desktop */}
-            <div className="hidden lg:flex items-center space-x-2 overflow-x-auto">
-              {categories.map((category) => (
-                <Button
-                  key={category.id}
-                  variant={selectedCategory === category.id ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setSelectedCategory(category.id)}
-                  className="whitespace-nowrap"
-                >
-                  {category.displayName}
-                </Button>
-              ))}
-            </div>
           </div>
 
-          {/* Mobile Filters */}
-          {showFilters && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: "auto" }}
-              exit={{ opacity: 0, height: 0 }}
-              className="lg:hidden mt-4 pt-4 border-t bg-white/95 backdrop-blur-sm rounded-lg shadow-lg border border-gray-200"
-            >
-              <div className="px-4 pb-4">
-                <div className="grid grid-cols-1 gap-3 mb-4">
-                  <div>
-                    <p className="text-sm font-semibold text-gray-900 mb-2">Sort</p>
-                    <Select value={sortBy} onValueChange={(v: any) => setSortBy(v)}>
-                      <SelectTrigger className="h-11 bg-white border-gray-300">
-                        <SelectValue placeholder="Sort" />
-                      </SelectTrigger>
-                      <SelectContent className="bg-white border-gray-300 shadow-lg z-50">
-                        <SelectItem value="recommended" className="cursor-pointer hover:bg-gray-100">Recommended</SelectItem>
-                        <SelectItem value="price_asc" className="cursor-pointer hover:bg-gray-100">Price: Low to High</SelectItem>
-                        <SelectItem value="price_desc" className="cursor-pointer hover:bg-gray-100">Price: High to Low</SelectItem>
-                        <SelectItem value="name_asc" className="cursor-pointer hover:bg-gray-100">Name: A-Z</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
+          {/* Collapsible Filters Panel */}
+          <AnimatePresence>
+            {filtersExpanded && (
+              <motion.div
+                initial={{ opacity: 0, maxHeight: 0 }}
+                animate={{ opacity: 1, maxHeight: 1000 }}
+                exit={{ opacity: 0, maxHeight: 0 }}
+                transition={{ duration: 0.3, ease: "easeInOut" }}
+                className="overflow-hidden"
+              >
+                <div className="pt-4 border-t border-gray-200 space-y-4">
+              {/* Sort and Price Range Row */}
+              <div className="flex flex-col sm:flex-row gap-3">
+                <div className="w-full sm:w-48">
+                  <label className="text-sm font-medium text-gray-700 mb-2 block">Sort By</label>
+                  <Select value={sortBy} onValueChange={(v: any) => setSortBy(v)}>
+                    <SelectTrigger className="h-11 bg-white border-gray-300">
+                      <SelectValue placeholder="Sort" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-white border-gray-300 shadow-lg z-[95]">
+                      <SelectItem value="recommended" className="cursor-pointer hover:bg-gray-100">Recommended</SelectItem>
+                      <SelectItem value="price_asc" className="cursor-pointer hover:bg-gray-100">Price: Low to High</SelectItem>
+                      <SelectItem value="price_desc" className="cursor-pointer hover:bg-gray-100">Price: High to Low</SelectItem>
+                      <SelectItem value="name_asc" className="cursor-pointer hover:bg-gray-100">Name: A-Z</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
 
-                  <div>
-                    <p className="text-sm font-semibold text-gray-900 mb-2">Price range</p>
-                    <div className="flex items-center gap-2">
-                      <div className="relative flex-1">
-                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">₦</span>
-                        <Input
-                          value={minPrice}
-                          onChange={(e) => {
-                            const value = e.target.value.replace(/[^0-9]/g, '')
-                            setMinPrice(value)
-                          }}
-                          inputMode="numeric"
-                          placeholder="Min"
-                          className="h-11 pl-8 bg-white border-gray-300"
-                        />
-                      </div>
-                      <span className="text-gray-500">-</span>
-                      <div className="relative flex-1">
-                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">₦</span>
-                        <Input
-                          value={maxPrice}
-                          onChange={(e) => {
-                            const value = e.target.value.replace(/[^0-9]/g, '')
-                            setMaxPrice(value)
-                          }}
-                          inputMode="numeric"
-                          placeholder="Max"
-                          className="h-11 pl-8 bg-white border-gray-300"
-                        />
-                      </div>
+                <div className="flex-1">
+                  <label className="text-sm font-medium text-gray-700 mb-2 block">Price Range</label>
+                  <div className="flex items-center gap-2">
+                    <div className="relative flex-1">
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">₦</span>
+                      <Input
+                        value={minPrice}
+                        onChange={(e) => {
+                          const value = e.target.value.replace(/[^0-9]/g, '')
+                          setMinPrice(value)
+                        }}
+                        inputMode="numeric"
+                        placeholder="Min"
+                        className="h-11 pl-8 bg-white border-gray-300"
+                      />
+                    </div>
+                    <span className="text-gray-500">-</span>
+                    <div className="relative flex-1">
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">₦</span>
+                      <Input
+                        value={maxPrice}
+                        onChange={(e) => {
+                          const value = e.target.value.replace(/[^0-9]/g, '')
+                          setMaxPrice(value)
+                        }}
+                        inputMode="numeric"
+                        placeholder="Max"
+                        className="h-11 pl-8 bg-white border-gray-300"
+                      />
                     </div>
                   </div>
                 </div>
-                <h3 className="text-sm font-semibold text-gray-900 mb-3">Filter by Category</h3>
-                <div className="flex flex-wrap gap-2">
+              </div>
+
+              {/* Category Filters */}
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-2 block">Categories</label>
+                <div className="flex flex-wrap items-center gap-2">
                   {categories.map((category) => (
                     <Button
                       key={category.id}
                       variant={selectedCategory === category.id ? "default" : "outline"}
                       size="sm"
                       onClick={() => setSelectedCategory(category.id)}
-                      className={selectedCategory === category.id
-                        ? "bg-orange-500 hover:bg-orange-600 text-white"
-                        : "bg-white hover:bg-gray-50 border-gray-300 text-gray-700"
-                      }
+                      className="whitespace-nowrap"
                     >
-                      {category.name}
+                      {category.displayName}
                     </Button>
                   ))}
                 </div>
               </div>
-            </motion.div>
-          )}
+
+              {/* Clear Filters Button */}
+              {(selectedCategory !== "all" || minPrice || maxPrice || sortBy !== "recommended") && (
+                <div className="flex justify-end pt-2">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      setSelectedCategory("all")
+                      setMinPrice("")
+                      setMaxPrice("")
+                      setSortBy("recommended")
+                    }}
+                    className="text-gray-600 hover:text-gray-900"
+                  >
+                    Clear Filters
+                  </Button>
+                </div>
+              )}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </div>
 
@@ -492,13 +464,14 @@ export default function MarketplacePage() {
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600"></div>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-4 gap-4 md:gap-6">
             {filteredProducts.map((product, index) => (
               <motion.div
                 key={product.id}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: index * 0.05 }}
+                className="h-full"
               >
                 <MarketplaceProductCard
                   product={product}

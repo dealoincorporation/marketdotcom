@@ -146,39 +146,57 @@ export default function AboutPage() {
           <div className="absolute bottom-0 right-0 w-80 h-80 bg-yellow-200/30 rounded-full blur-3xl"></div>
         </div>
 
-        <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-          >
-            <div className="inline-flex items-center px-4 py-2 bg-orange-100 text-orange-800 rounded-full text-sm font-medium mb-6">
-              <span className="w-2 h-2 bg-orange-500 rounded-full mr-2 animate-pulse"></span>
-              Our Story
-            </div>
-            <h1 className="text-5xl lg:text-6xl font-bold text-gray-900 mb-6 leading-tight">
-              About <span className="text-orange-600">Marketdotcom</span>
-            </h1>
-            <p className="text-xl lg:text-2xl text-gray-700 mb-8 leading-relaxed max-w-3xl mx-auto">
-              Marketdotcom was founded to solve the common problem of time-consuming, fragmented monthly food shopping. By consolidating all essential items in one place, we aim to provide convenience, affordability and quality experience.
-            </p>
-            <p className="text-lg text-gray-600 mb-10 leading-relaxed max-w-3xl mx-auto">
-              Through our thrift savings plans, personal shopping services, and customized food packages, customers can plan ahead, save gradually, and access fresh food without disruption.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link href="/marketplace">
-                <Button size="lg" className="bg-orange-600 hover:bg-orange-700 text-white px-8 py-6 text-lg">
-                  <ShoppingBag className="mr-2 h-5 w-5" />
-                  Start Shopping
-                </Button>
-              </Link>
-              <Link href="/auth/register">
-                <Button size="lg" variant="outline" className="border-2 border-orange-300 hover:bg-orange-50 px-8 py-6 text-lg">
-                  Join Our Community
-                </Button>
-              </Link>
-            </div>
-          </motion.div>
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            <motion.div
+              initial={{ opacity: 0, x: -30 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.8 }}
+              className="text-center lg:text-left"
+            >
+              <div className="inline-flex items-center px-4 py-2 bg-orange-100 text-orange-800 rounded-full text-sm font-medium mb-6">
+                <span className="w-2 h-2 bg-orange-500 rounded-full mr-2 animate-pulse"></span>
+                Our Story
+              </div>
+              <h1 className="text-5xl lg:text-6xl font-bold text-gray-900 mb-6 leading-tight">
+                About <span className="text-orange-600">Marketdotcom</span>
+              </h1>
+              <p className="text-xl lg:text-2xl text-gray-700 mb-8 leading-relaxed">
+                Marketdotcom was founded to solve the common problem of time-consuming, fragmented monthly food shopping. By consolidating all essential items in one place, we aim to provide convenience, affordability and quality experience.
+              </p>
+              <p className="text-lg text-gray-600 mb-10 leading-relaxed">
+                Through our thrift savings plans, personal shopping services, and customized food packages, customers can plan ahead, save gradually, and access fresh food without disruption.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
+                <Link href="/marketplace">
+                  <Button size="lg" className="bg-orange-600 hover:bg-orange-700 text-white px-8 py-6 text-lg">
+                    <ShoppingBag className="mr-2 h-5 w-5" />
+                    Start Shopping
+                  </Button>
+                </Link>
+                <Link href="/auth/register">
+                  <Button size="lg" variant="outline" className="border-2 border-orange-300 hover:bg-orange-50 px-8 py-6 text-lg">
+                    Join Our Community
+                  </Button>
+                </Link>
+              </div>
+            </motion.div>
+            <motion.div
+              initial={{ opacity: 0, x: 30 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.8, delay: 0.2 }}
+              className="relative"
+            >
+              <div className="relative rounded-2xl overflow-hidden shadow-2xl">
+                <img
+                  src="/360_F_382021894_YgVpXsRuwFr6lbSqa4uSzDiR9YLqqdtF.jpg"
+                  alt="Fresh produce and groceries"
+                  className="w-full h-[500px] object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
+              </div>
+            </motion.div>
+          </div>
         </div>
       </section>
 
@@ -203,6 +221,12 @@ export default function AboutPage() {
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
             {coreValues.map((value, index) => {
               const Icon = value.icon
+              const images = [
+                "/Whisk_34cbee6023de4bd9f724eedd0213ceeedr.png",
+                "/Whisk_028e78c5d80daa68aef4fbe5670db5f4dr.png",
+                "/Whisk_4e949716576ebe0a3b24c9c7ce062b42dr.png",
+                "/360_F_382021894_YgVpXsRuwFr6lbSqa4uSzDiR9YLqqdtF.jpg"
+              ]
               return (
                 <motion.div
                   key={index}
@@ -211,9 +235,17 @@ export default function AboutPage() {
                   transition={{ duration: 0.6, delay: index * 0.1 }}
                   viewport={{ once: true }}
                 >
-                  <Card className="h-full hover:shadow-xl transition-all duration-300 border-2 border-transparent hover:border-orange-200">
+                  <Card className="h-full hover:shadow-xl transition-all duration-300 border-2 border-transparent hover:border-orange-200 overflow-hidden">
+                    <div className="relative h-48 overflow-hidden">
+                      <img
+                        src={images[index % images.length]}
+                        alt={value.title}
+                        className="w-full h-full object-cover"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-white via-white/50 to-transparent"></div>
+                    </div>
                     <CardContent className="p-6 text-center">
-                      <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-orange-100 to-orange-200 rounded-2xl mb-4">
+                      <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-orange-100 to-orange-200 rounded-2xl mb-4 -mt-8 relative z-10">
                         <Icon className="h-8 w-8 text-orange-600" />
                       </div>
                       <h3 className="text-xl font-bold text-gray-900 mb-3">{value.title}</h3>
@@ -252,6 +284,11 @@ export default function AboutPage() {
           <div className="space-y-12">
             {services.map((service, index) => {
               const Icon = service.icon
+              const serviceImages = [
+                "/Whisk_34cbee6023de4bd9f724eedd0213ceeedr.png",
+                "/Whisk_028e78c5d80daa68aef4fbe5670db5f4dr.png",
+                "/Whisk_4e949716576ebe0a3b24c9c7ce062b42dr.png"
+              ]
               return (
                 <motion.div
                   key={index}
@@ -262,12 +299,20 @@ export default function AboutPage() {
                 >
                   <Card className="overflow-hidden border-2 border-gray-200 hover:shadow-2xl transition-all duration-300">
                     <div className="grid md:grid-cols-2 gap-0">
-                      <div className={`bg-gradient-to-r ${service.gradient} p-8 md:p-12 flex items-center justify-center`}>
-                        <div className="text-center text-white">
-                          <div className="inline-flex items-center justify-center w-20 h-20 bg-white/20 backdrop-blur-sm rounded-2xl mb-6">
-                            <Icon className="h-10 w-10" />
+                      <div className="relative overflow-hidden">
+                        <img
+                          src={serviceImages[index % serviceImages.length]}
+                          alt={service.title}
+                          className="w-full h-full object-cover min-h-[300px]"
+                        />
+                        <div className={`absolute inset-0 bg-gradient-to-r ${service.gradient} opacity-80`}></div>
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <div className="text-center text-white relative z-10">
+                            <div className="inline-flex items-center justify-center w-20 h-20 bg-white/20 backdrop-blur-sm rounded-2xl mb-6">
+                              <Icon className="h-10 w-10" />
+                            </div>
+                            <h3 className="text-3xl font-bold mb-4">{service.title}</h3>
                           </div>
-                          <h3 className="text-3xl font-bold mb-4">{service.title}</h3>
                         </div>
                       </div>
                       <CardContent className="p-8 md:p-12">
@@ -336,8 +381,15 @@ export default function AboutPage() {
       </section>
 
       {/* Vision & Mission */}
-      <section className="py-20 bg-gradient-to-br from-gray-900 via-gray-800 to-black text-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="py-20 bg-gradient-to-br from-gray-900 via-gray-800 to-black text-white relative overflow-hidden">
+        <div className="absolute inset-0 opacity-10">
+          <img
+            src="/360_F_382021894_YgVpXsRuwFr6lbSqa4uSzDiR9YLqqdtF.jpg"
+            alt=""
+            className="w-full h-full object-cover"
+          />
+        </div>
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid md:grid-cols-2 gap-12">
             <motion.div
               initial={{ opacity: 0, x: -30 }}
@@ -345,11 +397,21 @@ export default function AboutPage() {
               transition={{ duration: 0.8 }}
               viewport={{ once: true }}
             >
-              <div className="flex items-center space-x-4 mb-6">
-                <div className="p-3 bg-orange-600/20 rounded-xl">
-                  <Eye className="h-8 w-8 text-orange-400" />
+              <div className="relative mb-6 rounded-xl overflow-hidden">
+                <img
+                  src="/Whisk_028e78c5d80daa68aef4fbe5670db5f4dr.png"
+                  alt="Our Vision"
+                  className="w-full h-48 object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/80 to-transparent"></div>
+                <div className="absolute bottom-0 left-0 right-0 p-6">
+                  <div className="flex items-center space-x-4 mb-4">
+                    <div className="p-3 bg-orange-600/20 rounded-xl backdrop-blur-sm">
+                      <Eye className="h-8 w-8 text-orange-400" />
+                    </div>
+                    <h2 className="text-3xl font-bold">Our Vision</h2>
+                  </div>
                 </div>
-                <h2 className="text-3xl font-bold">Our Vision</h2>
               </div>
               <p className="text-lg text-gray-300 leading-relaxed">
                 To become Nigeria's most trusted platform for convenient and timely grocery and food essentials shopping, combined with smart savings solutions that help households plan ahead and access quality food without disruption.
@@ -362,11 +424,21 @@ export default function AboutPage() {
               transition={{ duration: 0.8 }}
               viewport={{ once: true }}
             >
-              <div className="flex items-center space-x-4 mb-6">
-                <div className="p-3 bg-orange-600/20 rounded-xl">
-                  <Target className="h-8 w-8 text-orange-400" />
+              <div className="relative mb-6 rounded-xl overflow-hidden">
+                <img
+                  src="/Whisk_4e949716576ebe0a3b24c9c7ce062b42dr.png"
+                  alt="Our Mission"
+                  className="w-full h-48 object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/80 to-transparent"></div>
+                <div className="absolute bottom-0 left-0 right-0 p-6">
+                  <div className="flex items-center space-x-4 mb-4">
+                    <div className="p-3 bg-orange-600/20 rounded-xl backdrop-blur-sm">
+                      <Target className="h-8 w-8 text-orange-400" />
+                    </div>
+                    <h2 className="text-3xl font-bold">Our Mission</h2>
+                  </div>
                 </div>
-                <h2 className="text-3xl font-bold">Our Mission</h2>
               </div>
               <p className="text-lg text-gray-300 leading-relaxed">
                 To deliver a reliable and convenient platform that enables Nigerian households to purchase groceries and food essentials effortlessly, receive orders on time, and build disciplined savings for their everyday and seasonal food needs—through trusted vendors, efficient logistics, and a mobile-first digital experience.
