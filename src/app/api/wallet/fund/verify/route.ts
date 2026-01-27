@@ -89,13 +89,10 @@ export async function POST(request: Request) {
       // Send admin notification
       try {
         await sendAdminWalletDepositNotification({
-          userId: user.userId,
-          customerName: userData?.name || 'Valued Customer',
-          customerEmail: userData?.email || 'No email provided',
+          userName: userData?.name || 'Valued Customer',
+          userEmail: userData?.email || 'No email provided',
           amount: walletTransaction.amount,
-          paymentMethod: walletTransaction.method,
-          transactionId: reference,
-          depositDate: new Date().toISOString()
+          transactionId: reference
         })
       } catch (adminEmailError) {
         console.error("Failed to send admin wallet deposit notification:", adminEmailError)

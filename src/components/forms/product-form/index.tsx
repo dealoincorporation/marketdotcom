@@ -21,6 +21,7 @@ export function ProductForm({
     formData,
     imagePreviews,
     uploadingImages,
+    uploadingVariationImages,
     errors,
     selectedImages,
     handleInputChange,
@@ -29,6 +30,8 @@ export function ProductForm({
     addVariation,
     updateVariation,
     removeVariation,
+    handleVariationImageUpload,
+    removeVariationImage,
     handleBulkVariationImport,
     handleSubmit,
   } = useProductForm({
@@ -87,6 +90,10 @@ export function ProductForm({
             onUpdateVariation={updateVariation}
             onRemoveVariation={removeVariation}
             onBulkImport={handleBulkVariationImport}
+            onVariationImageUpload={handleVariationImageUpload}
+            onRemoveVariationImage={removeVariationImage}
+            uploadingVariationImages={uploadingVariationImages}
+            errors={errors}
           />
 
           {/* Form Actions */}

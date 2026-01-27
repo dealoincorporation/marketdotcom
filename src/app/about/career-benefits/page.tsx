@@ -24,7 +24,8 @@ import {
   Globe,
   Sparkles,
   Building2,
-  Rocket
+  Rocket,
+  MapPin
 } from "lucide-react"
 
 export default function CareerBenefitsPage() {
@@ -313,6 +314,97 @@ export default function CareerBenefitsPage() {
                 </Card>
               </motion.div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Store Locations */}
+      <section className="py-20 bg-gradient-to-br from-orange-50 to-yellow-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+            viewport={{ once: true }}
+            className="text-center mb-16"
+          >
+            <div className="inline-flex items-center px-4 py-2 bg-orange-100 text-orange-800 rounded-full text-sm font-medium mb-6">
+              <span className="w-2 h-2 bg-orange-500 rounded-full mr-2 animate-pulse"></span>
+              Our Locations
+            </div>
+            <h2 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-4">
+              Join Us at Our <span className="text-orange-600">Stores</span>
+            </h2>
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+              We're expanding! Check out our store locations and apply to join our growing team
+            </p>
+          </motion.div>
+
+          <div className="grid md:grid-cols-2 gap-8">
+            {/* Sydney Store - USA */}
+            <motion.div
+              initial={{ opacity: 0, x: -30 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.6 }}
+              viewport={{ once: true }}
+            >
+              <Card className="h-full hover:shadow-xl transition-all duration-300 border-2 border-gray-200 hover:border-orange-200">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-2xl font-bold text-gray-900">SYDNEY STORE</h3>
+                    <div className="p-2 bg-red-100 rounded-lg">
+                      <MapPin className="h-5 w-5 text-red-600" />
+                    </div>
+                  </div>
+                  <div className="flex items-start space-x-3 mb-6">
+                    <MapPin className="h-5 w-5 text-gray-400 mt-1 flex-shrink-0" />
+                    <div>
+                      <p className="text-gray-700 font-medium">1234 Market Street</p>
+                      <p className="text-gray-600">Suite 200</p>
+                      <p className="text-gray-600">New York, NY 10001</p>
+                      <p className="text-gray-600">United States</p>
+                    </div>
+                  </div>
+                  <Link href="/about/career-benefits/apply">
+                    <Button className="w-full bg-orange-600 hover:bg-orange-700 text-white">
+                      Apply Here
+                    </Button>
+                  </Link>
+                </CardContent>
+              </Card>
+            </motion.div>
+
+            {/* Halifax Store - Canada */}
+            <motion.div
+              initial={{ opacity: 0, x: 30 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.6 }}
+              viewport={{ once: true }}
+            >
+              <Card className="h-full hover:shadow-xl transition-all duration-300 border-2 border-gray-200 hover:border-orange-200">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-2xl font-bold text-gray-900">HALIFAX STORE</h3>
+                    <div className="p-2 bg-blue-100 rounded-lg">
+                      <MapPin className="h-5 w-5 text-blue-600" />
+                    </div>
+                  </div>
+                  <div className="flex items-start space-x-3 mb-6">
+                    <MapPin className="h-5 w-5 text-gray-400 mt-1 flex-shrink-0" />
+                    <div>
+                      <p className="text-gray-700 font-medium">368 Lacewood Drive</p>
+                      <p className="text-gray-600">Halifax, NS B3M 2N7</p>
+                      <p className="text-gray-600">Canada</p>
+                    </div>
+                  </div>
+                  <Link href="/about/career-benefits/apply">
+                    <Button className="w-full bg-orange-600 hover:bg-orange-700 text-white">
+                      Apply Here
+                    </Button>
+                  </Link>
+                </CardContent>
+              </Card>
+            </motion.div>
           </div>
         </div>
       </section>

@@ -13,6 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Separator } from "@/components/ui/separator"
 import { useCartStore } from "@/lib/cart-store"
 import { formatCurrency } from "@/lib/helpers"
+import { normalizeImageUrl, normalizeImageUrls } from "@/lib/image-utils"
 
 type Product = {
   id: string
@@ -43,13 +44,8 @@ function formatPrice(price: number) {
   return `₦${price.toLocaleString()}`
 }
 
-function normalizeImages(images: unknown): string[] {
-  if (!Array.isArray(images)) return []
-  const cleaned = images
-    .filter((v) => typeof v === "string")
-    .map((v) => v.trim())
-    .filter(Boolean)
-  return Array.from(new Set(cleaned)).slice(0, 10)
+function normalizeImages(images: unknown, fallbackImage?: string | null): string[] {
+  return normalizeImageUrls(images, fallbackImage)
 }
 
 function buildOptions(p: Product): Option[] {
@@ -58,7 +54,8 @@ function buildOptions(p: Product): Option[] {
     options.push({ kind: "base", id: "base", label: "Standard", price: p.basePrice, image: p.images?.[0] })
   }
   for (const v of (p.variations || []).filter((vv) => (vv.stock || 0) > 0)) {
-    const label = v.quantity && v.unit ? `${v.quantity}${v.unit} ${v.name}` : v.name
+    // Use quantity as the label, or fallback to a default if quantity is missing
+    const label = v.quantity ? String(v.quantity) : `Variation ${v.id?.slice(0, 8) || ''}`
     options.push({
       kind: "variation",
       id: v.id,
@@ -101,7 +98,7 @@ export default function MarketplaceProductDetailsPage() {
         if (!res.ok) throw new Error("Failed to load product")
         const data = (await res.json()) as Product
         if (cancelled) return
-        data.images = normalizeImages(data.images)
+        data.images = normalizeImages(data.images, (data as any).image)
         setProduct(data)
         setHeroIndex(0)
       } catch {
@@ -169,13 +166,15 @@ export default function MarketplaceProductDetailsPage() {
           ? `${product.name} - ${variation.quantity ?? ""}${variation.unit ?? ""} ${variation.name}`.replace(/\s+/g, " ").trim()
         : product.name,
       price: variation?.price || product.basePrice,
-      image: (variation?.image || product.images?.[0] || "/market_image.jpeg") as string,
+      image:
+        (normalizeImageUrl(variation?.image) ||
+          (product.images && product.images.length > 0 ? product.images[0] : "/market_image.jpeg")) as string,
         quantity: quantity, // Use the selected quantity
       unit: (variation?.unit || product.unit) as string,
       variation: variation
         ? {
             id: variation.id,
-            name: variation.name,
+            name: variation.name || (variation.quantity ? String(variation.quantity) : `Variation ${variation.id?.slice(0, 8) || ''}`),
             type: "Quantity",
             price: variation.price,
             stock: variation.stock,
@@ -229,7 +228,11 @@ export default function MarketplaceProductDetailsPage() {
     )
   }
 
-  const hero = product.images?.[heroIndex] || "/market_image.jpeg"
+  // Only use default image if there are NO product images at all
+  // Only use default image if there are NO product images at all
+  const hero = product.images && product.images.length > 0
+    ? product.images[heroIndex] || product.images[0]
+    : normalizeImageUrl((product as any).image) || "/market_image.jpeg"
   const inStock = (product.stock || 0) > 0 || (product.variations || []).some((v) => (v.stock || 0) > 0)
 
   return (
@@ -261,7 +264,7 @@ export default function MarketplaceProductDetailsPage() {
                       className={`h-14 rounded-lg overflow-hidden border ${i === heroIndex ? "border-orange-500" : "border-gray-200"}`}
                       aria-label={`View image ${i + 1}`}
                     >
-                      <img src={img || "/market_image.jpeg"} alt="" className="w-full h-full object-cover" />
+                      <img src={img} alt="" className="w-full h-full object-cover" />
                     </button>
                   ))}
                 </div>

@@ -115,7 +115,8 @@ export function MarketplacePreview(props: { limit?: number }) {
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
             {items.map((p, idx) => {
               const images = normalizeImages(p.images)
-              const img = images[0]
+              // Only use default image if there are NO product images at all
+              const img = images.length > 0 ? images[0] : "/market_image.jpeg"
               const price = computePriceLabel(p)
               const category = p.category?.name
               const inStock = (p.stock || 0) > 0 || (p.variations || []).some((v) => (v.stock || 0) > 0)
@@ -131,7 +132,7 @@ export function MarketplacePreview(props: { limit?: number }) {
                   <Link href="/marketplace" className="block">
                     <Card className="h-full hover:shadow-lg transition-shadow border-orange-100 bg-white/90">
                       <div className="relative h-28 sm:h-32 bg-gray-100 rounded-t-lg overflow-hidden">
-                        <img src={img || "/market_image.jpeg"} alt={p.name} className="w-full h-full object-cover" />
+                        <img src={img} alt={p.name} className="w-full h-full object-cover" />
                         <div className="absolute top-2 left-2">
                           {inStock ? (
                             <Badge className="bg-green-500 text-white border-0 text-xs font-bold px-2.5 py-1 shadow-lg">

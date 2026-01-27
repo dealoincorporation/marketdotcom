@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { ProductFormType, Variation } from '../types'
 import { validateProductForm } from '@/lib/helpers'
+import { normalizeImageUrls } from '@/lib/image-utils'
 
 interface UseProductFormProps {
   initialData?: any
@@ -17,13 +18,12 @@ export function useProductForm({ initialData, onSubmit }: UseProductFormProps) {
     stock: initialData?.stock || 0,
     unit: initialData?.unit || '',
     inStock: initialData?.inStock ?? true,
-    images: Array.isArray(initialData?.images) ? initialData.images : (initialData?.image ? [initialData.image] : []),
+    images: normalizeImageUrls(initialData?.images, initialData?.image),
     variations: initialData?.variations?.map((v: any) => ({
       id: v.id,
       name: v.name,
       price: v.price,
       stock: v.stock,
-      unit: v.unit,
       quantity: v.quantity,
       image: v.image,
     })) || [],
@@ -32,6 +32,7 @@ export function useProductForm({ initialData, onSubmit }: UseProductFormProps) {
   const [selectedImages, setSelectedImages] = useState<File[]>([])
   const [imagePreviews, setImagePreviews] = useState<string[]>(formData.images)
   const [uploadingImages, setUploadingImages] = useState(false)
+  const [uploadingVariationImages, setUploadingVariationImages] = useState<Record<number, boolean>>({})
   const [errors, setErrors] = useState<Record<string, string>>({})
 
   const handleInputChange = (field: keyof ProductFormType, value: any) => {
@@ -142,7 +143,7 @@ export function useProductForm({ initialData, onSubmit }: UseProductFormProps) {
       ...prev,
       variations: [
         ...prev.variations,
-        { name: '', price: 0, stock: 0 }
+        { price: 0, stock: 0, quantity: '' }
       ]
     }))
   }
@@ -161,6 +162,81 @@ export function useProductForm({ initialData, onSubmit }: UseProductFormProps) {
       ...prev,
       variations: prev.variations.filter((_, i) => i !== index)
     }))
+  }
+
+  const handleVariationImageUpload = async (variationIndex: number, e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    if (!file.type.startsWith('image/')) {
+      setErrors(prev => ({
+        ...prev,
+        [`variation_${variationIndex}_image`]: 'Only image files are allowed'
+      }))
+      return
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      setErrors(prev => ({
+        ...prev,
+        [`variation_${variationIndex}_image`]: 'File size must be less than 5MB'
+      }))
+      return
+    }
+
+    setUploadingVariationImages(prev => ({ ...prev, [variationIndex]: true }))
+    setErrors(prev => ({ ...prev, [`variation_${variationIndex}_image`]: '' }))
+
+    try {
+      const formDataObj = new FormData()
+      formDataObj.append('files', file)
+      formDataObj.append('folder', 'marketdotcom/products')
+
+      const token = localStorage.getItem('token')
+      const headers: Record<string, string> = {}
+
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`
+      }
+
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        headers,
+        body: formDataObj,
+      })
+
+      const data = await response.json()
+
+      if (response.ok && data.successfulUploads > 0) {
+        const imageUrl = data.results[0]?.url
+        if (imageUrl) {
+          updateVariation(variationIndex, 'image', imageUrl)
+        }
+      } else {
+        setErrors(prev => ({
+          ...prev,
+          [`variation_${variationIndex}_image`]: data.errors?.[0]?.error || 'Failed to upload image'
+        }))
+      }
+    } catch (error) {
+      console.error('Variation image upload error:', error)
+      setErrors(prev => ({
+        ...prev,
+        [`variation_${variationIndex}_image`]: 'Network error. Please try again.'
+      }))
+    } finally {
+      setUploadingVariationImages(prev => {
+        const newState = { ...prev }
+        delete newState[variationIndex]
+        return newState
+      })
+    }
+
+    e.target.value = ''
+  }
+
+  const removeVariationImage = (variationIndex: number) => {
+    updateVariation(variationIndex, 'image', undefined)
   }
 
   const handleBulkVariationImport = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -183,25 +259,27 @@ export function useProductForm({ initialData, onSubmit }: UseProductFormProps) {
         for (let i = 1; i < lines.length; i++) {
           const values = lines[i].split(',').map(v => v.trim().replace(/"/g, ''))
 
-          if (values.length < 5) continue
+          // Updated format: Name, Quantity, Price, Stock, ImageURL
+          if (values.length < 4) continue
 
           const variation: any = {
             name: values[0] || '',
-            price: parseFloat(values[3]) || 0,
-            stock: parseInt(values[4]) || 0,
+            price: parseFloat(values[2]) || 0,
+            stock: parseInt(values[3]) || 0,
           }
 
-          if (values[1] && !isNaN(parseFloat(values[1]))) {
-            variation.quantity = parseFloat(values[1])
+          // Quantity can be text like "2 kg" or just a number
+          if (values[1]) {
+            variation.quantity = values[1]
           }
-          if (values[2]) {
-            variation.unit = values[2]
-          }
-          if (values[5] && values[5].startsWith('http')) {
-            variation.image = values[5]
+          
+          // Image URL (optional, 4th column)
+          if (values[3] && values[3].startsWith('http')) {
+            variation.image = values[3]
           }
 
-          if (variation.name) {
+          // Require quantity for a valid variation
+          if (variation.quantity) {
             variationsToAdd.push(variation)
           }
         }
@@ -252,6 +330,7 @@ export function useProductForm({ initialData, onSubmit }: UseProductFormProps) {
     formData,
     imagePreviews,
     uploadingImages,
+    uploadingVariationImages,
     errors,
     selectedImages,
     handleInputChange,
@@ -260,6 +339,8 @@ export function useProductForm({ initialData, onSubmit }: UseProductFormProps) {
     addVariation,
     updateVariation,
     removeVariation,
+    handleVariationImageUpload,
+    removeVariationImage,
     handleBulkVariationImport,
     handleSubmit,
   }

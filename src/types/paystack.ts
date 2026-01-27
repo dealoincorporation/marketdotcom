@@ -1,6 +1,6 @@
 declare global {
   interface Window {
-    PaystackPop: {
+    PaystackPop?: {
       setup: (options: {
         key: string
         email: string

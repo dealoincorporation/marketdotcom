@@ -232,7 +232,7 @@ export function ProductCard({
               >
                 {(product as any).variations?.map((variation: any) => (
                   <option key={variation.id} value={variation.id}>
-                    {variation.name} - {formatCurrency(variation.price)}
+                    {variation.name || (variation.quantity ? String(variation.quantity) : `Variation ${variation.id?.slice(0, 8) || ''}`)} - {formatCurrency(variation.price)}
                   </option>
                 ))}
               </select>

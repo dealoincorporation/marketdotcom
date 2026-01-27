@@ -141,7 +141,9 @@ export async function POST(request: NextRequest) {
         name: user.name || 'Unknown User',
         email: user.email || 'No email provided',
         phone: user.phone || 'No phone provided',
-        registrationDate: user.createdAt.toISOString()
+        registrationDate: user.createdAt.toISOString(),
+        referralCode: referrer ? referralCode : undefined,
+        referrerName: referrer?.name || undefined
       })
     } catch (adminEmailError) {
       console.error("Failed to send admin registration notification:", adminEmailError)

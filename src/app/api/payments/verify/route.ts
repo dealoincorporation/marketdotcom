@@ -97,14 +97,11 @@ export async function POST(request: Request) {
 
         await sendAdminPaymentNotification({
           orderId: order.id,
-          userId: user.userId,
           customerName: userData?.name || 'Valued Customer',
           customerEmail: userData?.email || 'No email provided',
           amount: transactionData.amount / 100,
           paymentMethod: 'Paystack',
-          transactionId: reference,
-          paymentDate: transactionData.paid_at || new Date().toISOString(),
-          status: 'COMPLETED'
+          transactionId: reference
         })
       } catch (adminEmailError) {
         console.error("Failed to send admin payment notification:", adminEmailError)

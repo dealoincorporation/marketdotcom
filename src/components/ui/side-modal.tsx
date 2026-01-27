@@ -11,6 +11,7 @@ export interface VariationOption {
   price: number
   stock: number
   kind: "base" | "variation"
+  image?: string
 }
 
 export interface SideModalProps {
@@ -55,6 +56,7 @@ export function SideModal({
   const variationPrice = selectedOption?.price || 0
   const variationLabel = selectedOption?.label || "Standard"
   const availableStock = selectedOption?.stock || maxQuantity
+  const displayImage = selectedOption?.image || productImage
 
   const handleQuantityChange = (newQuantity: number) => {
     if (newQuantity < 1) return
@@ -111,10 +113,10 @@ export function SideModal({
             {/* Content */}
             <div className="flex-1 overflow-y-auto p-6">
               {/* Product Image */}
-              {productImage && (
+              {displayImage && (
                 <div className="mb-4">
                   <img
-                    src={productImage}
+                    src={displayImage}
                     alt={productName}
                     className="w-full h-48 object-cover rounded-lg"
                   />

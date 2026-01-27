@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useCartStore } from "@/lib/cart-store"
 import { useAuth } from "@/contexts/AuthContext"
 import { MarketplaceProductCard, type MarketplaceProduct } from "@/components/marketplace/MarketplaceProductCard"
+import { normalizeImageUrls } from "@/lib/image-utils"
 
 // Default categories for when API is unavailable
 const defaultCategories = [
@@ -56,20 +57,54 @@ export default function MarketplacePage() {
         const productsResponse = await fetch('/api/products')
         if (productsResponse.ok) {
           const productsData = await productsResponse.json()
-          const transformedProducts: MarketplaceProduct[] = productsData.map((product: any) => ({
-            id: product.id,
-            name: product.name,
-            groupName: product.groupName ?? null,
-            description: product.description,
-            basePrice: product.basePrice,
-            categoryId: product.categoryId,
-            category: product.category || { id: product.categoryId, name: product.category?.name || "Uncategorized" },
-            images: product.images || [],
-            stock: product.stock,
-            unit: product.unit,
-            inStock: product.inStock,
-            variations: product.variations || [],
-          }))
+          
+          // Deduplicate products by ID to ensure each product appears only once
+          // This prevents any duplicate products from appearing in the marketplace
+          const uniqueProductsMap = new Map<string, any>()
+          
+          productsData.forEach((product: any) => {
+            // Only process actual Product records (not variations)
+            // Variations have a productId field, so we filter those out
+            // Products should have an id and categoryId, but not productId
+            if (product.id && product.categoryId && !product.productId) {
+              // If product already exists, keep the one with more complete data
+              if (uniqueProductsMap.has(product.id)) {
+                const existing = uniqueProductsMap.get(product.id)
+                // Merge variations if the new one has more variations
+                if (product.variations && product.variations.length > (existing.variations?.length || 0)) {
+                  existing.variations = product.variations
+                }
+                // Merge other fields if missing
+                if (!existing.description && product.description) {
+                  existing.description = product.description
+                }
+                if (!existing.image && product.image) {
+                  existing.image = product.image
+                }
+              } else {
+                uniqueProductsMap.set(product.id, product)
+              }
+            }
+          })
+          
+          const transformedProducts: MarketplaceProduct[] = Array.from(uniqueProductsMap.values()).map((product: any) => {
+            const images = normalizeImageUrls(product.images, product.image)
+
+            return {
+              id: product.id,
+              name: product.name,
+              groupName: product.groupName ?? null,
+              description: product.description,
+              basePrice: product.basePrice,
+              categoryId: product.categoryId,
+              category: product.category || { id: product.categoryId, name: product.category?.name || "Uncategorized" },
+              images: images,
+              stock: product.stock,
+              unit: product.unit,
+              inStock: product.inStock,
+              variations: product.variations || [],
+            }
+          })
           setProducts(transformedProducts)
         }
 
@@ -464,7 +499,7 @@ export default function MarketplacePage() {
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600"></div>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-4 gap-4 md:gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-4 gap-4 md:gap-6">
             {filteredProducts.map((product, index) => (
               <motion.div
                 key={product.id}

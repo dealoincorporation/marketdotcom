@@ -262,19 +262,17 @@ export function DashboardLayout({
                 </span>
               </div>
 
-              {/* Mobile Cart Button */}
+              {/* Mobile Signout Button */}
               <div className="lg:hidden relative">
                 <button
-                  onClick={() => setIsCartOpen(true)}
-                  className="relative bg-white hover:bg-orange-50 border-2 border-gray-300 hover:border-orange-300 rounded-md p-3 cursor-pointer active:scale-95 transition-all duration-150 active:bg-orange-100 min-w-[48px] min-h-[48px] flex items-center justify-center touch-manipulation pointer-events-auto"
+                  onClick={() => {
+                    logout()
+                    router.push('/')
+                  }}
+                  className="bg-white hover:bg-red-50 border-2 border-gray-300 hover:border-red-300 rounded-md p-3 cursor-pointer active:scale-95 transition-all duration-150 active:bg-red-100 min-w-[48px] min-h-[48px] flex items-center justify-center touch-manipulation pointer-events-auto"
                   type="button"
                 >
-                  <ShoppingCart className="h-5 w-5 pointer-events-none" />
-                  {totalItems > 0 && (
-                    <span className="absolute -top-1 -right-1 bg-orange-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold pointer-events-none z-[62]">
-                      {totalItems}
-                    </span>
-                  )}
+                  <LogOut className="h-5 w-5 pointer-events-none text-red-600" />
                 </button>
               </div>
 
@@ -406,12 +404,17 @@ export function DashboardLayout({
             </button>
 
             <button
-              onClick={() => setIsMobileMenuOpen(true)}
-              className="flex flex-col items-center justify-center py-2 rounded-lg transition-colors text-gray-600 hover:bg-gray-50"
+              onClick={() => setIsCartOpen(true)}
+              className="relative flex flex-col items-center justify-center py-2 rounded-lg transition-colors text-gray-600 hover:bg-gray-50"
               type="button"
             >
-              <Menu className="h-5 w-5" />
-              <span className="text-[11px] font-medium mt-1">Menu</span>
+              <ShoppingCart className="h-5 w-5" />
+              {totalItems > 0 && (
+                <span className="absolute top-0 right-1/2 translate-x-2 bg-orange-600 text-white text-[10px] rounded-full h-4 w-4 flex items-center justify-center font-bold">
+                  {totalItems > 9 ? '9+' : totalItems}
+                </span>
+              )}
+              <span className="text-[11px] font-medium mt-1">Cart</span>
             </button>
           </div>
         </div>
@@ -462,8 +465,19 @@ export function DashboardLayout({
                 <div className="space-y-4">
                   {items.map((item) => (
                     <div key={item.id} className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
-                      <div className="w-12 h-12 bg-gradient-to-r from-orange-100 to-red-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                        <span className="text-xs font-bold text-orange-600">{item.quantity}</span>
+                      <div className="relative w-12 h-12 rounded-lg overflow-hidden flex-shrink-0 border border-gray-200">
+                        <img
+                          src={item.image || "/market_image.jpeg"}
+                          alt={item.name}
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement
+                            target.src = "/market_image.jpeg"
+                          }}
+                        />
+                        <div className="absolute top-0 right-0 bg-orange-600 text-white text-xs font-bold px-1.5 py-0.5 rounded-bl-lg">
+                          {item.quantity}
+                        </div>
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium text-gray-900 truncate">{item.name}</p>

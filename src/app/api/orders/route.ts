@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { getUserFromRequest } from "@/lib/auth"
 import { getPrismaClient } from "@/lib/prisma"
-import { sendOrderStatusUpdateEmail } from "@/lib/email"
+import { sendOrderStatusUpdateEmail, sendAdminOrderStatusUpdateNotification } from "@/lib/email"
 
 // Force dynamic rendering since this route uses authentication and headers
 export const dynamic = 'force-dynamic'
@@ -130,6 +130,14 @@ export async function PUT(request: NextRequest) {
       )
     }
 
+    // Get current order status before updating
+    const currentOrder = await prisma.order.findUnique({
+      where: { id: orderId },
+      select: { status: true }
+    })
+
+    const previousStatus = currentOrder?.status
+
     const order = await prisma.order.update({
       where: { id: orderId },
       data: { status },
@@ -191,6 +199,25 @@ export async function PUT(request: NextRequest) {
     } catch (emailError) {
       console.error("Error sending status update email:", emailError)
       // Don't fail the status update if email fails
+    }
+
+    // Send admin notification about status change
+    try {
+      await sendAdminOrderStatusUpdateNotification({
+        orderId: order.id,
+        customerName: order.user.name || 'Valued Customer',
+        customerEmail: order.user.email,
+        status: status,
+        previousStatus: previousStatus,
+        deliveryInfo: order.delivery ? {
+          date: order.delivery.scheduledDate.toLocaleDateString(),
+          time: order.delivery.scheduledTime,
+          address: `${order.delivery.address}, ${order.delivery.city}, ${order.delivery.state}`
+        } : undefined
+      })
+    } catch (adminEmailError) {
+      console.error("Error sending admin status update notification:", adminEmailError)
+      // Don't fail the status update if admin email fails
     }
 
     return NextResponse.json(order)

@@ -65,6 +65,7 @@ export function useProducts(initialProducts: Product[] = []): UseProductsReturn 
 
       if (!response.ok) {
         const errorData = await response.json()
+        console.error('Product creation error:', errorData)
 
         // Handle expired token
         if (response.status === 401 && errorData.message?.includes('Unauthorized')) {
@@ -75,7 +76,22 @@ export function useProducts(initialProducts: Product[] = []): UseProductsReturn 
           return null
         }
 
-        throw new Error(errorData.message || 'Failed to create product')
+        // Show validation errors if available
+        if (errorData.details || errorData.issues || errorData.fieldErrors) {
+          const errors = errorData.fieldErrors || errorData.issues || []
+          const validationErrors = errors.map((issue: any) => {
+            const path = issue.path?.join('.') || issue.path || 'unknown'
+            return `${path}: ${issue.message}`
+          }).join('\n') || JSON.stringify(errorData.details)
+          
+          const errorMessage = `Validation failed:\n${validationErrors}`
+          console.error('Validation errors:', errorMessage)
+          throw new Error(errorMessage)
+        }
+
+        const errorMessage = errorData.error || errorData.message || 'Failed to create product'
+        console.error('Product creation error:', errorMessage, errorData)
+        throw new Error(errorMessage)
       }
 
       const newProduct = await response.json()

@@ -18,6 +18,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import toast from "react-hot-toast"
 
 interface WalletInfo {
   walletBalance: number
@@ -226,6 +227,120 @@ export default function WalletTab({ walletInfo }: WalletTabProps) {
 
     fetchTransactions()
   }, [])
+
+  // Copy referral code handler
+  const handleCopyReferralCode = async () => {
+    const code = referralData.code || walletInfo.referralCode || ''
+    
+    if (!code) {
+      toast.error('Referral code not available')
+      return
+    }
+
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(code)
+        toast.success('Referral code copied to clipboard!', {
+          icon: '📋',
+          duration: 3000,
+        })
+      } else {
+        // Fallback for older browsers
+        const textArea = document.createElement('textarea')
+        textArea.value = code
+        textArea.style.position = 'fixed'
+        textArea.style.opacity = '0'
+        document.body.appendChild(textArea)
+        textArea.select()
+        document.execCommand('copy')
+        document.body.removeChild(textArea)
+        toast.success('Referral code copied to clipboard!', {
+          icon: '📋',
+          duration: 3000,
+        })
+      }
+    } catch (error) {
+      console.error('Failed to copy referral code:', error)
+      toast.error('Failed to copy referral code. Please try again.', {
+        icon: '❌',
+        duration: 3000,
+      })
+    }
+  }
+
+  // Share referral code handler
+  const handleShareReferralCode = async () => {
+    const code = referralData.code || walletInfo.referralCode || ''
+    
+    if (!code) {
+      toast.error('Referral code not available')
+      return
+    }
+
+    const shareText = `Join me on Marketdotcom! Use my referral code ${code} to get ₦50 bonus on your first purchase. Sign up now and start shopping!`
+    const shareUrl = typeof window !== 'undefined' ? window.location.origin : ''
+
+    try {
+      // Check if Web Share API is available
+      if (navigator.share) {
+        await navigator.share({
+          title: 'Join Marketdotcom with my referral code!',
+          text: shareText,
+          url: shareUrl,
+        })
+        toast.success('Referral code shared!', {
+          icon: '📤',
+          duration: 3000,
+        })
+      } else {
+        // Fallback to copying the referral code with message
+        const fullMessage = `${shareText}\n\nSign up at: ${shareUrl}`
+        
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          await navigator.clipboard.writeText(fullMessage)
+          toast.success('Referral message copied to clipboard!', {
+            icon: '📋',
+            duration: 3000,
+          })
+        } else {
+          // Fallback for older browsers
+          const textArea = document.createElement('textarea')
+          textArea.value = fullMessage
+          textArea.style.position = 'fixed'
+          textArea.style.opacity = '0'
+          document.body.appendChild(textArea)
+          textArea.select()
+          document.execCommand('copy')
+          document.body.removeChild(textArea)
+          toast.success('Referral message copied to clipboard!', {
+            icon: '📋',
+            duration: 3000,
+          })
+        }
+      }
+    } catch (error: any) {
+      // User cancelled share or error occurred
+      if (error.name !== 'AbortError') {
+        console.error('Failed to share referral code:', error)
+        // Fallback to copy on error
+        try {
+          const fullMessage = `${shareText}\n\nSign up at: ${shareUrl}`
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            await navigator.clipboard.writeText(fullMessage)
+            toast.success('Referral message copied to clipboard!', {
+              icon: '📋',
+              duration: 3000,
+            })
+          }
+        } catch (copyError) {
+          toast.error('Failed to share referral code. Please try copying instead.', {
+            icon: '❌',
+            duration: 3000,
+          })
+        }
+      }
+    }
+  }
 
   const verifyWalletFunding = async (reference: string) => {
     try {
@@ -463,13 +578,18 @@ export default function WalletTab({ walletInfo }: WalletTabProps) {
                 </div>
 
                 <div className="flex flex-col sm:flex-row gap-3">
-                  <button className="flex-1 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors text-sm font-medium cursor-pointer">
+                  <button 
+                    onClick={handleShareReferralCode}
+                    className="flex-1 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors text-sm font-medium cursor-pointer flex items-center justify-center gap-2"
+                  >
+                    <Gift className="h-4 w-4" />
                     Share Code
                   </button>
                   <button
-                    onClick={() => navigator.clipboard.writeText(referralData.code || walletInfo.referralCode || '')}
-                    className="flex-1 border border-blue-600 text-blue-600 px-4 py-2 rounded-md hover:bg-blue-50 transition-colors text-sm font-medium cursor-pointer"
+                    onClick={handleCopyReferralCode}
+                    className="flex-1 border border-blue-600 text-blue-600 px-4 py-2 rounded-md hover:bg-blue-50 transition-colors text-sm font-medium cursor-pointer flex items-center justify-center gap-2"
                   >
+                    <Users className="h-4 w-4" />
                     Copy Code
                   </button>
                 </div>

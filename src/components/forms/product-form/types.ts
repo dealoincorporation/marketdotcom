@@ -10,11 +10,11 @@ export interface ProductFormType {
   images: string[]
   variations: Array<{
     id?: string
-    name: string
+    name?: string // Optional for backward compatibility
     price: number
-    stock: number
+    stock?: number // Optional - removed from form but kept for backward compatibility
     unit?: string
-    quantity?: number
+    quantity?: string | number // Can be string (e.g., "2 kg") or number for backward compatibility
     image?: string
   }>
 }
@@ -29,10 +29,9 @@ export interface ProductFormProps {
 
 export interface Variation {
   id?: string
-  name: string
+  name?: string // Optional - parent product has name
   price: number
-  stock: number
-  unit?: string
-  quantity?: number
+  stock?: number
+  quantity?: string | number // String format: "2 kg", "1 cup", etc. or just a number
   image?: string
 }

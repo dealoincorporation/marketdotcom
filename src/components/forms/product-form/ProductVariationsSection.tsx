@@ -1,11 +1,10 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { Plus, Minus, FileText, Layers } from 'lucide-react'
+import { Plus, Minus, FileText, Layers, Upload, X, Image as ImageIcon } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Variation } from './types'
 
@@ -15,34 +14,11 @@ interface ProductVariationsSectionProps {
   onUpdateVariation: (index: number, field: keyof Variation, value: any) => void
   onRemoveVariation: (index: number) => void
   onBulkImport: (event: React.ChangeEvent<HTMLInputElement>) => void
+  onVariationImageUpload: (index: number, event: React.ChangeEvent<HTMLInputElement>) => void
+  onRemoveVariationImage: (index: number) => void
+  uploadingVariationImages?: Record<number, boolean>
+  errors?: Record<string, string>
 }
-
-const UNIT_OPTIONS = [
-  // Volume
-  { value: 'ml', label: 'ml' },
-  { value: 'l', label: 'L' },
-  { value: 'cup', label: 'cup' },
-  // Weight
-  { value: 'g', label: 'g' },
-  { value: 'kg', label: 'kg' },
-  { value: 'lb', label: 'lb' },
-  { value: 'oz', label: 'oz' },
-  // Count
-  { value: 'pc', label: 'pc' },
-  { value: 'pcs', label: 'pcs' },
-  { value: 'pack', label: 'pack' },
-  { value: 'dozen', label: 'dozen' },
-  // Packaging
-  { value: 'bag', label: 'bag' },
-  { value: 'box', label: 'box' },
-  { value: 'bottle', label: 'bottle' },
-  { value: 'can', label: 'can' },
-  { value: 'tin', label: 'tin' },
-  { value: 'jar', label: 'jar' },
-  // Other
-  { value: 'roll', label: 'roll' },
-  { value: 'set', label: 'set' },
-]
 
 export function ProductVariationsSection({
   variations,
@@ -50,6 +26,10 @@ export function ProductVariationsSection({
   onUpdateVariation,
   onRemoveVariation,
   onBulkImport,
+  onVariationImageUpload,
+  onRemoveVariationImage,
+  uploadingVariationImages = {},
+  errors = {},
 }: ProductVariationsSectionProps) {
   return (
     <Card className="border-2 border-gray-200 shadow-lg">
@@ -130,79 +110,155 @@ export function ProductVariationsSection({
                 animate={{ opacity: 1, y: 0 }}
                 className="p-5 border-2 border-gray-200 rounded-xl bg-gradient-to-br from-white to-gray-50 shadow-md hover:shadow-lg transition-all duration-200 overflow-visible"
               >
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3 sm:gap-4 items-end relative">
-                  <div className="col-span-1">
-                    <Label className="text-xs sm:text-sm font-medium text-gray-700 mb-1.5 sm:mb-2 block">Name</Label>
-                    <Input
-                      value={variation.name}
-                      onChange={(e) => onUpdateVariation(index, 'name', e.target.value)}
-                      placeholder="Mama Gold"
-                      className="w-full h-10 sm:h-11 text-sm sm:text-base bg-white border-2 border-gray-300 focus:border-orange-500 focus:ring-2 focus:ring-orange-200 rounded-lg"
-                    />
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
+                    <div className="col-span-1">
+                      <Label className="text-xs sm:text-sm font-medium text-gray-700 mb-1.5 sm:mb-2 block">Quantity</Label>
+                      <Input
+                        type="text"
+                        value={variation.quantity || ""}
+                        onChange={(e) => onUpdateVariation(index, 'quantity', e.target.value)}
+                        placeholder="e.g., 2 kg, Premium Pack, or 1"
+                        className="w-full h-10 sm:h-11 text-sm sm:text-base bg-white border-2 border-gray-300 focus:border-orange-500 focus:ring-2 focus:ring-orange-200 rounded-lg"
+                      />
+                      <p className="text-xs text-gray-500 mt-1">Describe the variation (e.g., "2 kg", "Premium Pack", "1 dozen")</p>
+                    </div>
+                    <div className="col-span-1">
+                      <Label className="text-xs sm:text-sm font-medium text-gray-700 mb-1.5 sm:mb-2 block">Price (₦)</Label>
+                      <Input
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        value={variation.price}
+                        onChange={(e) => onUpdateVariation(index, 'price', parseFloat(e.target.value) || 0)}
+                        placeholder="0.00"
+                        className="w-full h-10 sm:h-11 text-sm sm:text-base bg-white border-2 border-gray-300 focus:border-orange-500 focus:ring-2 focus:ring-orange-200 rounded-lg"
+                      />
+                    </div>
+                    <div className="col-span-1">
+                      <Label className="text-xs sm:text-sm font-medium text-gray-700 mb-1.5 sm:mb-2 block">Stock</Label>
+                      <Input
+                        type="number"
+                        min="0"
+                        value={variation.stock || 0}
+                        onChange={(e) => onUpdateVariation(index, 'stock', parseInt(e.target.value) || 0)}
+                        placeholder="0"
+                        className="w-full h-10 sm:h-11 text-sm sm:text-base bg-white border-2 border-gray-300 focus:border-orange-500 focus:ring-2 focus:ring-orange-200 rounded-lg"
+                      />
+                    </div>
                   </div>
-                  <div className="col-span-1">
-                    <Label className="text-xs sm:text-sm font-medium text-gray-700 mb-1.5 sm:mb-2 block">Quantity</Label>
-                    <Input
-                      type="number"
-                      min="0"
-                      step="0.1"
-                      value={variation.quantity || ""}
-                      onChange={(e) => onUpdateVariation(index, 'quantity', parseFloat(e.target.value) || undefined)}
-                      placeholder="1"
-                      className="w-full h-10 sm:h-11 text-sm sm:text-base bg-white border-2 border-gray-300 focus:border-orange-500 focus:ring-2 focus:ring-orange-200 rounded-lg"
-                    />
+
+                  {/* Variation Image Upload */}
+                  <div className="col-span-full pt-2">
+                    <Label className="text-xs sm:text-sm font-semibold text-gray-800 mb-3 block">
+                      Variation Image
+                      <span className="text-gray-500 font-normal ml-1">(Optional)</span>
+                    </Label>
+                    <div className="flex flex-col sm:flex-row items-start gap-4">
+                      {/* Image Preview */}
+                      <div className="relative group flex-shrink-0">
+                        {variation.image ? (
+                          <>
+                            <div className="w-28 h-28 sm:w-36 sm:h-36 rounded-xl overflow-hidden border-2 border-gray-200 bg-gradient-to-br from-gray-50 to-gray-100 shadow-sm ring-1 ring-gray-200/50 transition-all duration-200 group-hover:shadow-md group-hover:ring-orange-200">
+                              <img
+                                src={variation.image}
+                                alt={variation.quantity ? String(variation.quantity) : `Variation ${index + 1}`}
+                                className="w-full h-full object-cover"
+                              />
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => onRemoveVariationImage(index)}
+                              className="absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 text-white rounded-full p-1.5 shadow-lg hover:shadow-xl transition-all duration-200 opacity-0 group-hover:opacity-100 transform hover:scale-110 z-10"
+                              aria-label="Remove image"
+                            >
+                              <X className="h-3.5 w-3.5" />
+                            </button>
+                            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 rounded-xl transition-colors duration-200 pointer-events-none" />
+                          </>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const fileInput = document.getElementById(`variation-image-${index}`) as HTMLInputElement
+                              if (fileInput && !uploadingVariationImages[index]) {
+                                fileInput.click()
+                              }
+                            }}
+                            disabled={uploadingVariationImages[index]}
+                            className="w-28 h-28 sm:w-36 sm:h-36 rounded-xl border-2 border-dashed border-gray-300 bg-gradient-to-br from-gray-50 to-gray-100 flex flex-col items-center justify-center transition-all duration-200 hover:border-orange-400 hover:bg-orange-50/30 group cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-orange-400 focus:ring-offset-2"
+                          >
+                            <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-lg bg-white/80 flex items-center justify-center mb-2 shadow-sm">
+                              <ImageIcon className="h-6 w-6 sm:h-7 sm:w-7 text-gray-400 group-hover:text-orange-500 transition-colors" />
+                            </div>
+                            <p className="text-[10px] sm:text-xs text-gray-500 font-medium group-hover:text-orange-600 transition-colors">Click to upload</p>
+                          </button>
+                        )}
+                      </div>
+
+                      {/* Upload Controls */}
+                      <div className="flex-1 min-w-0 space-y-3">
+                        <div>
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={(e) => onVariationImageUpload(index, e)}
+                            className="hidden"
+                            id={`variation-image-${index}`}
+                            disabled={uploadingVariationImages[index]}
+                          />
+                          <Button
+                            type="button"
+                            variant="outline"
+                            disabled={uploadingVariationImages[index]}
+                            onClick={() => {
+                              const fileInput = document.getElementById(`variation-image-${index}`) as HTMLInputElement
+                              if (fileInput && !uploadingVariationImages[index]) {
+                                fileInput.click()
+                              }
+                            }}
+                            className="w-full sm:w-auto cursor-pointer border-2 border-gray-300 hover:border-orange-400 hover:bg-orange-50 text-gray-700 hover:text-orange-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 font-medium shadow-sm hover:shadow"
+                          >
+                            {uploadingVariationImages[index] ? (
+                              <span className="flex items-center">
+                                <div className="animate-spin rounded-full h-4 w-4 border-2 border-orange-400 border-t-transparent mr-2"></div>
+                                Uploading...
+                              </span>
+                            ) : (
+                              <span className="flex items-center">
+                                <Upload className="h-4 w-4 mr-2" />
+                                {variation.image ? 'Change Image' : 'Upload Image'}
+                              </span>
+                            )}
+                          </Button>
+                        </div>
+                        
+                        {errors[`variation_${index}_image`] && (
+                          <div className="bg-red-50 border border-red-200 rounded-lg p-2.5">
+                            <p className="text-xs text-red-700 font-medium flex items-center">
+                              <X className="h-3.5 w-3.5 mr-1.5 flex-shrink-0" />
+                              {errors[`variation_${index}_image`]}
+                            </p>
+                          </div>
+                        )}
+                        
+                        <p className="text-xs text-gray-500 leading-relaxed">
+                          Upload a specific image for this variation to help customers identify it better. Recommended: Square image, max 5MB.
+                        </p>
+                      </div>
+                    </div>
                   </div>
-                  <div className="col-span-1 relative z-[100]">
-                    <Label className="text-xs sm:text-sm font-medium text-gray-700 mb-1.5 sm:mb-2 block">Unit</Label>
-                    <Select
-                      value={variation.unit || ""}
-                      onValueChange={(value) => onUpdateVariation(index, 'unit', value)}
-                    >
-                      <SelectTrigger className="w-full h-10 sm:h-11 text-sm sm:text-base bg-white border-2 border-gray-300 focus:border-orange-500 focus:ring-2 focus:ring-orange-200 rounded-lg relative z-[100]">
-                        <SelectValue placeholder="Select unit" />
-                      </SelectTrigger>
-                      <SelectContent className="bg-white border-2 border-gray-300 shadow-xl max-h-60 overflow-y-auto z-[9999]" position="popper">
-                        {UNIT_OPTIONS.map((unit) => (
-                          <SelectItem key={unit.value} value={unit.value}>
-                            {unit.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="col-span-1">
-                    <Label className="text-xs sm:text-sm font-medium text-gray-700 mb-1.5 sm:mb-2 block">Price (₦)</Label>
-                    <Input
-                      type="number"
-                      min="0"
-                      step="0.01"
-                      value={variation.price}
-                      onChange={(e) => onUpdateVariation(index, 'price', parseFloat(e.target.value) || 0)}
-                      placeholder="0.00"
-                      className="w-full h-10 sm:h-11 text-sm sm:text-base bg-white border-2 border-gray-300 focus:border-orange-500 focus:ring-2 focus:ring-orange-200 rounded-lg"
-                    />
-                  </div>
-                  <div className="col-span-1">
-                    <Label className="text-xs sm:text-sm font-medium text-gray-700 mb-1.5 sm:mb-2 block">Stock</Label>
-                    <Input
-                      type="number"
-                      min="0"
-                      value={variation.stock}
-                      onChange={(e) => onUpdateVariation(index, 'stock', parseInt(e.target.value) || 0)}
-                      placeholder="0"
-                      className="w-full h-10 sm:h-11 text-sm sm:text-base bg-white border-2 border-gray-300 focus:border-orange-500 focus:ring-2 focus:ring-orange-200 rounded-lg"
-                    />
-                  </div>
-                  <div className="col-span-1 sm:col-span-2 md:col-span-3 lg:col-span-2 xl:col-span-2 flex justify-end items-end pt-2 sm:pt-4 md:pt-6">
+
+                  {/* Remove Button */}
+                  <div className="flex justify-end pt-2">
                     <Button
                       type="button"
                       onClick={() => onRemoveVariation(index)}
                       variant="outline"
-                      className="text-red-600 border-2 border-red-600 hover:bg-red-50 active:bg-red-100 hover:border-red-700 w-full sm:w-auto h-10 sm:h-11 rounded-lg font-medium text-sm sm:text-base"
+                      className="text-red-600 border-2 border-red-600 hover:bg-red-50 active:bg-red-100 hover:border-red-700 h-10 sm:h-11 rounded-lg font-medium text-sm sm:text-base"
                     >
-                      <Minus className="h-4 w-4 mr-1.5 sm:mr-2" />
-                      <span className="hidden sm:inline">Remove Variation</span>
-                      <span className="sm:hidden">Remove</span>
+                      <Minus className="h-4 w-4 mr-2" />
+                      Remove Variation
                     </Button>
                   </div>
                 </div>
