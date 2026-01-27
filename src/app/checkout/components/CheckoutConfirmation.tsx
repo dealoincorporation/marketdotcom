@@ -13,6 +13,7 @@ interface CheckoutConfirmationProps {
   paymentMethod: string
   selectedAddress: string
   addresses: Address[]
+  orderId?: string
 }
 
 export function CheckoutConfirmation({
@@ -22,6 +23,7 @@ export function CheckoutConfirmation({
   paymentMethod,
   selectedAddress,
   addresses,
+  orderId,
 }: CheckoutConfirmationProps) {
   const router = useRouter()
   const address = addresses.find(addr => addr.id === selectedAddress)
@@ -33,10 +35,13 @@ export function CheckoutConfirmation({
           <div className="w-20 h-20 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center mx-auto mb-6">
             <Check className="h-12 w-12 text-white" />
           </div>
-          <h1 className="text-3xl font-bold text-white mb-2">🎉 Order Placed Successfully!</h1>
+          <h1 className="text-3xl font-bold text-white mb-2">🎉 Order Confirmed!</h1>
           <p className="text-green-100 text-lg">
-            Your order has been received and is being processed.
-            You'll receive SMS and email updates shortly.
+            Your payment has been confirmed and your order is being processed.
+            {orderId && <span className="block mt-2 font-semibold">Order ID: #{orderId.slice(-8)}</span>}
+          </p>
+          <p className="text-green-50 text-sm mt-3">
+            📧 Check your email for order confirmation and tracking updates
           </p>
         </div>
 
@@ -48,6 +53,12 @@ export function CheckoutConfirmation({
                 📋 Order Confirmed
               </h3>
               <div className="space-y-3">
+                {orderId && (
+                  <div className="flex justify-between items-center py-2 border-b border-blue-200">
+                    <span className="text-blue-700 font-medium">Order ID:</span>
+                    <span className="text-blue-900 font-mono font-semibold">#{orderId.slice(-8)}</span>
+                  </div>
+                )}
                 <div className="flex justify-between items-center py-2 border-b border-blue-200">
                   <span className="text-blue-700 font-medium">Order Total:</span>
                   <span className="text-blue-900 font-bold text-lg">₦{finalTotal.toLocaleString()}</span>
@@ -96,13 +107,20 @@ export function CheckoutConfirmation({
                     <p className="text-purple-700 text-sm">Within 4 hours of scheduled time</p>
                   </div>
                 </div>
+                <div className="mt-4 p-3 bg-purple-100 rounded-lg border border-purple-300">
+                  <p className="text-purple-900 text-sm font-medium mb-1">📦 Track Your Order</p>
+                  <p className="text-purple-700 text-xs">
+                    You'll receive real-time updates via email and notifications when your order status changes. 
+                    Visit your dashboard to see the delivery timeline.
+                  </p>
+                </div>
               </div>
             </div>
           </div>
 
           {/* Action Buttons */}
           <div className="flex flex-col sm:flex-row gap-4">
-            <Link href="/dashboard" className="flex-1">
+            <Link href="/dashboard?tab=orders" className="flex-1">
               <Button className="w-full h-12 bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-300">
                 📦 Track My Order
               </Button>
@@ -136,7 +154,7 @@ export function CheckoutConfirmation({
         {/* Action Buttons */}
         <div className="flex flex-col sm:flex-row gap-4 justify-center mt-8 px-8 pb-8">
           <Button
-            onClick={() => router.push('/dashboard')}
+            onClick={() => router.push('/dashboard?tab=orders')}
             className="flex-1 h-12 bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white font-semibold"
           >
             📊 View Orders

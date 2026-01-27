@@ -20,6 +20,7 @@ export function useCheckout() {
   const [loading, setLoading] = useState(false)
   const [addressesLoaded, setAddressesLoaded] = useState(false)
   const [step, setStep] = useState(1)
+  const [orderId, setOrderId] = useState<string | null>(null)
 
   // Delivery Information
   const [selectedAddress, setSelectedAddress] = useState("")
@@ -143,17 +144,19 @@ export function useCheckout() {
     }
   }
 
-  // Create order after payment
+  // Create order after payment (for wallet payments)
   const createOrderAfterPayment = async () => {
     try {
       const token = localStorage.getItem('token')
       const orderData = {
         items: items.map(item => ({
-          productId: item.id,
-          variationId: null,
+          productId: item.productId,
+          variationId: item.variationId || null,
+          name: item.name,
           quantity: item.quantity,
           unitPrice: item.price,
-          totalPrice: item.price * item.quantity
+          totalPrice: item.price * item.quantity,
+          unit: item.unit
         })),
         deliveryAddress: addresses.find(addr => addr.id === selectedAddress) || null,
         deliveryDate,
@@ -164,7 +167,8 @@ export function useCheckout() {
         subtotal,
         deliveryFee,
         walletDeduction,
-        finalTotal
+        finalTotal,
+        skipEmails: false // Send emails immediately for wallet payments
       }
 
       const response = await fetch('/api/orders/create', {
@@ -180,9 +184,14 @@ export function useCheckout() {
         throw new Error('Failed to create order')
       }
 
+      const result = await response.json()
+      setOrderId(result.orderId) // Store orderId for confirmation page
       clearCart()
       setStep(3)
-      toast.success('Order placed successfully!')
+      toast.success('🎉 Order placed successfully! Your order is being processed.', {
+        duration: 5000,
+        icon: '✅',
+      })
     } catch (error) {
       console.error('Error creating order:', error)
       toast.error(error instanceof Error ? error.message : 'Failed to create order')
@@ -193,6 +202,12 @@ export function useCheckout() {
   // Handle Paystack payment
   const handlePaystackPayment = async (orderId: string | null, amount: number) => {
     try {
+      if (!orderId) {
+        throw new Error('Order ID is required for payment')
+      }
+      
+      console.log('Initializing Paystack payment...', { orderId, amount })
+      
       const token = localStorage.getItem('token')
       const paymentResponse = await fetch('/api/payments/initialize', {
         method: 'POST',
@@ -201,17 +216,20 @@ export function useCheckout() {
           ...(token ? { 'Authorization': `Bearer ${token}` } : {})
         },
         body: JSON.stringify({
-          orderId: orderId || undefined,
+          orderId: orderId,
           amount,
           paymentMethod: paymentMethod || 'paystack'
         }),
       })
 
       if (!paymentResponse.ok) {
-        throw new Error('Failed to initialize payment')
+        const errorData = await paymentResponse.json().catch(() => ({ error: 'Failed to initialize payment' }))
+        console.error('Payment initialization failed:', errorData)
+        throw new Error(errorData.error || 'Failed to initialize payment')
       }
 
       const paymentData = await paymentResponse.json()
+      console.log('Payment initialized:', paymentData.reference)
 
       if (!window.PaystackPop) {
         await loadPaystackScript()
@@ -221,36 +239,54 @@ export function useCheckout() {
         throw new Error('Paystack script failed to load')
       }
 
+      let paymentVerified = false
+      
       const handler = window.PaystackPop.setup({
         key: process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY || 'pk_test_9071bb582b6486e980b86bce551587236426329a',
         email: user?.email || '',
         amount: amount * 100,
         reference: paymentData.reference,
-        onClose: function() {
-          toast('Payment cancelled', {
-            style: {
-              background: 'rgba(239, 68, 68, 0.95)',
-              backdropFilter: 'blur(10px)',
-              color: 'white',
-              border: '1px solid rgba(239, 68, 68, 0.3)',
-            }
-          })
+        callback: function(response: any) {
+          console.log('Paystack callback triggered:', response)
+          if (response.status === 'success' && response.reference) {
+            paymentVerified = true
+            verifyPayment(response.reference)
+          }
         },
-        onSuccess: function(transaction: any) {
-          verifyPayment(transaction.reference)
+        onClose: function() {
+          console.log('Payment popup closed')
+          // If payment wasn't verified yet, check if it succeeded
+          // This handles cases where Paystack callback might not fire properly
+          if (!paymentVerified) {
+            setTimeout(async () => {
+              console.log('Checking payment status after popup close...', paymentData.reference)
+              try {
+                await verifyPayment(paymentData.reference)
+              } catch (error) {
+                // If verification fails, user likely cancelled
+                console.log('Payment verification failed (user may have cancelled)')
+                setLoading(false)
+              }
+            }, 2000) // Wait 2 seconds for Paystack to process
+          } else {
+            // Payment was already verified, just reset loading if needed
+            setLoading(false)
+          }
         }
       })
 
       handler.openIframe()
     } catch (error) {
       console.error('Error initializing Paystack payment:', error)
-      toast.error('Failed to initialize payment. Please try again.')
+      setLoading(false)
+      toast.error(error instanceof Error ? error.message : 'Failed to initialize payment. Please try again.')
     }
   }
 
   // Verify payment
   const verifyPayment = async (reference: string) => {
     try {
+      setLoading(true)
       const token = localStorage.getItem('token')
       const response = await fetch('/api/payments/verify', {
         method: 'POST',
@@ -261,23 +297,63 @@ export function useCheckout() {
         body: JSON.stringify({ reference }),
       })
 
-      const result = await response.json()
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: 'Failed to verify payment' }))
+        throw new Error(errorData.error || 'Payment verification failed')
+      }
 
-      if (result.success && result.paymentStatus === 'COMPLETED') {
-        try {
-          await createOrderAfterPayment()
-        } catch (orderError) {
-          console.error('Error creating order after payment:', orderError)
-          toast.error('Payment successful but order creation failed. Please contact support.')
-          setLoading(false)
+      const result = await response.json()
+      console.log('Payment verification response:', result)
+
+      // Check if payment was successful - handle both 'COMPLETED' and 'success' status
+      const isPaymentSuccessful = result.success && (
+        result.paymentStatus === 'COMPLETED' || 
+        result.transactionData?.status === 'success' ||
+        result.orderStatus === 'CONFIRMED'
+      )
+
+      if (isPaymentSuccessful) {
+        console.log('Payment verified successfully, redirecting to confirmation...')
+        
+        // Payment successful - order already exists and is now CONFIRMED
+        // Store orderId and redirect to confirmation page
+        if (result.orderId) {
+          setOrderId(result.orderId)
+          console.log('Order ID set:', result.orderId)
         }
-      } else {
-        toast.error('Payment verification failed. Please contact support.')
+        
+        // Clear cart first
+        clearCart()
+        console.log('Cart cleared')
+        
+        // Set loading to false and redirect immediately
         setLoading(false)
+        setStep(3)
+        console.log('Redirected to step 3 (confirmation page)')
+        
+        // Show success toast
+        toast.success('🎉 Payment successful! Your order has been confirmed and is being processed.', {
+          duration: 5000,
+          icon: '✅',
+          style: {
+            background: 'rgba(34, 197, 94, 0.95)',
+            backdropFilter: 'blur(10px)',
+            color: 'white',
+            border: '1px solid rgba(34, 197, 94, 0.3)',
+          },
+        })
+      } else {
+        // Payment failed or pending
+        console.error('Payment verification failed:', result)
+        setLoading(false)
+        const errorMessage = result.error || 'Payment verification failed. Please contact support.'
+        toast.error(errorMessage)
       }
     } catch (error) {
       console.error('Error verifying payment:', error)
-      toast.error('Payment verification failed. Please contact support.')
+      setLoading(false)
+      const errorMessage = error instanceof Error ? error.message : 'Payment verification failed. Please contact support.'
+      toast.error(errorMessage)
     }
   }
 
@@ -327,14 +403,77 @@ export function useCheckout() {
     setLoading(true)
     try {
       if (paymentMethod === 'wallet') {
+        // For wallet payment, create order immediately
         await createOrderAfterPayment()
       } else if (paymentMethod === 'paystack' || paymentMethod === 'card') {
-        await handlePaystackPayment(null, finalTotal)
+        // For Paystack, create order first, then initialize payment
+        // Order will be updated to CONFIRMED after payment verification
+        const orderId = await createOrderBeforePayment()
+        await handlePaystackPayment(orderId, finalTotal)
       }
     } catch (error) {
       console.error('Error placing order:', error)
       toast.error(error instanceof Error ? error.message : 'Failed to place order')
       setLoading(false)
+    }
+  }
+
+  // Create order before payment (for Paystack flow)
+  const createOrderBeforePayment = async (): Promise<string> => {
+    try {
+      const token = localStorage.getItem('token')
+      const orderData = {
+        items: items.map(item => ({
+          productId: item.productId,
+          variationId: item.variationId || null,
+          name: item.name,
+          quantity: item.quantity,
+          unitPrice: item.price,
+          totalPrice: item.price * item.quantity,
+          unit: item.unit
+        })),
+        deliveryAddress: addresses.find(addr => addr.id === selectedAddress) || null,
+        deliveryDate,
+        deliveryTime,
+        deliveryNotes,
+        paymentMethod,
+        useWallet,
+        subtotal,
+        deliveryFee,
+        walletDeduction,
+        finalTotal,
+        skipEmails: true // Skip emails for Paystack - will send after payment confirmation
+      }
+
+      console.log('Creating order before payment...', { itemsCount: items.length, finalTotal })
+      
+      const response = await fetch('/api/orders/create', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        },
+        body: JSON.stringify(orderData),
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: 'Failed to create order' }))
+        console.error('Order creation failed:', errorData)
+        throw new Error(errorData.error || 'Failed to create order')
+      }
+
+      const result = await response.json()
+      console.log('Order created successfully:', result.orderId)
+      
+      if (!result.orderId) {
+        throw new Error('Order created but no orderId returned')
+      }
+      
+      return result.orderId
+    } catch (error) {
+      console.error('Error creating order before payment:', error)
+      toast.error(error instanceof Error ? error.message : 'Failed to create order. Please try again.')
+      throw error
     }
   }
 
@@ -468,6 +607,7 @@ export function useCheckout() {
     dropdownRef,
     addresses,
     items,
+    orderId,
     
     // Computed
     totalItems,

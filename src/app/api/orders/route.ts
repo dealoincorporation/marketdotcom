@@ -130,17 +130,47 @@ export async function PUT(request: NextRequest) {
       )
     }
 
+    // Valid order statuses (mapping UI statuses to database statuses)
+    const validStatuses = ['PENDING', 'CONFIRMED', 'PROCESSING', 'ON_DELIVERY', 'DELIVERED', 'CANCELLED']
+    const statusMapping: Record<string, string> = {
+      'pending': 'PENDING',
+      'confirmed': 'CONFIRMED',
+      'processing': 'PROCESSING',
+      'shipped': 'ON_DELIVERY', // Map 'shipped' to 'ON_DELIVERY'
+      'on_delivery': 'ON_DELIVERY',
+      'delivered': 'DELIVERED',
+      'cancelled': 'CANCELLED',
+    }
+
+    // Normalize status (convert lowercase to uppercase, handle 'shipped' -> 'ON_DELIVERY')
+    const normalizedStatus = statusMapping[status.toLowerCase()] || status.toUpperCase()
+
+    // Validate status
+    if (!validStatuses.includes(normalizedStatus)) {
+      return NextResponse.json(
+        { error: `Invalid status. Valid statuses are: ${validStatuses.join(', ')}` },
+        { status: 400 }
+      )
+    }
+
     // Get current order status before updating
     const currentOrder = await prisma.order.findUnique({
       where: { id: orderId },
       select: { status: true }
     })
 
-    const previousStatus = currentOrder?.status
+    if (!currentOrder) {
+      return NextResponse.json(
+        { error: "Order not found" },
+        { status: 404 }
+      )
+    }
+
+    const previousStatus = currentOrder.status
 
     const order = await prisma.order.update({
       where: { id: orderId },
-      data: { status },
+      data: { status: normalizedStatus },
       include: {
         user: {
           select: { id: true, name: true, email: true }
@@ -172,12 +202,15 @@ export async function PUT(request: NextRequest) {
       }
     })
 
+    // Map status back to lowercase for UI/email (ON_DELIVERY -> shipped)
+    const displayStatus = normalizedStatus === 'ON_DELIVERY' ? 'shipped' : normalizedStatus.toLowerCase()
+
     // Send notification to customer
     await prisma.notification.create({
       data: {
         userId: order.userId,
         title: "Order Status Updated",
-        message: `Your order #${order.id} status has been updated to ${status}`,
+        message: `Your order #${order.id} status has been updated to ${displayStatus}`,
         type: "ORDER",
         orderId: order.id
       }
@@ -189,7 +222,7 @@ export async function PUT(request: NextRequest) {
         order.id,
         order.user.email,
         order.user.name || 'Valued Customer',
-        status,
+        displayStatus,
         order.delivery ? {
           date: order.delivery.scheduledDate.toLocaleDateString(),
           time: order.delivery.scheduledTime,
@@ -207,8 +240,8 @@ export async function PUT(request: NextRequest) {
         orderId: order.id,
         customerName: order.user.name || 'Valued Customer',
         customerEmail: order.user.email,
-        status: status,
-        previousStatus: previousStatus,
+        status: displayStatus,
+        previousStatus: previousStatus === 'ON_DELIVERY' ? 'shipped' : previousStatus.toLowerCase(),
         deliveryInfo: order.delivery ? {
           date: order.delivery.scheduledDate.toLocaleDateString(),
           time: order.delivery.scheduledTime,

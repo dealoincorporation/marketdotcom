@@ -44,8 +44,15 @@ export function OrderSummary({
             <div className="space-y-3 sm:space-y-4 mb-6">
               {items.map(item => (
                 <div key={item.id} className="flex items-start space-x-3 p-3 bg-gray-50 rounded-lg">
-                  <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-r from-orange-100 to-red-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <span className="text-xs sm:text-sm font-bold text-orange-600">{item.quantity}</span>
+                  <div className="relative w-12 h-12 sm:w-16 sm:h-16 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0 border border-gray-200">
+                    <img
+                      src={item.image || "/market_image.jpeg"}
+                      alt={item.name}
+                      className="w-full h-full object-cover"
+                    />
+                    <div className="absolute top-0 right-0 bg-orange-600 text-white text-xs font-bold px-1.5 py-0.5 rounded-bl-lg">
+                      {item.quantity}
+                    </div>
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-gray-900 truncate">{item.name}</p>

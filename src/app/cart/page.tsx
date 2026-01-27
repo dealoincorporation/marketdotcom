@@ -24,6 +24,7 @@ import { Separator } from "@/components/ui/separator"
 import { useCartStore } from "@/lib/cart-store"
 import { useRouter } from "next/navigation"
 import { getEstimatedDeliveryTime } from "@/lib/helpers"
+import { normalizeImageUrls, normalizeImageUrl } from "@/lib/image-utils"
 
 export default function CartPage() {
   const { user } = useAuth()
@@ -363,13 +364,28 @@ export default function CartPage() {
               ) : (
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                   {recommended.map((p: any) => {
-                    const img = Array.isArray(p.images) && p.images[0] ? p.images[0] : "/market_image.jpeg"
+                    // Use normalizeImageUrls to properly handle product images
+                    const normalizedImages = normalizeImageUrls(p.images, p.image)
+                    // Only use default image if there are NO product images at all
+                    const img = normalizedImages.length > 0 
+                      ? normalizedImages[0] 
+                      : normalizeImageUrl(p.image) || "/market_image.jpeg"
                     const price = typeof p.basePrice === "number" ? `₦${p.basePrice.toLocaleString()}` : ""
                     return (
                       <Link key={p.id} href={`/marketplace/${p.id}`} className="block">
                         <div className="bg-white border border-gray-200 rounded-xl overflow-hidden hover:shadow-md transition-shadow">
-                          <div className="h-20 bg-gray-100">
-                            <img src={img} alt={p.name || "Product"} className="w-full h-full object-cover" />
+                          <div className="h-20 bg-gray-100 relative overflow-hidden">
+                            <img 
+                              src={img} 
+                              alt={p.name || "Product"} 
+                              className="w-full h-full object-cover"
+                              onError={(e) => {
+                                // Fallback to default image only if image fails to load
+                                if (e.currentTarget.src !== "/market_image.jpeg") {
+                                  e.currentTarget.src = "/market_image.jpeg"
+                                }
+                              }}
+                            />
                           </div>
                           <div className="p-2">
                             <p className="text-sm font-semibold text-gray-900 truncate">{p.name}</p>

@@ -57,6 +57,7 @@ export async function POST(request: Request) {
 
     // Update order with transaction reference (only if order exists)
     if (orderId && order) {
+      console.log('Updating order with transaction reference:', { orderId, reference })
       await prisma.order.update({
         where: { id: orderId },
         data: {
@@ -64,6 +65,9 @@ export async function POST(request: Request) {
           paymentMethod: paymentMethod || "paystack"
         }
       })
+      console.log('Order updated with transaction reference successfully')
+    } else {
+      console.warn('Order not found or orderId missing:', { orderId, orderFound: !!order })
     }
 
     // Initialize Paystack transaction

@@ -43,13 +43,22 @@ export async function POST(request: Request) {
       subtotal,
       deliveryFee,
       walletDeduction,
-      finalTotal
+      finalTotal,
+      skipEmails = false // Skip emails for Paystack payments until payment is confirmed
     } = body
 
     // Calculate total amount
     const totalAmount = subtotal + deliveryFee
 
     // Create order
+    console.log('Creating order...', {
+      userId: user.userId,
+      itemsCount: items.length,
+      finalTotal,
+      paymentMethod,
+      skipEmails
+    })
+    
     const order = await prisma.order.create({
       data: {
         userId: user.userId,
@@ -64,6 +73,8 @@ export async function POST(request: Request) {
         transactionId: null, // Would be set after payment
       }
     })
+    
+    console.log('Order created successfully:', { orderId: order.id, status: order.status })
 
     // Create order items
     await prisma.orderItem.createMany({
@@ -154,33 +165,35 @@ export async function POST(request: Request) {
       }
     })
 
-    // Send email notifications
-    try {
-      const emailData = {
-        orderId: order.id,
-        customerName: userData.name || 'Valued Customer',
-        customerEmail: userData.email || '',
-        items: items.map((item: any) => ({
-          name: item.name,
-          quantity: item.quantity,
-          price: item.unitPrice,
-          unit: item.unit
-        })),
-        total: finalTotal,
-        deliveryAddress: `${deliveryAddress.address}, ${deliveryAddress.city}, ${deliveryAddress.state}`,
-        deliveryDate: new Date(deliveryDate).toLocaleDateString(),
-        deliveryTime: deliveryTime
+    // Send email notifications (skip for Paystack payments until payment is confirmed)
+    if (!skipEmails) {
+      try {
+        const emailData = {
+          orderId: order.id,
+          customerName: userData.name || 'Valued Customer',
+          customerEmail: userData.email || '',
+          items: items.map((item: any) => ({
+            name: item.name,
+            quantity: item.quantity,
+            price: item.unitPrice,
+            unit: item.unit
+          })),
+          total: finalTotal,
+          deliveryAddress: `${deliveryAddress.address}, ${deliveryAddress.city}, ${deliveryAddress.state}`,
+          deliveryDate: new Date(deliveryDate).toLocaleDateString(),
+          deliveryTime: deliveryTime
+        }
+
+        // Send confirmation email to customer
+        await sendOrderConfirmationEmail(emailData)
+
+        // Send notification email to admin
+        await sendAdminOrderNotification(emailData)
+
+      } catch (emailError) {
+        console.error("Error sending email notifications:", emailError)
+        // Don't fail the order if email fails
       }
-
-      // Send confirmation email to customer
-      await sendOrderConfirmationEmail(emailData)
-
-      // Send notification email to admin
-      await sendAdminOrderNotification(emailData)
-
-    } catch (emailError) {
-      console.error("Error sending email notifications:", emailError)
-      // Don't fail the order if email fails
     }
 
     return NextResponse.json({

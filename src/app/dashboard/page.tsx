@@ -37,7 +37,7 @@ function DashboardContent() {
   // Custom hooks
   const { user } = useAuth()
   const { logout } = useAuth()
-  const { products: rawProducts, categories: rawCategories, orders: rawOrders, walletInfo, loading, refreshAll } = useDashboard()
+  const { products: rawProducts, categories: rawCategories, orders: rawOrders, walletInfo, loading, ordersLoading, refreshAll, refreshOrders } = useDashboard()
   const products = rawProducts as any[]
   const orders = rawOrders as any[]
   const categories = rawCategories as any[]
@@ -137,21 +137,27 @@ function DashboardContent() {
   const handleOrderStatusChange = async (orderId: string, newStatus: string) => {
     setUpdatingOrderId(orderId)
     try {
+      const token = localStorage.getItem('token')
       const response = await fetch('/api/orders', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
         },
         body: JSON.stringify({ orderId, status: newStatus }),
       })
 
       if (response.ok) {
-        refreshAll()
+        // Refresh orders immediately to show updated status
+        await refreshOrders()
+        showSuccess('Status Updated', `Order status has been updated to ${newStatus}`)
       } else {
-        console.error('Error updating order status:', await response.text())
+        const errorData = await response.json()
+        showError('Update Failed', errorData.error || 'Failed to update order status')
       }
     } catch (error) {
       console.error('Error updating order status:', error)
+      showError('Update Failed', 'Failed to update order status. Please try again.')
     } finally {
       setUpdatingOrderId(null)
     }
@@ -276,6 +282,8 @@ function DashboardContent() {
             onOrderStatusChange={handleOrderStatusChange}
             onOrderDelete={handleOrderDelete}
             updatingOrderId={updatingOrderId}
+            onRefreshOrders={refreshOrders}
+            ordersLoading={ordersLoading}
           />
         )}
 

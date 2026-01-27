@@ -57,6 +57,7 @@ export default function CheckoutPage() {
     handleAddNewAddress,
     handlePlaceOrder,
     createDeliverySlots,
+    orderId,
   } = useCheckout()
 
   if (!user) {
@@ -151,6 +152,7 @@ export default function CheckoutPage() {
             paymentMethod={paymentMethod}
             selectedAddress={selectedAddress}
             addresses={addresses}
+            orderId={orderId || undefined}
           />
         )}
       </div>

@@ -2,7 +2,7 @@ import { NextResponse } from "next/server"
 import { getUserFromRequest } from "@/lib/auth"
 import { getPrismaClient } from "@/lib/prisma"
 import { PaystackService } from "@/lib/paystack"
-import { sendAdminPaymentNotification } from "@/lib/email"
+import { sendAdminPaymentNotification, sendAdminOrderNotification, sendOrderConfirmationEmail, sendOrderStatusUpdateEmail } from "@/lib/email"
 
 export async function POST(request: Request) {
   try {
@@ -36,21 +36,55 @@ export async function POST(request: Request) {
     }
 
     const transactionData = paystackResponse.data
+    console.log('Payment verification - Paystack response:', {
+      reference,
+      status: transactionData.status,
+      amount: transactionData.amount
+    })
 
-    // Find the order
-    const order = await prisma.order.findFirst({
+    // Find the order by transactionId first
+    let order = await prisma.order.findFirst({
       where: {
         transactionId: reference,
         userId: user.userId
       }
     })
 
+    // If not found by transactionId, try to find by metadata orderId (fallback)
+    if (!order && transactionData.metadata?.orderId) {
+      console.log('Order not found by transactionId, trying metadata orderId:', transactionData.metadata.orderId)
+      order = await prisma.order.findFirst({
+        where: {
+          id: transactionData.metadata.orderId,
+          userId: user.userId
+        }
+      })
+    }
+
+    // If still not found, try to find any pending order for this user (last resort)
     if (!order) {
+      console.log('Order not found by transactionId or metadata, searching for pending orders...')
+      order = await prisma.order.findFirst({
+        where: {
+          userId: user.userId,
+          paymentStatus: 'PENDING',
+          paymentMethod: 'paystack'
+        },
+        orderBy: {
+          createdAt: 'desc'
+        }
+      })
+    }
+
+    if (!order) {
+      console.error('Order not found for payment verification:', { reference, userId: user.userId })
       return NextResponse.json(
-        { error: "Order not found" },
+        { error: "Order not found. Please contact support with reference: " + reference },
         { status: 404 }
       )
     }
+
+    console.log('Order found for verification:', { orderId: order.id, currentStatus: order.status })
 
     // Update order based on payment status
     const paymentStatus = transactionData.status === 'success' ? 'COMPLETED' : 'FAILED'
@@ -83,29 +117,132 @@ export async function POST(request: Request) {
       }
     })
 
-    // Send admin payment notification if payment was successful
+    // Send notifications and emails if payment was successful
     if (paymentStatus === 'COMPLETED') {
       try {
-        // Get user data from database for email
-        const userData = await prisma.user.findUnique({
-          where: { id: user.userId },
-          select: {
-            name: true,
-            email: true
+        // Get full order data with items and delivery info
+        const fullOrder = await prisma.order.findUnique({
+          where: { id: order.id },
+          include: {
+            items: {
+              include: {
+                product: {
+                  select: {
+                    name: true,
+                    unit: true
+                  }
+                }
+              }
+            },
+            delivery: true,
+            user: {
+              select: {
+                name: true,
+                email: true
+              }
+            }
           }
         })
 
-        await sendAdminPaymentNotification({
-          orderId: order.id,
-          customerName: userData?.name || 'Valued Customer',
-          customerEmail: userData?.email || 'No email provided',
-          amount: transactionData.amount / 100,
-          paymentMethod: 'Paystack',
-          transactionId: reference
-        })
-      } catch (adminEmailError) {
-        console.error("Failed to send admin payment notification:", adminEmailError)
-        // Don't fail the payment verification if admin email fails
+        if (fullOrder && fullOrder.user) {
+          const userData = fullOrder.user
+          const deliveryInfo = fullOrder.delivery
+
+          // Send order confirmation email to customer
+          try {
+            await sendOrderConfirmationEmail({
+              orderId: fullOrder.id,
+              customerName: userData.name || 'Valued Customer',
+              customerEmail: userData.email || '',
+              items: fullOrder.items.map(item => ({
+                name: item.product?.name || 'Product',
+                quantity: item.quantity,
+                price: item.unitPrice,
+                unit: item.product?.unit || 'item'
+              })),
+              total: fullOrder.finalAmount,
+              deliveryAddress: deliveryInfo 
+                ? `${deliveryInfo.address}, ${deliveryInfo.city}, ${deliveryInfo.state}`
+                : 'Address not available',
+              deliveryDate: deliveryInfo?.scheduledDate 
+                ? new Date(deliveryInfo.scheduledDate).toLocaleDateString()
+                : 'Date not available',
+              deliveryTime: deliveryInfo?.scheduledTime || 'Time not available'
+            })
+          } catch (emailError) {
+            console.error("Failed to send order confirmation email:", emailError)
+          }
+
+          // Send order status update email (CONFIRMED)
+          try {
+            await sendOrderStatusUpdateEmail(
+              fullOrder.id,
+              userData.email || '',
+              userData.name || 'Valued Customer',
+              'confirmed',
+              deliveryInfo ? {
+                date: new Date(deliveryInfo.scheduledDate).toLocaleDateString(),
+                time: deliveryInfo.scheduledTime,
+                address: `${deliveryInfo.address}, ${deliveryInfo.city}, ${deliveryInfo.state}`
+              } : undefined
+            )
+          } catch (statusEmailError) {
+            console.error("Failed to send order status update email:", statusEmailError)
+          }
+
+          // Send admin payment notification
+          try {
+            await sendAdminPaymentNotification({
+              orderId: fullOrder.id,
+              customerName: userData.name || 'Valued Customer',
+              customerEmail: userData.email || 'No email provided',
+              amount: transactionData.amount / 100,
+              paymentMethod: 'Paystack',
+              transactionId: reference
+            })
+          } catch (adminEmailError) {
+            console.error("Failed to send admin payment notification:", adminEmailError)
+          }
+
+          // Send admin order notification (since we skipped it during order creation)
+          try {
+            await sendAdminOrderNotification({
+              orderId: fullOrder.id,
+              customerName: userData.name || 'Valued Customer',
+              customerEmail: userData.email || '',
+              items: fullOrder.items.map(item => ({
+                name: item.product?.name || 'Product',
+                quantity: item.quantity,
+                price: item.unitPrice,
+                unit: item.product?.unit || 'item'
+              })),
+              total: fullOrder.finalAmount,
+              deliveryAddress: deliveryInfo 
+                ? `${deliveryInfo.address}, ${deliveryInfo.city}, ${deliveryInfo.state}`
+                : 'Address not available',
+              deliveryDate: deliveryInfo?.scheduledDate 
+                ? new Date(deliveryInfo.scheduledDate).toLocaleDateString()
+                : 'Date not available',
+              deliveryTime: deliveryInfo?.scheduledTime || 'Time not available'
+            })
+          } catch (adminOrderError) {
+            console.error("Failed to send admin order notification:", adminOrderError)
+          }
+
+          // Create notification for user
+          await prisma.notification.create({
+            data: {
+              userId: user.userId,
+              title: "Payment Successful & Order Confirmed",
+              message: `Your payment of ₦${(transactionData.amount / 100).toLocaleString()} has been confirmed. Order #${fullOrder.id} is now being processed and will be delivered soon!`,
+              type: "ORDER",
+              orderId: fullOrder.id
+            }
+          })
+        }
+      } catch (notificationError) {
+        console.error("Failed to send notifications:", notificationError)
+        // Don't fail the payment verification if notifications fail
       }
     }
 
@@ -113,6 +250,7 @@ export async function POST(request: Request) {
       success: true,
       paymentStatus: paymentStatus,
       orderStatus: orderStatus,
+      orderId: order.id, // Return orderId for frontend redirect
       transactionData: {
         reference: transactionData.reference,
         amount: transactionData.amount / 100,

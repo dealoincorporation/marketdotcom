@@ -49,10 +49,10 @@ export function CreateDeliverySlotsModal({
               value={slotConfig.daysAhead.toString()}
               onValueChange={(value) => onSlotConfigChange({ ...slotConfig, daysAhead: parseInt(value) })}
             >
-              <SelectTrigger>
+              <SelectTrigger className="bg-white border-gray-300">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="bg-white border-gray-300 shadow-lg">
                 <SelectItem value="3">3 days</SelectItem>
                 <SelectItem value="7">7 days</SelectItem>
                 <SelectItem value="14">14 days</SelectItem>

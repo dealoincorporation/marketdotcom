@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
 import {
   Truck,
@@ -12,7 +12,9 @@ import {
   MapPin,
   Calendar,
   DollarSign,
-  Trash2
+  Trash2,
+  Navigation,
+  RefreshCw
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -42,13 +44,60 @@ interface OrdersTabProps {
   onOrderStatusChange: (orderId: string, newStatus: string) => void
   onOrderDelete?: (orderId: string) => void
   updatingOrderId?: string | null
+  onRefreshOrders?: () => void
+  ordersLoading?: boolean
 }
 
-export default function OrdersTab({ orders, isAdmin, onOrderStatusChange, onOrderDelete, updatingOrderId }: OrdersTabProps) {
+export default function OrdersTab({ orders, isAdmin, onOrderStatusChange, onOrderDelete, updatingOrderId, onRefreshOrders, ordersLoading }: OrdersTabProps) {
   const [selectedStatus, setSelectedStatus] = useState("all")
+  const [isRefreshing, setIsRefreshing] = useState(false)
+
+  // Auto-refresh orders every 30 seconds when customer is viewing orders tab
+  useEffect(() => {
+    if (!isAdmin && onRefreshOrders) {
+      const interval = setInterval(() => {
+        onRefreshOrders()
+      }, 30000) // Refresh every 30 seconds
+
+      return () => clearInterval(interval)
+    }
+  }, [isAdmin, onRefreshOrders])
+
+  // Refresh orders when component mounts or when tab becomes visible
+  useEffect(() => {
+    if (!isAdmin && onRefreshOrders) {
+      // Refresh immediately when component mounts
+      onRefreshOrders()
+      
+      // Also refresh when page becomes visible (user switches back to tab)
+      const handleVisibilityChange = () => {
+        if (!document.hidden && onRefreshOrders) {
+          onRefreshOrders()
+        }
+      }
+      
+      document.addEventListener('visibilitychange', handleVisibilityChange)
+      return () => document.removeEventListener('visibilitychange', handleVisibilityChange)
+    }
+  }, [isAdmin, onRefreshOrders])
+
+  const handleRefresh = async () => {
+    if (onRefreshOrders) {
+      setIsRefreshing(true)
+      await onRefreshOrders()
+      setTimeout(() => setIsRefreshing(false), 500)
+    }
+  }
+
+  // Normalize status for display (ON_DELIVERY -> shipped)
+  const normalizeStatus = (status: string) => {
+    if (status === 'ON_DELIVERY' || status === 'on_delivery') return 'shipped'
+    return status.toLowerCase()
+  }
 
   const getStatusIcon = (status: string) => {
-    switch (status.toLowerCase()) {
+    const normalized = normalizeStatus(status)
+    switch (normalized) {
       case 'pending':
         return <Clock className="h-4 w-4" />
       case 'confirmed':
@@ -65,7 +114,8 @@ export default function OrdersTab({ orders, isAdmin, onOrderStatusChange, onOrde
   }
 
   const getStatusColor = (status: string) => {
-    switch (status.toLowerCase()) {
+    const normalized = normalizeStatus(status)
+    switch (normalized) {
       case 'pending':
         return 'bg-yellow-100 text-yellow-800 border-yellow-200'
       case 'confirmed':
@@ -106,17 +156,76 @@ export default function OrdersTab({ orders, isAdmin, onOrderStatusChange, onOrde
 
   const orderStatuses = ['all', 'pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled']
 
+  // Get order status steps for timeline
+  const getOrderStatusSteps = (currentStatus: string) => {
+    const allSteps = [
+      { key: 'pending', label: 'Order Placed', icon: Clock, color: 'yellow' },
+      { key: 'confirmed', label: 'Order Confirmed', icon: CheckCircle, color: 'blue' },
+      { key: 'processing', label: 'Processing', icon: Package, color: 'blue' },
+      { key: 'shipped', label: 'On the Way', icon: Truck, color: 'purple' },
+      { key: 'delivered', label: 'Delivered', icon: CheckCircle, color: 'green' },
+    ]
+
+    const normalizedStatus = normalizeStatus(currentStatus)
+    const currentIndex = allSteps.findIndex(step => step.key === normalizedStatus)
+    
+    return allSteps.map((step, index) => ({
+      ...step,
+      completed: index <= currentIndex,
+      current: index === currentIndex,
+    }))
+  }
+
+  // Get status message
+  const getStatusMessage = (status: string) => {
+    switch (status.toLowerCase()) {
+      case 'pending':
+        return 'Your order is pending confirmation'
+      case 'confirmed':
+        return 'Your order has been confirmed and is being prepared'
+      case 'processing':
+        return 'Your order is being processed and packaged'
+      case 'shipped':
+        return '🚚 Your order is on the way! Track your delivery below'
+      case 'delivered':
+        return '✅ Your order has been delivered successfully'
+      case 'cancelled':
+        return 'Your order has been cancelled'
+      default:
+        return 'Order status update'
+    }
+  }
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
     >
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Orders</h1>
-        <p className="text-gray-600">
-          {isAdmin ? 'Manage and track all customer orders' : 'Track your order history and status'}
-        </p>
+      <div className="mb-8 flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Orders</h1>
+          <p className="text-gray-600">
+            {isAdmin ? 'Manage and track all customer orders' : 'Track your order history and status'}
+          </p>
+          {!isAdmin && (
+            <p className="text-sm text-gray-500 mt-1">
+              Status updates automatically refresh every 30 seconds
+            </p>
+          )}
+        </div>
+        {onRefreshOrders && (
+          <Button
+            onClick={handleRefresh}
+            disabled={isRefreshing || ordersLoading}
+            variant="outline"
+            size="sm"
+            className="flex items-center space-x-2"
+          >
+            <RefreshCw className={`h-4 w-4 ${isRefreshing || ordersLoading ? 'animate-spin' : ''}`} />
+            <span>Refresh</span>
+          </Button>
+        )}
       </div>
 
       {/* Status Filter */}
@@ -147,6 +256,12 @@ export default function OrdersTab({ orders, isAdmin, onOrderStatusChange, onOrde
 
       {/* Orders Grid */}
       <div className="space-y-6">
+        {(ordersLoading || isRefreshing) && (
+          <div className="text-center py-4">
+            <RefreshCw className="h-6 w-6 text-orange-600 animate-spin mx-auto mb-2" />
+            <p className="text-sm text-gray-600">Refreshing orders...</p>
+          </div>
+        )}
         {filteredOrders.length === 0 ? (
           <motion.div
             initial={{ opacity: 0 }}
@@ -177,7 +292,7 @@ export default function OrdersTab({ orders, isAdmin, onOrderStatusChange, onOrde
                       <CardTitle className="text-lg">Order #{order.id.slice(-8)}</CardTitle>
                       <Badge className={`flex items-center space-x-1 px-3 py-1 ${getStatusColor(order.status)}`}>
                         {getStatusIcon(order.status)}
-                        <span className="uppercase">{order.status}</span>
+                        <span className="uppercase">{normalizeStatus(order.status) === 'shipped' ? 'On the Way' : normalizeStatus(order.status)}</span>
                       </Badge>
                     </div>
                     <div className="text-right">
@@ -193,6 +308,100 @@ export default function OrdersTab({ orders, isAdmin, onOrderStatusChange, onOrde
                 </CardHeader>
 
                 <CardContent className="pt-0">
+                  {/* Delivery Status Timeline */}
+                  {!isAdmin && (
+                    <div className="mb-6 p-4 bg-gradient-to-r from-orange-50 to-purple-50 rounded-lg border border-orange-200">
+                      <div className="flex items-center space-x-2 mb-4">
+                        <Navigation className="h-5 w-5 text-orange-600" />
+                        <h4 className="font-semibold text-gray-900">Delivery Status</h4>
+                      </div>
+                      <p className="text-sm text-gray-700 mb-4 font-medium">
+                        {getStatusMessage(order.status)}
+                      </p>
+                      
+                      {/* Status Timeline */}
+                      <div className="relative">
+                        <div className="flex items-center justify-between">
+                          {getOrderStatusSteps(order.status).map((step, index) => {
+                            const Icon = step.icon
+                            const isLast = index === getOrderStatusSteps(order.status).length - 1
+                            
+                            // Get color classes based on step color
+                            const getColorClasses = (color: string, completed: boolean, current: boolean) => {
+                              if (completed) {
+                                switch (color) {
+                                  case 'yellow': return 'bg-yellow-500 border-yellow-500 text-white'
+                                  case 'blue': return 'bg-blue-500 border-blue-500 text-white'
+                                  case 'purple': return 'bg-purple-500 border-purple-500 text-white'
+                                  case 'green': return 'bg-green-500 border-green-500 text-white'
+                                  default: return 'bg-gray-500 border-gray-500 text-white'
+                                }
+                              }
+                              if (current) {
+                                switch (color) {
+                                  case 'yellow': return 'bg-white border-yellow-500 text-yellow-500 ring-2 ring-yellow-200'
+                                  case 'blue': return 'bg-white border-blue-500 text-blue-500 ring-2 ring-blue-200'
+                                  case 'purple': return 'bg-white border-purple-500 text-purple-500 ring-2 ring-purple-200'
+                                  case 'green': return 'bg-white border-green-500 text-green-500 ring-2 ring-green-200'
+                                  default: return 'bg-white border-gray-500 text-gray-500 ring-2 ring-gray-200'
+                                }
+                              }
+                              return 'bg-gray-100 border-gray-300 text-gray-400'
+                            }
+
+                            const getTextColor = (color: string, completed: boolean, current: boolean) => {
+                              if (completed || current) {
+                                switch (color) {
+                                  case 'yellow': return 'text-yellow-600'
+                                  case 'blue': return 'text-blue-600'
+                                  case 'purple': return 'text-purple-600'
+                                  case 'green': return 'text-green-600'
+                                  default: return 'text-gray-600'
+                                }
+                              }
+                              return 'text-gray-400'
+                            }
+
+                            const getLineColor = (color: string, completed: boolean) => {
+                              if (completed) {
+                                switch (color) {
+                                  case 'yellow': return 'bg-yellow-500'
+                                  case 'blue': return 'bg-blue-500'
+                                  case 'purple': return 'bg-purple-500'
+                                  case 'green': return 'bg-green-500'
+                                  default: return 'bg-gray-500'
+                                }
+                              }
+                              return 'bg-gray-200'
+                            }
+                            
+                            return (
+                              <div key={step.key} className="flex items-center flex-1">
+                                <div className="flex flex-col items-center flex-1">
+                                  <div
+                                    className={`w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all ${getColorClasses(step.color, step.completed, step.current)}`}
+                                  >
+                                    <Icon className="h-5 w-5" />
+                                  </div>
+                                  <p
+                                    className={`text-xs mt-2 text-center font-medium ${getTextColor(step.color, step.completed, step.current)}`}
+                                  >
+                                    {step.label}
+                                  </p>
+                                </div>
+                                {!isLast && (
+                                  <div
+                                    className={`flex-1 h-0.5 mx-2 ${getLineColor(step.color, step.completed)}`}
+                                  />
+                                )}
+                              </div>
+                            )
+                          })}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
                   {/* Order Items */}
                   <div className="mb-6">
                     <h4 className="font-medium text-gray-900 mb-3">Order Items</h4>
@@ -249,7 +458,7 @@ export default function OrdersTab({ orders, isAdmin, onOrderStatusChange, onOrde
                           Change order status:
                         </div>
                         <Select
-                          value={order.status}
+                          value={normalizeStatus(order.status)}
                           onValueChange={(newStatus) => onOrderStatusChange(order.id, newStatus)}
                           disabled={updatingOrderId === order.id}
                         >
@@ -260,7 +469,7 @@ export default function OrdersTab({ orders, isAdmin, onOrderStatusChange, onOrde
                             <SelectItem value="pending">Pending</SelectItem>
                             <SelectItem value="confirmed">Confirmed</SelectItem>
                             <SelectItem value="processing">Processing</SelectItem>
-                            <SelectItem value="shipped">Shipped</SelectItem>
+                            <SelectItem value="shipped">🚚 Shipped (On the Way)</SelectItem>
                             <SelectItem value="delivered">Delivered</SelectItem>
                             <SelectItem value="cancelled">Cancelled</SelectItem>
                           </SelectContent>

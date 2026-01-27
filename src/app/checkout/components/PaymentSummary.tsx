@@ -70,24 +70,27 @@ export function PaymentSummary({
               <Button
                 variant="outline"
                 onClick={onBack}
-                className="flex-1 h-12 border-2 border-gray-300 hover:bg-gray-50 font-semibold transition-all duration-300"
+                className="w-full sm:flex-1 h-12 border-2 border-gray-300 hover:bg-gray-50 font-semibold transition-all duration-300 text-sm sm:text-base"
               >
                 ← Back
               </Button>
               <Button
                 onClick={onPlaceOrder}
-                className="flex-1 h-12 sm:h-14 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-bold text-base sm:text-lg shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50"
+                className="w-full sm:flex-1 min-h-[48px] sm:h-14 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-bold shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50 px-3 sm:px-4 py-2.5 sm:py-3"
                 disabled={loading}
               >
                 {loading ? (
-                  <>
-                    <div className="animate-spin rounded-full h-4 w-4 sm:h-5 sm:w-5 border-b-2 border-white mr-2"></div>
-                    Processing Payment...
-                  </>
+                  <span className="flex items-center justify-center gap-2">
+                    <div className="animate-spin rounded-full h-4 w-4 sm:h-5 sm:w-5 border-b-2 border-white"></div>
+                    <span className="text-xs sm:text-sm md:text-base">Processing...</span>
+                  </span>
                 ) : (
-                  <>
-                    💳 Complete Order • ₦{finalTotal.toLocaleString()}
-                  </>
+                  <span className="flex items-center justify-center gap-1.5 sm:gap-2 flex-wrap">
+                    <span className="text-sm sm:text-base md:text-lg">💳</span>
+                    <span className="text-xs sm:text-sm md:text-base lg:text-lg">Complete Order</span>
+                    <span className="hidden sm:inline text-xs sm:text-sm md:text-base">•</span>
+                    <span className="text-xs sm:text-sm md:text-base lg:text-lg font-semibold whitespace-nowrap">₦{finalTotal.toLocaleString()}</span>
+                  </span>
                 )}
               </Button>
             </div>
