@@ -14,12 +14,15 @@ export interface CartItem {
   image: string
   quantity: number
   unit: string
+  deliveryFee?: number | null // Per-product delivery fee (null = use default, 0 = free, number = custom fee)
   variation?: {
     id: string
     name: string
     type: string
     price?: number
     stock?: number
+    quantity?: number // Variation quantity (e.g., 55)
+    unit?: string // Variation unit (e.g., "kg")
   }
   categoryId?: string
   categoryName?: string

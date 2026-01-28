@@ -69,24 +69,26 @@ export function ServicesSection() {
               >
                 <motion.div className="bg-white/90 backdrop-blur-sm border border-orange-200/50 rounded-3xl p-8 h-full hover:bg-white hover:shadow-2xl transition-all duration-500 hover:transform hover:scale-[1.02] hover:border-orange-300/60">
                   {/* Icon */}
-                  <motion.div className={`inline-flex items-center justify-center w-16 h-16 rounded-2xl mb-6 bg-gradient-to-r ${service.gradient} shadow-lg group-hover:scale-110 transition-transform duration-300`}>
-                    <IconComponent className="h-8 w-8 text-white" />
-                  </motion.div>
+                  <div className="flex justify-center md:justify-start mb-6">
+                    <motion.div className={`flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-r ${service.gradient} shadow-lg group-hover:scale-110 transition-transform duration-300`}>
+                      <IconComponent className="h-8 w-8 text-white" />
+                    </motion.div>
+                  </div>
 
                   {/* Title */}
-                  <h3 className="text-2xl font-bold text-gray-900 mb-4 group-hover:text-orange-600 transition-colors duration-300">
+                  <h3 className="text-2xl font-bold text-gray-900 mb-4 group-hover:text-orange-600 transition-colors duration-300 text-center md:text-left">
                     {service.title}
                   </h3>
 
                   {/* Description */}
-                  <p className="text-gray-600 leading-relaxed mb-6 text-lg">
+                  <p className="text-gray-600 leading-relaxed mb-6 text-lg text-center md:text-left">
                     {service.description}
                   </p>
 
                   {/* Features */}
                   <motion.div className="space-y-2">
                     {service.features.map((feature, featureIndex) => (
-                      <motion.div key={featureIndex} className="flex items-center space-x-2">
+                      <motion.div key={featureIndex} className="flex items-center justify-center md:justify-start space-x-2">
                         <motion.div className={`w-2 h-2 rounded-full bg-gradient-to-r ${service.gradient}`}></motion.div>
                         <span className="text-gray-700 font-medium">{feature}</span>
                       </motion.div>

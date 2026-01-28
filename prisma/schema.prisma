@@ -96,6 +96,7 @@ model Product {
   stock       Int        @default(0)
   unit        String     @default("piece")
   inStock     Boolean    @default(true)
+  deliveryFee Float?     // Per-product delivery fee (null = use default calculation, 0 = free delivery)
   categoryId  String
   category    Category   @relation(fields: [categoryId], references: [id], onDelete: Cascade)
 
@@ -257,8 +258,8 @@ model Reward {
 
 model ReferralSettings {
   id                String   @id @default(cuid()) @map("_id")
-  referrerReward    Float    @default(100) // Amount referrer gets
-  refereeReward     Float    @default(50)  // Amount new user gets
+  referrerReward    String   @default("100") // Amount or description referrer gets (can be number like "₦100" or text like "Refer a friend and earn rewards!")
+  refereeReward     String   @default("50")  // Amount or description new user gets (can be number like "₦50" or text like "Get a bonus on your first purchase!")
   isActive          Boolean  @default(true)
   description       String?
   validUntil        DateTime?

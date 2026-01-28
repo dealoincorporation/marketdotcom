@@ -68,11 +68,14 @@ export function MarketplaceProductCard(props: MarketplaceProductCardProps) {
             type: "Quantity",
             price: variation.price,
             stock: variation.stock,
+            quantity: variation.quantity,
+            unit: variation.unit,
           }
         : undefined,
       maxQuantity: variation ? variation.stock : product.stock,
       categoryId: product.categoryId,
       categoryName: product.category?.name,
+      deliveryFee: (product as any).deliveryFee !== undefined ? (product as any).deliveryFee : null,
     })
 
     if (success) {
@@ -139,7 +142,8 @@ export function MarketplaceProductCard(props: MarketplaceProductCardProps) {
             stock: opt.kind === "variation"
               ? product.variations.find((v) => v.id === opt.id)?.stock || 0
               : product.stock,
-            kind: opt.kind
+            kind: opt.kind,
+            image: opt.image // Include image for standard/base options
           }))}
           selectedVariationId={selectedVariation?.id}
           onVariationSelect={(variationId) => {

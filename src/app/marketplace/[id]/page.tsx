@@ -183,6 +183,7 @@ export default function MarketplaceProductDetailsPage() {
       maxQuantity: variation ? variation.stock : product.stock,
       categoryId: (product as any).categoryId,
       categoryName: product.category?.name,
+      deliveryFee: (product as any).deliveryFee !== undefined ? (product as any).deliveryFee : null,
     })
       
       if (success) addedCount++

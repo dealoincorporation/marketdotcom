@@ -73,6 +73,15 @@ export function OrderSummary({
                   {deliveryFee === 0 ? 'Free' : `₦${deliveryFee.toLocaleString()}`}
                 </span>
               </div>
+              {deliveryFee === 0 && (
+                <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+                  <p className="text-xs sm:text-sm text-green-800 font-medium">
+                    🎉 {typeof window !== 'undefined' && localStorage.getItem('freeDeliveryMessage') 
+                      ? localStorage.getItem('freeDeliveryMessage') 
+                      : 'Free delivery!'}
+                  </p>
+                </div>
+              )}
               <div className="relative">
                 <div className="border-t border-orange-300 pt-3">
                   <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 bg-gradient-to-r from-orange-500 to-orange-600 text-white p-3 sm:p-4 rounded-lg">

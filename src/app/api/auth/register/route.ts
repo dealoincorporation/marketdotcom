@@ -2,32 +2,37 @@ import { NextRequest, NextResponse } from "next/server"
 import bcrypt from "bcryptjs"
 import { getPrismaClient } from "@/lib/prisma"
 import { sendEmailVerificationEmail, sendAdminUserRegistrationNotification } from "@/lib/email"
-import crypto from "crypto"
+import { registerApiSchema } from "@/lib/validations/auth-api"
 
 // Force dynamic rendering to avoid Edge Runtime issues
 export const dynamic = 'force-dynamic'
 
 export async function POST(request: NextRequest) {
   try {
-    const { name, email, phone, password, referralCode, makeAdmin } = await request.json()
+    const body = await request.json()
+
+    // Validate input using zod
+    const validationResult = registerApiSchema.safeParse(body)
+    
+    if (!validationResult.success) {
+      const errors = validationResult.error.issues.map(err => ({
+        field: err.path.join('.'),
+        message: err.message
+      }))
+      
+      return NextResponse.json(
+        { 
+          message: errors[0]?.message || "Validation failed",
+          errors 
+        },
+        { status: 400 }
+      )
+    }
+
+    const { name, email, phone, password, referralCode, makeAdmin } = validationResult.data
 
     // Special admin creation for initial setup (temporary)
     const isAdminCreation = makeAdmin && email === "marketdotcominfo@gmail.com"
-
-    // Validate input
-    if (!name || !email || !phone || !password) {
-      return NextResponse.json(
-        { message: "All fields are required" },
-        { status: 400 }
-      )
-    }
-
-    if (password.length < 6) {
-      return NextResponse.json(
-        { message: "Password must be at least 6 characters" },
-        { status: 400 }
-      )
-    }
 
     // Get Prisma client lazily to avoid build-time initialization
     const prisma = await getPrismaClient()
@@ -91,7 +96,7 @@ export async function POST(request: NextRequest) {
     })
 
     // Create referral record if referrer exists
-    if (referrer) {
+    if (referrer && referralCode) {
       await prisma.referral.create({
         data: {
           referrerId: referrer.id,
@@ -129,9 +134,15 @@ export async function POST(request: NextRequest) {
     // Send verification email
     try {
       await sendEmailVerificationEmail(user.email, emailVerificationCode)
-    } catch (emailError) {
-      console.error("Failed to send verification email:", emailError)
-      // Don't fail registration if email fails, but log it
+      console.log('✅ Verification email sent successfully to:', user.email)
+    } catch (emailError: any) {
+      console.error("❌ Failed to send verification email:", {
+        error: emailError?.message || String(emailError),
+        email: user.email,
+        stack: emailError?.stack,
+        note: 'Registration will continue, but user needs to request verification email'
+      })
+      // Don't fail registration if email fails, but log it for debugging
     }
 
     // Send admin notification

@@ -377,7 +377,6 @@ export default function ManageDeliveriesTab({ isAdmin }: ManageDeliveriesTabProp
                   value={formData.maxOrders}
                   onChange={(e) => setFormData(prev => ({ ...prev, maxOrders: parseInt(e.target.value) || 10 }))}
                   min="1"
-                  max="50"
                   className="h-12 text-base border-gray-300 focus:border-orange-500 focus:ring-orange-500"
                   placeholder="10"
                 />

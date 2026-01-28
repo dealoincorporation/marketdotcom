@@ -44,12 +44,45 @@ export async function POST(request: Request) {
           { status: 404 }
         )
       }
-    } else if (paymentMethod !== 'paystack' && paymentMethod !== 'card') {
+    } else if (paymentMethod !== 'paystack') {
       // For non-Paystack payments, orderId is required
       return NextResponse.json(
         { error: "Order ID is required for this payment method" },
         { status: 400 }
       )
+    }
+
+    // DUPLICATE PREVENTION: Check if order already has a pending payment
+    if (orderId && order) {
+      // Check if there's already a payment in progress for this order
+      const existingPayment = await prisma.payment.findFirst({
+        where: {
+          orderId: orderId,
+          status: { in: ["PENDING", "COMPLETED"] }
+        },
+        orderBy: { createdAt: 'desc' }
+      })
+
+      if (existingPayment && existingPayment.status === "COMPLETED") {
+        return NextResponse.json(
+          { error: "Order has already been paid" },
+          { status: 400 }
+        )
+      }
+
+      // If there's a pending payment, reuse the reference
+      if (existingPayment && existingPayment.status === "PENDING") {
+        const reference = existingPayment.transactionId
+        // Verify payment status with Paystack
+        const verifyResponse = await PaystackService.verifyTransaction(reference)
+        if (verifyResponse.status && verifyResponse.data.status === 'success') {
+          return NextResponse.json(
+            { error: "Payment already in progress. Please complete the existing payment." },
+            { status: 400 }
+          )
+        }
+        // If payment failed or expired, continue with new reference
+      }
     }
 
     // Generate unique reference
@@ -75,7 +108,7 @@ export async function POST(request: Request) {
       amount: amount,
       email: user.email || "",
       reference: reference,
-      callback_url: `${process.env.NEXTAUTH_URL}/checkout?reference=${reference}`,
+      callback_url: `${process.env.NEXTAUTH_URL || process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/checkout?reference=${reference}`,
       metadata: {
         orderId: orderId || null,
         userId: user.userId,

@@ -1,4 +1,5 @@
 import type { MarketplaceProduct, VariationOption } from "./types"
+import { normalizeImageUrl, normalizeImageUrls } from "@/lib/image-utils"
 
 export function formatPrice(price: number): string {
   return `₦${price.toLocaleString()}`
@@ -8,11 +9,19 @@ export function buildVariationOptions(product: MarketplaceProduct): VariationOpt
   const options: VariationOption[] = []
 
   if (product.stock > 0) {
+    // Get the first product image for standard option
+    // Use normalizeImageUrls to handle both images array and image field
+    const normalizedImages = normalizeImageUrls(product.images, (product as any).image)
+    const standardImage = normalizedImages.length > 0 
+      ? normalizedImages[0] 
+      : normalizeImageUrl((product as any).image) || undefined
+    
     options.push({
       kind: "base",
       id: "base",
       label: `Standard`,
       price: product.basePrice,
+      image: standardImage,
     })
   }
 

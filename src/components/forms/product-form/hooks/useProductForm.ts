@@ -18,6 +18,7 @@ export function useProductForm({ initialData, onSubmit }: UseProductFormProps) {
     stock: initialData?.stock || 0,
     unit: initialData?.unit || '',
     inStock: initialData?.inStock ?? true,
+    deliveryFee: initialData?.deliveryFee !== undefined ? initialData.deliveryFee : null,
     images: normalizeImageUrls(initialData?.images, initialData?.image),
     variations: initialData?.variations?.map((v: any) => ({
       id: v.id,

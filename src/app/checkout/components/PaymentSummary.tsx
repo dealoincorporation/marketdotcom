@@ -48,6 +48,15 @@ export function PaymentSummary({
                 {deliveryFee === 0 ? 'Free' : `₦${deliveryFee.toLocaleString()}`}
               </span>
             </div>
+            {deliveryFee === 0 && (
+              <div className="bg-green-50 border border-green-200 rounded-lg p-3 mb-3">
+                <p className="text-xs sm:text-sm text-green-800 font-medium">
+                  🎉 {typeof window !== 'undefined' && localStorage.getItem('freeDeliveryMessage') 
+                    ? localStorage.getItem('freeDeliveryMessage') 
+                    : 'Free delivery!'}
+                </p>
+              </div>
+            )}
             {useWallet && (
               <div className="flex justify-between items-center py-3 px-3 sm:px-4 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg">
                 <span className="font-medium text-green-900 text-sm sm:text-base">Wallet Deduction</span>
@@ -101,15 +110,14 @@ export function PaymentSummary({
                 <div className="text-xs sm:text-sm text-gray-600 mb-2">Payment Method</div>
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-center gap-2 sm:space-x-2">
                   <div className="flex items-center justify-center space-x-2">
-                    {paymentMethod === 'card' && <CreditCard className="h-4 w-4 sm:h-5 sm:w-5 text-gray-600" />}
+                    {paymentMethod === 'paystack' && <CreditCard className="h-4 w-4 sm:h-5 sm:w-5 text-gray-600" />}
                     {paymentMethod === 'wallet' && <span className="text-base sm:text-lg">💰</span>}
-                    {paymentMethod === 'paystack' && <span className="text-base sm:text-lg">🏦</span>}
                     <span className="text-sm font-medium text-gray-800">
-                      {paymentMethod === 'card' ? 'Credit/Debit Card' :
-                       paymentMethod === 'wallet' ? 'Wallet Balance' : 'Bank Transfer'}
+                      {paymentMethod === 'paystack' ? 'Card/Bank Transfer' :
+                       paymentMethod === 'wallet' ? 'Wallet Balance' : 'Card/Bank Transfer'}
                     </span>
                   </div>
-                  {useWallet && paymentMethod === 'card' && (
+                  {useWallet && paymentMethod === 'paystack' && (
                     <span className="text-xs text-green-600 font-medium">
                       (+₦{walletDeduction.toLocaleString()} from wallet)
                     </span>

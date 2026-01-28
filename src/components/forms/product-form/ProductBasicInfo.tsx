@@ -185,6 +185,39 @@ export function ProductBasicInfo({
                 Product is in stock
               </Label>
             </div>
+
+            {/* Delivery Fee */}
+            <div className="space-y-2">
+              <Label htmlFor="deliveryFee" className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                <DollarSign className="h-4 w-4 text-orange-600" />
+                Delivery Fee (₦)
+                <span className="text-xs font-normal text-gray-400">(optional)</span>
+              </Label>
+              <Input
+                id="deliveryFee"
+                type="number"
+                min="0"
+                step="0.01"
+                value={formData.deliveryFee === null || formData.deliveryFee === undefined ? '' : formData.deliveryFee}
+                onChange={(e) => {
+                  const value = e.target.value
+                  if (value === '') {
+                    onInputChange('deliveryFee', null)
+                  } else {
+                    const numValue = parseFloat(value)
+                    onInputChange('deliveryFee', isNaN(numValue) ? null : numValue)
+                  }
+                }}
+                placeholder="Leave empty for default calculation, 0 for free delivery"
+                className="h-12 text-base border-2 border-gray-300 focus:border-orange-500 focus:ring-orange-200 rounded-lg"
+              />
+              <div className="flex items-start gap-2 bg-blue-50 border border-blue-200 rounded-lg p-3">
+                <Info className="h-4 w-4 text-blue-600 mt-0.5 flex-shrink-0" />
+                <p className="text-xs text-blue-700">
+                  Leave empty to use default delivery calculation, set to 0 for free delivery, or enter a custom fee per item.
+                </p>
+              </div>
+            </div>
           </div>
 
           {/* Description */}

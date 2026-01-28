@@ -13,14 +13,19 @@ export async function POST(request: Request) {
     const rawBody = await request.text()
     const signature = request.headers.get('x-paystack-signature') || ''
 
-    // Verify webhook signature
+    // Verify webhook signature (CRITICAL for security)
+    if (!PAYSTACK_SECRET_KEY) {
+      console.error('PAYSTACK_SECRET_KEY not configured')
+      return NextResponse.json({ error: 'Webhook configuration error' }, { status: 500 })
+    }
+
     const expectedSignature = crypto
       .createHmac('sha512', PAYSTACK_SECRET_KEY)
       .update(rawBody)
       .digest('hex')
 
     if (signature !== expectedSignature) {
-      console.error('Invalid webhook signature')
+      console.error('Invalid webhook signature - potential security threat')
       return NextResponse.json({ error: 'Invalid signature' }, { status: 400 })
     }
 
@@ -56,6 +61,23 @@ async function handleSuccessfulPayment(data: any, prisma: any) {
   const { reference, amount, customer, metadata } = data
 
   try {
+    // IDEMPOTENCY CHECK: Check if payment already processed
+    const existingPayment = await prisma.payment.findUnique({
+      where: { transactionId: reference }
+    })
+
+    if (existingPayment) {
+      console.log('Payment already processed (idempotency check):', reference)
+      // Verify order status matches
+      const order = await prisma.order.findFirst({
+        where: { transactionId: reference }
+      })
+      if (order && order.paymentStatus === "COMPLETED") {
+        console.log('Payment and order already processed, skipping duplicate')
+        return // Already processed, return success to acknowledge webhook
+      }
+    }
+
     // Find the order by transaction reference
     const order = await prisma.order.findFirst({
       where: { transactionId: reference },
@@ -64,6 +86,12 @@ async function handleSuccessfulPayment(data: any, prisma: any) {
 
     if (!order) {
       console.error('Order not found for reference:', reference)
+      return
+    }
+
+    // Additional check: prevent processing if order already completed
+    if (order.paymentStatus === "COMPLETED") {
+      console.log('Order already completed, skipping duplicate processing:', order.id)
       return
     }
 
@@ -76,9 +104,14 @@ async function handleSuccessfulPayment(data: any, prisma: any) {
       }
     })
 
-    // Create payment record
-    await prisma.payment.create({
-      data: {
+    // Create payment record (use upsert for idempotency)
+    await prisma.payment.upsert({
+      where: { transactionId: reference },
+      update: {
+        status: "COMPLETED",
+        gatewayResponse: data
+      },
+      create: {
         orderId: order.id,
         userId: order.userId,
         amount: amount / 100, // Convert from kobo to naira
@@ -90,25 +123,36 @@ async function handleSuccessfulPayment(data: any, prisma: any) {
       }
     })
 
-    // Award loyalty points for successful payment
-    const pointsEarned = Math.floor(order.finalAmount / 100) // 1 point per ₦100
-    if (pointsEarned > 0) {
-      await prisma.user.update({
-        where: { id: order.userId },
-        data: {
-          points: { increment: pointsEarned }
-        }
-      })
+    // Award loyalty points for successful payment (only if not already awarded)
+    const existingReward = await prisma.reward.findFirst({
+      where: {
+        orderId: order.id,
+        type: "PURCHASE"
+      }
+    })
 
-      await prisma.reward.create({
-        data: {
-          userId: order.userId,
-          points: pointsEarned,
-          description: `Points earned from payment for order #${order.id}`,
-          type: "PURCHASE",
-          orderId: order.id
-        }
-      })
+    if (!existingReward) {
+      const pointsEarned = Math.floor(order.finalAmount / 100) // 1 point per ₦100
+      if (pointsEarned > 0) {
+        await prisma.user.update({
+          where: { id: order.userId },
+          data: {
+            points: { increment: pointsEarned }
+          }
+        })
+
+        await prisma.reward.create({
+          data: {
+            userId: order.userId,
+            points: pointsEarned,
+            description: `Points earned from payment for order #${order.id}`,
+            type: "PURCHASE",
+            orderId: order.id
+          }
+        })
+      }
+    } else {
+      console.log('Points already awarded for order:', order.id)
     }
 
     // Create notification
@@ -142,6 +186,16 @@ async function handleFailedPayment(data: any, prisma: any) {
   const { reference } = data
 
   try {
+    // IDEMPOTENCY CHECK: Don't reprocess if already handled
+    const existingPayment = await prisma.payment.findUnique({
+      where: { transactionId: reference }
+    })
+
+    if (existingPayment && existingPayment.status === "FAILED") {
+      console.log('Failed payment already processed (idempotency check):', reference)
+      return
+    }
+
     // Find the order
     const order = await prisma.order.findFirst({
       where: { transactionId: reference }
@@ -149,6 +203,12 @@ async function handleFailedPayment(data: any, prisma: any) {
 
     if (!order) {
       console.error('Order not found for failed payment reference:', reference)
+      return
+    }
+
+    // Don't update if already completed (payment might have succeeded after failure)
+    if (order.paymentStatus === "COMPLETED") {
+      console.log('Order already completed, not updating to failed:', order.id)
       return
     }
 
@@ -161,9 +221,14 @@ async function handleFailedPayment(data: any, prisma: any) {
       }
     })
 
-    // Create payment record for failed payment
-    await prisma.payment.create({
-      data: {
+    // Create or update payment record for failed payment (use upsert for idempotency)
+    await prisma.payment.upsert({
+      where: { transactionId: reference },
+      update: {
+        status: "FAILED",
+        gatewayResponse: data
+      },
+      create: {
         orderId: order.id,
         userId: order.userId,
         amount: data.amount / 100,

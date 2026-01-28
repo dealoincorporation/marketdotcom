@@ -22,5 +22,5 @@ export interface MarketplaceProduct {
 }
 
 export type VariationOption =
-  | { kind: "base"; id: "base"; label: string; price: number }
+  | { kind: "base"; id: "base"; label: string; price: number; image?: string }
   | { kind: "variation"; id: string; label: string; price: number; image?: string }

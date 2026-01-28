@@ -34,6 +34,13 @@ export function ModernNavigation() {
   ]
 
   const handleNavClick = (href: string, external: boolean) => {
+    // Redirect authenticated users to dashboard if they try to access marketplace or home
+    if (user && (href === "/marketplace" || href === "/")) {
+      window.location.href = "/dashboard"
+      setIsOpen(false)
+      return
+    }
+
     if (!external && href.startsWith("#")) {
       const element = document.querySelector(href)
       if (element) {
@@ -69,25 +76,47 @@ export function ModernNavigation() {
             whileHover={{ scale: 1.02 }}
             transition={{ duration: 0.2 }}
           >
-            <Link href="/" className="flex items-center space-x-3 group">
-              <img
-                src="/mrktdotcom-logo.png"
-                alt="Marketdotcom Logo"
-                className="h-28 w-28 sm:h-32 sm:w-32 md:h-36 md:w-36 lg:h-40 lg:w-40 object-contain"
-              />
-              <div>
-                <span className={`text-xl lg:text-2xl font-bold transition-colors ${
-                isScrolled ? 'text-gray-900 group-hover:text-orange-600' : 'text-gray-900 group-hover:text-orange-600'
-              }`}>
-                  Marketdotcom
-                </span>
-                <div className={`text-xs -mt-1 hidden sm:block ${
-                  isScrolled ? 'text-gray-500' : 'text-gray-600'
+            {user ? (
+              <Link href="/dashboard" className="flex items-center space-x-3 group">
+                <img
+                  src="/mrktdotcom-logo.png"
+                  alt="Marketdotcom Logo"
+                  className="h-28 w-28 sm:h-32 sm:w-32 md:h-36 md:w-36 lg:h-40 lg:w-40 object-contain"
+                />
+                <div>
+                  <span className={`text-xl lg:text-2xl font-bold transition-colors ${
+                  isScrolled ? 'text-gray-900 group-hover:text-orange-600' : 'text-gray-900 group-hover:text-orange-600'
                 }`}>
-                  Smart Shopping Solutions
+                    Marketdotcom
+                  </span>
+                  <div className={`text-xs -mt-1 hidden sm:block ${
+                    isScrolled ? 'text-gray-500' : 'text-gray-600'
+                  }`}>
+                    Smart Shopping Solutions
+                  </div>
                 </div>
-              </div>
-            </Link>
+              </Link>
+            ) : (
+              <Link href="/" className="flex items-center space-x-3 group">
+                <img
+                  src="/mrktdotcom-logo.png"
+                  alt="Marketdotcom Logo"
+                  className="h-28 w-28 sm:h-32 sm:w-32 md:h-36 md:w-36 lg:h-40 lg:w-40 object-contain"
+                />
+                <div>
+                  <span className={`text-xl lg:text-2xl font-bold transition-colors ${
+                  isScrolled ? 'text-gray-900 group-hover:text-orange-600' : 'text-gray-900 group-hover:text-orange-600'
+                }`}>
+                    Marketdotcom
+                  </span>
+                  <div className={`text-xs -mt-1 hidden sm:block ${
+                    isScrolled ? 'text-gray-500' : 'text-gray-600'
+                  }`}>
+                    Smart Shopping Solutions
+                  </div>
+                </div>
+              </Link>
+            )}
           </motion.div>
 
           {/* Desktop Navigation */}

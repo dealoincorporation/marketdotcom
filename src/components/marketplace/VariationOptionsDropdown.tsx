@@ -3,7 +3,7 @@
 import { ChevronDown } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { formatPrice } from "./utils"
-import { normalizeImageUrl } from "@/lib/image-utils"
+import { normalizeImageUrl, normalizeImageUrls } from "@/lib/image-utils"
 import type { MarketplaceProduct, VariationOption } from "./types"
 
 interface VariationOptionsDropdownProps {
@@ -65,11 +65,33 @@ export function VariationOptionsDropdown({
                 : undefined
               const stock = variation ? variation.stock : product.stock
               
-              // Get variation image, fallback to product image or default
-              const variationImage = variation?.image || (option.kind === "variation" ? option.image : undefined)
-              const normalizedImage = normalizeImageUrl(variationImage) || 
-                (product.images && product.images.length > 0 ? normalizeImageUrl(product.images[0]) : null) ||
-                "/market_image.jpeg"
+              // Get image for the option
+              // For standard (base) options, use the product's standard image (first image from images array or image field)
+              // For variation options, use variation image or option image
+              let normalizedImage: string
+              if (option.kind === "base") {
+                // Standard option - prioritize option.image (which should be set from buildVariationOptions)
+                // Then try product images array, then product.image field, finally default
+                const standardImages = normalizeImageUrls(
+                  option.image,
+                  product.images,
+                  (product as any).image
+                )
+                normalizedImage = standardImages.length > 0 
+                  ? standardImages[0] 
+                  : "/market_image.jpeg"
+              } else {
+                // Variation option - use variation image, option image, or product images as fallback
+                const variationImages = normalizeImageUrls(
+                  variation?.image,
+                  option.image,
+                  product.images,
+                  (product as any).image
+                )
+                normalizedImage = variationImages.length > 0 
+                  ? variationImages[0] 
+                  : "/market_image.jpeg"
+              }
               
               return (
                 <button

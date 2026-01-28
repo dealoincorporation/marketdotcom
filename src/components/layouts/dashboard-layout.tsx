@@ -17,12 +17,14 @@ import {
   LogOut,
   Plus,
   Minus,
+  Users,
+  DollarSign,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useCartStore } from '@/lib/cart-store'
 import { useAuth } from '@/contexts/AuthContext'
 import { formatCurrency, getInitials } from '@/lib/helpers'
-type DashboardTab = "marketplace" | "orders" | "manage-products" | "manage-categories" | "manage-deliveries" | "wallet" | "admin"
+type DashboardTab = "marketplace" | "orders" | "manage-products" | "manage-categories" | "manage-deliveries" | "manage-delivery-fees" | "manage-referrals" | "wallet" | "admin"
 
 interface DashboardLayoutProps {
   children: ReactNode
@@ -195,6 +197,38 @@ export function DashboardLayout({
                 >
                   <Truck className="h-5 w-5 flex-shrink-0" />
                   <span className="text-sm md:text-base">Manage Deliveries</span>
+                </button>
+
+                <button
+                  onClick={() => {
+                    onTabChange('manage-delivery-fees')
+                    setIsMobileMenuOpen(false)
+                  }}
+                  className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-left transition-all duration-200 cursor-pointer touch-manipulation ${
+                    activeTab === 'manage-delivery-fees'
+                      ? 'bg-gradient-to-r from-orange-50 to-red-50 text-orange-600 border-l-4 border-orange-600 shadow-sm font-semibold'
+                      : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900 active:bg-gray-100'
+                  }`}
+                  type="button"
+                >
+                  <DollarSign className="h-5 w-5 flex-shrink-0" />
+                  <span className="text-sm md:text-base">Delivery Fees</span>
+                </button>
+
+                <button
+                  onClick={() => {
+                    onTabChange('manage-referrals')
+                    setIsMobileMenuOpen(false)
+                  }}
+                  className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-left transition-all duration-200 cursor-pointer touch-manipulation ${
+                    activeTab === 'manage-referrals'
+                      ? 'bg-gradient-to-r from-orange-50 to-red-50 text-orange-600 border-l-4 border-orange-600 shadow-sm font-semibold'
+                      : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900 active:bg-gray-100'
+                  }`}
+                  type="button"
+                >
+                  <Users className="h-5 w-5 flex-shrink-0" />
+                  <span className="text-sm md:text-base">Manage Referrals</span>
                 </button>
               </>
             )}
@@ -438,23 +472,30 @@ export function DashboardLayout({
             onClick={(e) => e.stopPropagation()}
           >
             {/* Cart Header */}
-            <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-gradient-to-r from-orange-500 to-red-500 text-white">
+            <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-gradient-to-r from-orange-500 to-red-500 text-white sticky top-0 z-10">
               <h2 className="text-lg font-bold flex items-center">
                 <ShoppingCart className="h-5 w-5 mr-2" />
                 Your Cart ({totalItems})
               </h2>
-              <Button
-                variant="ghost"
-                size="sm"
+              <button
                 onClick={() => setIsCartOpen(false)}
-                className="text-white hover:bg-white/20 p-1"
+                className="text-white hover:bg-white/20 rounded-full p-2 transition-colors focus:outline-none focus:ring-2 focus:ring-white/50 flex-shrink-0"
+                aria-label="Close cart"
               >
-                <X className="h-5 w-5" />
-              </Button>
+                <X className="h-6 w-6" />
+              </button>
             </div>
 
             {/* Cart Content */}
-            <div className="flex-1 overflow-y-auto p-4">
+            <div className="flex-1 overflow-y-auto p-4 relative">
+              {/* Floating Close Button - Always Visible */}
+              <button
+                onClick={() => setIsCartOpen(false)}
+                className="absolute top-2 right-2 z-20 bg-white hover:bg-gray-100 text-gray-700 rounded-full p-2 shadow-lg border border-gray-200 transition-all hover:scale-110 focus:outline-none focus:ring-2 focus:ring-orange-500"
+                aria-label="Close cart"
+              >
+                <X className="h-5 w-5" />
+              </button>
               {items.length === 0 ? (
                 <div className="text-center py-12">
                   <ShoppingCart className="h-12 w-12 text-gray-300 mx-auto mb-4" />

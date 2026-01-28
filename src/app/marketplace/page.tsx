@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { motion, AnimatePresence } from "framer-motion"
 import { ShoppingBag, Search, Filter, ShoppingCart, Heart, Star, Plus, Minus, Menu, X, ChevronLeft, ChevronRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -43,10 +44,21 @@ export default function MarketplacePage() {
   const [isLoading, setIsLoading] = useState(true)
   const [filtersExpanded, setFiltersExpanded] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-  const { user } = useAuth()
+  const { user, isLoading: authLoading } = useAuth()
   const { items } = useCartStore()
+  const router = useRouter()
 
-  const isAdmin = user?.role === "ADMIN"
+  // Redirect authenticated users to dashboard
+  useEffect(() => {
+    if (!authLoading && user) {
+      router.push('/dashboard')
+    }
+  }, [user, authLoading, router])
+
+  // Don't render content if user is authenticated
+  if (user) {
+    return null
+  }
 
   // Fetch products and categories on component mount
   useEffect(() => {
@@ -215,11 +227,6 @@ export default function MarketplacePage() {
               />
               <div className="flex flex-col">
                 <span className="text-lg font-bold text-gray-900 hidden sm:block">Marketplace</span>
-                {isAdmin && (
-                  <span className="text-xs text-orange-600 font-medium hidden sm:block">
-                    Admin Mode
-                  </span>
-                )}
               </div>
             </Link>
 
@@ -235,7 +242,7 @@ export default function MarketplacePage() {
                   <Link href="/cart">
                     <Button variant="outline" size="sm" className="relative">
                       <ShoppingCart className="h-4 w-4 mr-2" />
-                      {isAdmin ? 'Cart (Admin)' : 'Cart'}
+                      Cart
                       {cartItemCount > 0 && (
                         <Badge className="absolute -top-2 -right-2 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs">
                           {cartItemCount}

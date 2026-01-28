@@ -86,24 +86,53 @@ export async function POST(request: Request) {
 
     console.log('Order found for verification:', { orderId: order.id, currentStatus: order.status })
 
+    // RECONCILIATION: Verify amount matches
+    const expectedAmount = order.finalAmount * 100 // Convert to kobo
+    const actualAmount = transactionData.amount
+    if (transactionData.status === 'success' && Math.abs(expectedAmount - actualAmount) > 1) {
+      console.error('Amount mismatch detected:', {
+        orderId: order.id,
+        expected: expectedAmount,
+        actual: actualAmount,
+        difference: Math.abs(expectedAmount - actualAmount)
+      })
+      // Log but don't fail - amounts might differ due to rounding or fees
+    }
+
+    // IDEMPOTENCY CHECK: Don't update if already completed
+    if (order.paymentStatus === "COMPLETED" && transactionData.status === 'success') {
+      console.log('Order already completed, skipping duplicate update:', order.id)
+      // Still return success to acknowledge verification
+      return NextResponse.json({
+        success: true,
+        message: "Payment already verified",
+        orderId: order.id,
+        status: "COMPLETED"
+      })
+    }
+
     // Update order based on payment status
     const paymentStatus = transactionData.status === 'success' ? 'COMPLETED' : 'FAILED'
     const orderStatus = transactionData.status === 'success' ? 'CONFIRMED' : 'CANCELLED'
 
-    await prisma.order.update({
-      where: { id: order.id },
-      data: {
-        paymentStatus: paymentStatus,
-        status: orderStatus
-      }
-    })
+    // Only update if status is different (idempotency)
+    if (order.paymentStatus !== paymentStatus) {
+      await prisma.order.update({
+        where: { id: order.id },
+        data: {
+          paymentStatus: paymentStatus,
+          status: orderStatus
+        }
+      })
+    }
 
-    // Create or update payment record
+    // Create or update payment record (idempotent upsert)
     await prisma.payment.upsert({
       where: { transactionId: reference },
       update: {
         status: paymentStatus,
-        gatewayResponse: transactionData
+        gatewayResponse: transactionData,
+        amount: transactionData.amount / 100 // Update amount in case it changed
       },
       create: {
         orderId: order.id,

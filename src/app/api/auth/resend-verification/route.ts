@@ -64,16 +64,30 @@ export async function POST(request: NextRequest) {
       await sendEmailVerificationEmail(user.email, emailVerificationCode)
 
       return NextResponse.json(
-        { message: "Verification email sent successfully. Please check your inbox." },
+        { 
+          message: "Verification email sent successfully. Please check your inbox.",
+          success: true
+        },
         { status: 200 }
       )
-    } catch (emailError) {
-      console.error("Failed to send verification email:", emailError)
+    } catch (emailError: any) {
+      console.error("❌ Failed to send verification email:", {
+        error: emailError?.message || String(emailError),
+        email: user.email,
+        stack: emailError?.stack
+      })
 
-      // Don't reveal email sending failure for security
+      // Return error details in development, generic message in production
+      const isDevelopment = process.env.NODE_ENV === 'development'
       return NextResponse.json(
-        { message: "If an account with this email exists, we've sent a new verification link." },
-        { status: 200 }
+        { 
+          message: isDevelopment 
+            ? `Failed to send email: ${emailError?.message || 'Unknown error'}. Please check server logs.`
+            : "If an account with this email exists, we've sent a new verification link.",
+          success: false,
+          error: isDevelopment ? emailError?.message : undefined
+        },
+        { status: isDevelopment ? 500 : 200 }
       )
     }
   } catch (error: any) {

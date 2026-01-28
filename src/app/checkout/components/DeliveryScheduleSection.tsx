@@ -55,6 +55,38 @@ export function DeliveryScheduleSection({
         <p className="text-orange-100 mt-1 text-sm sm:text-base break-words">Choose when you'd like your order delivered</p>
       </div>
       <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
+        {/* Selected Delivery Date Display */}
+        {deliveryDate && (
+          <div className="bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-200 rounded-xl p-4 mb-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <div className="p-2 bg-green-100 rounded-lg">
+                  <Check className="h-5 w-5 text-green-600" />
+                </div>
+                <div>
+                  <p className="text-xs text-green-700 font-medium mb-1">Selected Delivery Date</p>
+                  <p className="text-lg font-bold text-green-900">
+                    {new Date(deliveryDate).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
+                  </p>
+                  {deliveryTime && (
+                    <p className="text-sm text-green-700 mt-1">Time: {deliveryTime}</p>
+                  )}
+                </div>
+              </div>
+              {user?.role === 'ADMIN' && (
+                <Button
+                  onClick={onShowCreateSlotsModal}
+                  size="sm"
+                  className="bg-orange-600 hover:bg-orange-700 text-white"
+                >
+                  <Plus className="h-4 w-4 mr-1" />
+                  Add Slot
+                </Button>
+              )}
+            </div>
+          </div>
+        )}
+
         {deliverySlots.length === 0 && !deliverySlotsLoading && (
           <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
             <div className="flex items-start">
@@ -65,22 +97,34 @@ export function DeliveryScheduleSection({
                   No delivery slots have been configured yet. Configure delivery options to continue with your order.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-2">
-                  <Button
-                    onClick={onShowCreateSlotsModal}
-                    size="sm"
-                    className="bg-orange-600 hover:bg-orange-700 text-white text-xs px-3 py-1 h-8"
-                  >
-                    <Plus className="h-3 w-3 mr-1" />
-                    Configure Slots
-                  </Button>
                   {user?.role === 'ADMIN' && (
+                    <>
+                      <Button
+                        onClick={onShowCreateSlotsModal}
+                        size="sm"
+                        className="bg-orange-600 hover:bg-orange-700 text-white text-xs px-3 py-1 h-8"
+                      >
+                        <Plus className="h-3 w-3 mr-1" />
+                        Create Delivery Slots
+                      </Button>
+                      <Button
+                        onClick={() => window.open('/dashboard?tab=deliveries', '_blank')}
+                        variant="outline"
+                        size="sm"
+                        className="text-xs px-3 py-1 h-8 border-orange-300 text-orange-700 hover:bg-orange-50"
+                      >
+                        Advanced Setup
+                      </Button>
+                    </>
+                  )}
+                  {user?.role !== 'ADMIN' && (
                     <Button
-                      onClick={() => window.open('/dashboard?tab=deliveries', '_blank')}
-                      variant="outline"
+                      onClick={onShowCreateSlotsModal}
                       size="sm"
-                      className="text-xs px-3 py-1 h-8 border-orange-300 text-orange-700 hover:bg-orange-50"
+                      className="bg-orange-600 hover:bg-orange-700 text-white text-xs px-3 py-1 h-8"
                     >
-                      Advanced Setup
+                      <Plus className="h-3 w-3 mr-1" />
+                      Configure Slots
                     </Button>
                   )}
                 </div>
@@ -90,10 +134,23 @@ export function DeliveryScheduleSection({
         )}
 
         <div className="space-y-3">
-          <Label className="text-sm font-semibold text-gray-700 flex items-center">
-            <Calendar className="h-4 w-4 mr-2 text-orange-600" />
-            Preferred Delivery Date
-          </Label>
+          <div className="flex items-center justify-between">
+            <Label className="text-sm font-semibold text-gray-700 flex items-center">
+              <Calendar className="h-4 w-4 mr-2 text-orange-600" />
+              Preferred Delivery Date
+            </Label>
+            {user?.role === 'ADMIN' && !deliveryDate && (
+              <Button
+                onClick={onShowCreateSlotsModal}
+                size="sm"
+                variant="outline"
+                className="text-xs px-3 py-1 h-8 border-orange-300 text-orange-700 hover:bg-orange-50"
+              >
+                <Plus className="h-3 w-3 mr-1" />
+                Create Slot
+              </Button>
+            )}
+          </div>
           <div className="relative" ref={dropdownRef}>
             <button
               type="button"
@@ -222,6 +279,10 @@ export function DeliveryScheduleSection({
                 <li className="flex items-start">
                   <Check className="h-3 w-3 sm:h-4 sm:w-4 mr-2 text-orange-600 flex-shrink-0 mt-0.5" />
                   <span className="break-words">Orders after 3 PM delivered next day</span>
+                </li>
+                <li className="flex items-start">
+                  <Check className="h-3 w-3 sm:h-4 sm:w-4 mr-2 text-orange-600 flex-shrink-0 mt-0.5" />
+                  <span className="break-words">Delivery fees calculated per product</span>
                 </li>
                 <li className="flex items-start">
                   <Check className="h-3 w-3 sm:h-4 sm:w-4 mr-2 text-orange-600 flex-shrink-0 mt-0.5" />

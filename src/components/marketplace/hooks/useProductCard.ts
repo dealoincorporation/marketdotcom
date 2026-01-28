@@ -33,7 +33,7 @@ export function useProductCard({ product, selectedVariationId }: UseProductCardP
   
   const selectedVariationImage = React.useMemo(() => {
     if (!selectedVariation) return null
-    if (selectedVariation.kind !== "variation") return null
+    // For both base (standard) and variation options, use the option's image
     return normalizeImageUrl(selectedVariation.image)
   }, [selectedVariation])
 

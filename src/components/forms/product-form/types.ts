@@ -7,6 +7,7 @@ export interface ProductFormType {
   stock: number
   unit: string
   inStock: boolean
+  deliveryFee?: number | null // null = use default calculation, 0 = free delivery, number = custom fee
   images: string[]
   variations: Array<{
     id?: string

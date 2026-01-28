@@ -8,21 +8,35 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Loader2, UserPlus, Mail, Lock, User, Phone } from "lucide-react"
+import { Loader2, UserPlus, Mail, Lock, User, Phone, Gift, Eye, EyeOff } from "lucide-react"
 import { AuthLayout } from "@/components/auth-layout"
+import { registerSchema, type RegisterFormData } from "@/lib/validations/auth"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { useForm } from "react-hook-form"
 
 export default function RegisterPage() {
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    password: "",
-    confirmPassword: "",
-    phone: "",
-  })
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const router = useRouter()
   const { user, register } = useAuth()
+
+  const {
+    register: registerField,
+    handleSubmit: handleFormSubmit,
+    formState: { errors },
+  } = useForm<RegisterFormData>({
+    resolver: zodResolver(registerSchema),
+    defaultValues: {
+      name: "",
+      email: "",
+      phone: "",
+      password: "",
+      confirmPassword: "",
+      referralCode: undefined,
+    },
+  })
 
   // Redirect authenticated users away from register page
   useEffect(() => {
@@ -31,41 +45,23 @@ export default function RegisterPage() {
     }
   }, [user, router])
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    })
-    setError("")
-  }
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+  const onSubmit = async (data: RegisterFormData) => {
     setLoading(true)
     setError("")
 
-    // Validation
-    if (formData.password !== formData.confirmPassword) {
-      setError("Passwords do not match")
-      setLoading(false)
-      return
-    }
-
-    if (formData.password.length < 6) {
-      setError("Password must be at least 6 characters")
-      setLoading(false)
-      return
-    }
-
     try {
+      // Trim and handle referral code - send undefined if empty
+      const referralCode = data.referralCode?.trim() || undefined
+      
       await register({
-        name: formData.name,
-        email: formData.email,
-        password: formData.password,
-        phone: formData.phone,
+        name: data.name.trim(),
+        email: data.email.trim().toLowerCase(),
+        password: data.password,
+        phone: data.phone.trim(),
+        referralCode: referralCode,
       })
       // Redirect to verification page after successful registration
-      router.push('/auth/verify-email?email=' + encodeURIComponent(formData.email))
+      router.push('/auth/verify-email?email=' + encodeURIComponent(data.email.trim().toLowerCase()))
     } catch (error: any) {
       setError(error.message || "Registration failed. Please try again.")
     } finally {
@@ -78,7 +74,7 @@ export default function RegisterPage() {
       title="Create your account"
       subtitle="Sign up to start shopping"
     >
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form onSubmit={handleFormSubmit(onSubmit)} className="space-y-6" noValidate>
         {error && (
           <Alert variant="destructive">
             <AlertDescription>{error}</AlertDescription>
@@ -93,15 +89,15 @@ export default function RegisterPage() {
             <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
             <Input
               id="name"
-              name="name"
               type="text"
               placeholder="Enter your full name"
-              value={formData.name}
-              onChange={handleChange}
-              className="h-12 text-base pl-10"
-              required
+              {...registerField("name")}
+              className={`h-12 text-base pl-10 ${errors.name ? "border-red-500" : ""}`}
             />
           </div>
+          {errors.name && (
+            <p className="text-sm text-red-500 mt-1">{errors.name.message}</p>
+          )}
         </div>
 
         <div className="space-y-2">
@@ -112,15 +108,15 @@ export default function RegisterPage() {
             <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
             <Input
               id="email"
-              name="email"
-              type="email"
+              type="text"
               placeholder="Enter your email address"
-              value={formData.email}
-              onChange={handleChange}
-              className="h-12 text-base pl-10"
-              required
+              {...registerField("email")}
+              className={`h-12 text-base pl-10 ${errors.email ? "border-red-500" : ""}`}
             />
           </div>
+          {errors.email && (
+            <p className="text-sm text-red-500 mt-1">{errors.email.message}</p>
+          )}
         </div>
 
         <div className="space-y-2">
@@ -131,15 +127,15 @@ export default function RegisterPage() {
             <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
             <Input
               id="phone"
-              name="phone"
-              type="tel"
+              type="text"
               placeholder="Enter your phone number"
-              value={formData.phone}
-              onChange={handleChange}
-              className="h-12 text-base pl-10"
-              required
+              {...registerField("phone")}
+              className={`h-12 text-base pl-10 ${errors.phone ? "border-red-500" : ""}`}
             />
           </div>
+          {errors.phone && (
+            <p className="text-sm text-red-500 mt-1">{errors.phone.message}</p>
+          )}
         </div>
 
         <div className="space-y-2">
@@ -150,15 +146,22 @@ export default function RegisterPage() {
             <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
             <Input
               id="password"
-              name="password"
-              type="password"
+              type={showPassword ? "text" : "password"}
               placeholder="Create a password (min. 6 characters)"
-              value={formData.password}
-              onChange={handleChange}
-              className="h-12 text-base pl-10"
-              required
+              {...registerField("password")}
+              className={`h-12 text-base pl-10 pr-10 ${errors.password ? "border-red-500" : ""}`}
             />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 focus:outline-none"
+            >
+              {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+            </button>
           </div>
+          {errors.password && (
+            <p className="text-sm text-red-500 mt-1">{errors.password.message}</p>
+          )}
         </div>
 
         <div className="space-y-2">
@@ -169,15 +172,41 @@ export default function RegisterPage() {
             <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
             <Input
               id="confirmPassword"
-              name="confirmPassword"
-              type="password"
+              type={showConfirmPassword ? "text" : "password"}
               placeholder="Confirm your password"
-              value={formData.confirmPassword}
-              onChange={handleChange}
-              className="h-12 text-base pl-10"
-              required
+              {...registerField("confirmPassword")}
+              className={`h-12 text-base pl-10 pr-10 ${errors.confirmPassword ? "border-red-500" : ""}`}
+            />
+            <button
+              type="button"
+              onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 focus:outline-none"
+            >
+              {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+            </button>
+          </div>
+          {errors.confirmPassword && (
+            <p className="text-sm text-red-500 mt-1">{errors.confirmPassword.message}</p>
+          )}
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="referralCode" className="text-gray-700 font-medium">
+            Referral Code <span className="text-gray-500 text-sm font-normal">(Optional)</span>
+          </Label>
+          <div className="relative">
+            <Gift className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+            <Input
+              id="referralCode"
+              type="text"
+              placeholder="Enter referral code if you have one"
+              {...registerField("referralCode")}
+              className={`h-12 text-base pl-10 ${errors.referralCode ? "border-red-500" : ""}`}
             />
           </div>
+          {errors.referralCode && (
+            <p className="text-sm text-red-500 mt-1">{errors.referralCode.message}</p>
+          )}
         </div>
 
         <Button

@@ -24,18 +24,42 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 interface Order {
   id: string
   status: string
-  total: number
+  totalAmount?: number
+  finalAmount?: number
+  total?: number
   createdAt: string
   items: Array<{
     id: string
-    name: string
     quantity: number
-    price: number
-    unit: string
+    unitPrice: number
+    totalPrice: number
+    product?: {
+      id: string
+      name: string
+      unit?: string
+    }
+    variation?: {
+      id: string
+      name: string
+    }
+    // Legacy fields for backward compatibility
+    name?: string
+    price?: number
+    unit?: string
   }>
+  user?: {
+    id: string
+    name: string | null
+    email: string
+  }
   customerName?: string
   customerEmail?: string
   deliveryAddress?: string
+  delivery?: {
+    address: string
+    city: string
+    state: string
+  }
 }
 
 interface OrdersTabProps {
@@ -297,7 +321,7 @@ export default function OrdersTab({ orders, isAdmin, onOrderStatusChange, onOrde
                     </div>
                     <div className="text-right">
                       <div className="text-2xl font-bold text-orange-600">
-                        {formatPrice(order?.total)}
+                        {formatPrice(order?.finalAmount || order?.totalAmount || order?.total || 0)}
                       </div>
                       <div className="text-sm text-gray-500 flex items-center">
                         <Calendar className="h-4 w-4 mr-1" />
@@ -406,21 +430,31 @@ export default function OrdersTab({ orders, isAdmin, onOrderStatusChange, onOrde
                   <div className="mb-6">
                     <h4 className="font-medium text-gray-900 mb-3">Order Items</h4>
                     <div className="space-y-3">
-                      {order.items.map((item) => (
-                        <div key={item.id} className="flex items-center justify-between py-2 border-b border-gray-100 last:border-b-0">
-                          <div className="flex-1">
-                            <div className="font-medium text-gray-900">{item.name}</div>
-                            <div className="text-sm text-gray-600">
-                              {item.quantity} {item.unit} × {formatPrice(item?.price)}
+                      {order.items.map((item) => {
+                        // Get item name from product, variation, or legacy name field
+                        const itemName = item.product?.name || item.variation?.name || item.name || 'Product'
+                        // Get unit from product or legacy unit field
+                        const itemUnit = item.product?.unit || item.unit || 'item'
+                        // Use unitPrice and totalPrice from API, fallback to legacy price field
+                        const unitPrice = item.unitPrice ?? item.price ?? 0
+                        const totalPrice = item.totalPrice ?? (item.quantity * unitPrice)
+                        
+                        return (
+                          <div key={item.id} className="flex items-center justify-between py-2 border-b border-gray-100 last:border-b-0">
+                            <div className="flex-1">
+                              <div className="font-medium text-gray-900">{itemName}</div>
+                              <div className="text-sm text-gray-600">
+                                {item.quantity} {itemUnit} × {formatPrice(unitPrice)}
+                              </div>
+                            </div>
+                            <div className="text-right">
+                              <div className="font-medium text-gray-900">
+                                {formatPrice(totalPrice)}
+                              </div>
                             </div>
                           </div>
-                          <div className="text-right">
-                            <div className="font-medium text-gray-900">
-                              {formatPrice((item?.quantity || 0) * (item?.price || 0))}
-                            </div>
-                          </div>
-                        </div>
-                      ))}
+                        )
+                      })}
                     </div>
                   </div>
 
@@ -430,18 +464,22 @@ export default function OrdersTab({ orders, isAdmin, onOrderStatusChange, onOrde
                       <h4 className="font-medium text-gray-900 mb-3">Customer Information</h4>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                         <div>
-                          <span className="font-medium">Name:</span> {order.customerName || 'N/A'}
+                          <span className="font-medium">Name:</span> {order.user?.name || order.customerName || 'N/A'}
                         </div>
                         <div>
-                          <span className="font-medium">Email:</span> {order.customerEmail || 'N/A'}
+                          <span className="font-medium">Email:</span> {order.user?.email || order.customerEmail || 'N/A'}
                         </div>
-                        {order.deliveryAddress && (
+                        {(order.delivery?.address || order.deliveryAddress) && (
                           <div className="md:col-span-2">
                             <div className="flex items-start space-x-2">
                               <MapPin className="h-4 w-4 mt-0.5 text-gray-500" />
                               <div>
                                 <span className="font-medium">Delivery Address:</span>
-                                <div className="text-gray-600">{order.deliveryAddress}</div>
+                                <div className="text-gray-600">
+                                  {order.delivery?.address 
+                                    ? `${order.delivery.address}, ${order.delivery.city}, ${order.delivery.state}`
+                                    : order.deliveryAddress || 'N/A'}
+                                </div>
                               </div>
                             </div>
                           </div>

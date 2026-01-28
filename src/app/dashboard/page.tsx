@@ -22,6 +22,8 @@ import AdminTab from "./components/AdminTab"
 import ManageProductsTab from "./components/ManageProductsTab"
 import ManageCategoriesTab from "./components/ManageCategoriesTab"
 import ManageDeliveriesTab from "./components/ManageDeliveriesTab"
+import ManageDeliveryFeesTab from "./components/ManageDeliveryFeesTab"
+import ManageReferralsTab from "./components/ManageReferralsTab"
 import { ProductForm } from "@/components/forms/product-form"
 
 // Import hooks
@@ -31,7 +33,7 @@ import { useCartStore } from "@/lib/cart-store"
 // Import types
 import { Product } from "@prisma/client"
 
-type DashboardTab = "marketplace" | "orders" | "manage-products" | "manage-categories" | "manage-deliveries" | "wallet" | "admin"
+type DashboardTab = "marketplace" | "orders" | "manage-products" | "manage-categories" | "manage-deliveries" | "manage-delivery-fees" | "manage-referrals" | "wallet" | "admin"
 
 function DashboardContent() {
   // Custom hooks
@@ -63,7 +65,7 @@ function DashboardContent() {
   // Handle URL tab parameter
   useEffect(() => {
     const tabParam = searchParams.get('tab')
-    if (tabParam && ['marketplace', 'orders', 'wallet', 'admin', 'manage-products', 'manage-categories'].includes(tabParam)) {
+    if (tabParam && ['marketplace', 'orders', 'wallet', 'admin', 'manage-products', 'manage-categories', 'manage-deliveries', 'manage-delivery-fees', 'manage-referrals'].includes(tabParam)) {
       setActiveTab(tabParam as DashboardTab)
     }
   }, [searchParams])
@@ -319,6 +321,16 @@ function DashboardContent() {
           <ManageDeliveriesTab
             isAdmin={isAdmin}
           />
+        )}
+
+        {isAdmin && activeTab === "manage-delivery-fees" && (
+          <ManageDeliveryFeesTab
+            isAdmin={isAdmin}
+          />
+        )}
+
+        {isAdmin && activeTab === "manage-referrals" && (
+          <ManageReferralsTab />
         )}
       </DashboardLayout>
 

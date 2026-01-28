@@ -19,16 +19,16 @@ export async function GET(request: NextRequest) {
     // If no settings exist, return defaults
     if (!settings) {
       return NextResponse.json({
-        referrerReward: 100,
-        refereeReward: 50,
+        referrerReward: "100",
+        refereeReward: "50",
         isActive: true,
         description: "Refer a friend and earn rewards!"
       })
     }
 
     return NextResponse.json({
-      referrerReward: settings.referrerReward,
-      refereeReward: settings.refereeReward,
+      referrerReward: settings.referrerReward?.toString() || "100",
+      refereeReward: settings.refereeReward?.toString() || "50",
       isActive: settings.isActive,
       description: settings.description
     })
@@ -56,29 +56,47 @@ export async function PUT(request: NextRequest) {
 
     const { referrerReward, refereeReward, isActive, description } = await request.json()
 
-    // Update or create referral settings
-    const settings = await prisma.referralSettings.upsert({
-      where: {
-        id: "default" // Use a fixed ID for the main settings
-      },
-      update: {
-        referrerReward: parseFloat(referrerReward) || 100,
-        refereeReward: parseFloat(refereeReward) || 50,
-        isActive: Boolean(isActive),
-        description: description || null
-      },
-      create: {
-        id: "default",
-        referrerReward: parseFloat(referrerReward) || 100,
-        refereeReward: parseFloat(refereeReward) || 50,
-        isActive: Boolean(isActive),
-        description: description || null
+    // Find existing settings (we'll use the first one, or create if none exist)
+    const existingSettings = await prisma.referralSettings.findFirst({
+      orderBy: {
+        createdAt: 'desc'
       }
     })
 
+    // Store reward values as strings (can be numbers like "100" or text like "Refer a friend and earn rewards!")
+    const referrerRewardValue = referrerReward?.toString().trim() || "100"
+    const refereeRewardValue = refereeReward?.toString().trim() || "50"
+
+    let settings
+
+    if (existingSettings) {
+      // Update existing settings
+      settings = await prisma.referralSettings.update({
+        where: {
+          id: existingSettings.id
+        },
+        data: {
+          referrerReward: referrerRewardValue,
+          refereeReward: refereeRewardValue,
+          isActive: Boolean(isActive),
+          description: description || null
+        }
+      })
+    } else {
+      // Create new settings
+      settings = await prisma.referralSettings.create({
+        data: {
+          referrerReward: referrerRewardValue,
+          refereeReward: refereeRewardValue,
+          isActive: Boolean(isActive),
+          description: description || null
+        }
+      })
+    }
+
     return NextResponse.json({
-      referrerReward: settings.referrerReward,
-      refereeReward: settings.refereeReward,
+      referrerReward: settings.referrerReward || "100",
+      refereeReward: settings.refereeReward || "50",
       isActive: settings.isActive,
       description: settings.description
     })

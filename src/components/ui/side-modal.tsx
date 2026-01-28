@@ -56,6 +56,8 @@ export function SideModal({
   const variationPrice = selectedOption?.price || 0
   const variationLabel = selectedOption?.label || "Standard"
   const availableStock = selectedOption?.stock || maxQuantity
+  // Use option image if available (for standard options, this will be the first product image)
+  // Otherwise fallback to productImage
   const displayImage = selectedOption?.image || productImage
 
   const handleQuantityChange = (newQuantity: number) => {

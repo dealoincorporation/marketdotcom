@@ -30,7 +30,7 @@ export function AboutSection() {
             <span className="text-orange-600"> Are</span>
           </h2>
 
-          <motion.div className="text-justify max-w-3xl mx-auto">
+          <motion.div className="text-center md:text-justify max-w-3xl mx-auto">
             <p className="text-xl text-gray-600 mb-6 leading-relaxed">
               Tired of crowded markets and overpriced foodstuff? At Marketdotcom, we're here to fix that.
               We take the hassle out of market runs for everyday Nigerians, delivering affordable, quality food straight to your doorstep.

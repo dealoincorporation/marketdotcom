@@ -7,6 +7,7 @@ import { motion } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import { normalizeImageUrls, normalizeImageUrl } from "@/lib/image-utils"
 
 type PreviewProduct = {
   id: string
@@ -41,14 +42,6 @@ function computePriceLabel(product: PreviewProduct) {
   return min === max ? formatPrice(min) : `${formatPrice(min)} - ${formatPrice(max)}`
 }
 
-function normalizeImages(images: unknown): string[] {
-  if (!Array.isArray(images)) return []
-  const cleaned = images
-    .filter((v) => typeof v === "string")
-    .map((v) => v.trim())
-    .filter(Boolean)
-  return Array.from(new Set(cleaned)).slice(0, 10)
-}
 
 export function MarketplacePreview(props: { limit?: number }) {
   const limit = props.limit ?? 8
@@ -114,9 +107,12 @@ export function MarketplacePreview(props: { limit?: number }) {
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
             {items.map((p, idx) => {
-              const images = normalizeImages(p.images)
+              // Use normalizeImageUrls to properly handle product images
+              const normalizedImages = normalizeImageUrls(p.images, undefined)
               // Only use default image if there are NO product images at all
-              const img = images.length > 0 ? images[0] : "/market_image.jpeg"
+              const img = normalizedImages.length > 0 
+                ? normalizedImages[0] 
+                : "/market_image.jpeg"
               const price = computePriceLabel(p)
               const category = p.category?.name
               const inStock = (p.stock || 0) > 0 || (p.variations || []).some((v) => (v.stock || 0) > 0)
@@ -129,10 +125,21 @@ export function MarketplacePreview(props: { limit?: number }) {
                   transition={{ duration: 0.35, delay: idx * 0.03 }}
                   viewport={{ once: true }}
                 >
-                  <Link href="/marketplace" className="block">
+                  <Link href={`/marketplace/${p.id}`} className="block">
                     <Card className="h-full hover:shadow-lg transition-shadow border-orange-100 bg-white/90">
                       <div className="relative h-28 sm:h-32 bg-gray-100 rounded-t-lg overflow-hidden">
-                        <img src={img} alt={p.name} className="w-full h-full object-cover" />
+                        <img 
+                          src={img} 
+                          alt={p.name} 
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            // Fallback to default image only if image fails to load
+                            const target = e.target as HTMLImageElement
+                            if (target.src !== "/market_image.jpeg") {
+                              target.src = "/market_image.jpeg"
+                            }
+                          }}
+                        />
                         <div className="absolute top-2 left-2">
                           {inStock ? (
                             <Badge className="bg-green-500 text-white border-0 text-xs font-bold px-2.5 py-1 shadow-lg">

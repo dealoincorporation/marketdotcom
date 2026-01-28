@@ -252,7 +252,9 @@ export default function CartPage() {
                           {item.name}
                         </h3>
                         <p className="text-xs sm:text-sm text-gray-600 text-center sm:text-left">
-                          ₦{item.price.toLocaleString()} per {item.unit}
+                          ₦{item.price.toLocaleString()} per {item.variation?.quantity && item.variation?.unit 
+                            ? `${item.variation.quantity}${item.variation.unit}` 
+                            : item.unit}
                         </p>
                         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mt-3">
                           {/* Quantity Controls */}
@@ -488,7 +490,7 @@ export default function CartPage() {
                     </li>
                     <li className="flex items-center space-x-2">
                       <div className="w-1.5 h-1.5 bg-orange-400 rounded-full"></div>
-                      <span>Orders delivered within 4 hours</span>
+                      <span>Orders delivered within 4 hours of scheduled time</span>
                     </li>
                     <li className="flex items-center space-x-2">
                       <div className="w-1.5 h-1.5 bg-orange-400 rounded-full"></div>
@@ -499,8 +501,8 @@ export default function CartPage() {
                       <span>Orders after 3 PM delivered next day</span>
                     </li>
                     <li className="flex items-center space-x-2">
-                      <div className="w-1.5 h-1.5 bg-green-400 rounded-full"></div>
-                      <span className="text-green-700 font-medium">Free delivery on orders over ₦10,000</span>
+                      <div className="w-1.5 h-1.5 bg-blue-400 rounded-full"></div>
+                      <span className="text-blue-700 font-medium">Delivery fees calculated per product</span>
                     </li>
                   </ul>
                 </div>

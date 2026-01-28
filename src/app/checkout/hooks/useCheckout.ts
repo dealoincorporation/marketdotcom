@@ -41,7 +41,7 @@ export function useCheckout() {
   })
 
   // Payment Information
-  const [paymentMethod, setPaymentMethod] = useState("card")
+  const [paymentMethod, setPaymentMethod] = useState("paystack")
   const [useWallet, setUseWallet] = useState(false)
   const [walletBalance, setWalletBalance] = useState(0)
 
@@ -66,7 +66,30 @@ export function useCheckout() {
 
   const totalItems = getTotalItems()
   const subtotal = getTotalPrice()
-  const deliveryFee = subtotal > 10000 ? 0 : 1500
+  
+  // Calculate delivery fee from cart items
+  // Each product can have its own deliveryFee:
+  // - null/undefined = use default calculation (base + per item)
+  // - 0 = free delivery for this product
+  // - number = custom fee per item
+  const baseDeliveryFee = 500
+  const perItemFee = 100
+  
+  const deliveryFee = items.reduce((total, item) => {
+    const itemDeliveryFee = item.deliveryFee
+    
+    if (itemDeliveryFee === null || itemDeliveryFee === undefined) {
+      // Use default calculation: base fee + per item fee
+      return total + (baseDeliveryFee / items.length) + (perItemFee * item.quantity)
+    } else if (itemDeliveryFee === 0) {
+      // Free delivery for this product
+      return total
+    } else {
+      // Custom fee per item
+      return total + (itemDeliveryFee * item.quantity)
+    }
+  }, 0)
+  
   const walletDeduction = useWallet ? Math.min(walletBalance, subtotal + deliveryFee) : 0
   const finalTotal = subtotal + deliveryFee - walletDeduction
 
@@ -74,27 +97,19 @@ export function useCheckout() {
   const fetchDeliverySlots = async () => {
     try {
       setDeliverySlotsLoading(true)
-      const response = await fetch('/api/delivery-slots')
+      const response = await fetch('/api/delivery-slots', {
+        cache: 'no-store'
+      })
       if (response.ok) {
         const slots = await response.json()
-        setDeliverySlots(slots)
+        setDeliverySlots(Array.isArray(slots) ? slots : [])
       } else {
-        // Fallback slots
-        setDeliverySlots([
-          { 
-            id: "fallback-1", 
-            date: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split('T')[0], 
-            timeSlot: "10:00 AM - 2:00 PM", 
-            isAvailable: true, 
-            maxOrders: 10, 
-            currentOrders: 0, 
-            createdAt: new Date().toISOString(), 
-            updatedAt: new Date().toISOString() 
-          },
-        ])
+        console.error('Failed to fetch delivery slots:', response.status, response.statusText)
+        setDeliverySlots([])
       }
     } catch (error) {
       console.error('Error fetching delivery slots:', error)
+      setDeliverySlots([])
     } finally {
       setDeliverySlotsLoading(false)
     }
@@ -405,8 +420,8 @@ export function useCheckout() {
       if (paymentMethod === 'wallet') {
         // For wallet payment, create order immediately
         await createOrderAfterPayment()
-      } else if (paymentMethod === 'paystack' || paymentMethod === 'card') {
-        // For Paystack, create order first, then initialize payment
+      } else if (paymentMethod === 'paystack') {
+        // For Paystack (card/bank transfer), create order first, then initialize payment
         // Order will be updated to CONFIRMED after payment verification
         const orderId = await createOrderBeforePayment()
         await handlePaystackPayment(orderId, finalTotal)

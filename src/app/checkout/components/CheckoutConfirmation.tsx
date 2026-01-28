@@ -79,8 +79,8 @@ export function CheckoutConfirmation({
                 <div className="flex justify-between items-center py-2">
                   <span className="text-blue-700 font-medium">Payment Method:</span>
                   <span className="text-blue-900 font-medium">
-                    {paymentMethod === 'card' ? 'Credit/Debit Card' :
-                     paymentMethod === 'wallet' ? 'Wallet Balance' : 'Bank Transfer'}
+                    {paymentMethod === 'paystack' ? 'Card/Bank Transfer' :
+                     paymentMethod === 'wallet' ? 'Wallet Balance' : 'Card/Bank Transfer'}
                   </span>
                 </div>
               </div>

@@ -54,7 +54,7 @@ export async function PUT(
 
     const { id } = await params
     const body = await request.json()
-    const { name, description, basePrice, categoryId, stock, unit, inStock, variations, images, image } = body
+    const { name, description, basePrice, categoryId, stock, unit, inStock, deliveryFee, variations, images, image } = body
 
     const normalizedImages = normalizeImageUrls(images, image)
     const primaryImage = normalizedImages.length > 0 ? normalizedImages[0] : normalizeImageUrl(image)
@@ -69,6 +69,7 @@ export async function PUT(
         stock: parseInt(stock),
         unit,
         inStock,
+        deliveryFee: deliveryFee !== undefined ? (deliveryFee === null || deliveryFee === '' ? null : parseFloat(deliveryFee)) : undefined,
         image: primaryImage || undefined,
       },
       include: {
