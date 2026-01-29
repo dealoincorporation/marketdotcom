@@ -82,12 +82,14 @@ interface CartStore {
   isLoading: boolean
   lastValidation: Date | null
   userId?: string
+  /** Admin-only: override delivery fee for current order (null = use calculated) */
+  adminDeliveryFeeOverride: number | null
 
   // Basic operations
   addItem: (item: Omit<CartItem, 'id' | 'addedAt' | 'updatedAt' | 'quantity' | 'isAvailable'> & { quantity?: number }) => Promise<boolean>
   removeItem: (id: string) => void
   updateQuantity: (id: string, quantity: number) => Promise<boolean>
-  clearCart: () => void
+  clearCart: (opts?: { silent?: boolean }) => void
 
   // Advanced operations
   mergeCart: (items: CartItem[]) => Promise<void>
@@ -107,6 +109,9 @@ interface CartStore {
   getItemsByCategory: (categoryId: string) => CartItem[]
   getLowStockItems: () => CartItem[]
   getUnavailableItems: () => CartItem[]
+  setAdminDeliveryFeeOverride: (fee: number | null) => void
+  setUserId: (userId: string | undefined) => void
+  loadUserCart: () => Promise<void>
 }
 
 // Utility functions
@@ -133,6 +138,9 @@ export const useCartStore = create<CartStore>()(
       isLoading: false,
       lastValidation: null,
       userId: undefined,
+      adminDeliveryFeeOverride: null,
+
+      setAdminDeliveryFeeOverride: (fee) => set({ adminDeliveryFeeOverride: fee }),
 
       addItem: async (newItem) => {
         try {
@@ -289,20 +297,20 @@ export const useCartStore = create<CartStore>()(
         }
       },
 
-      clearCart: () => {
-        set({ items: [] })
-        toast.success('Cart cleared', {
-          duration: 2000,
-          style: {
-            background: 'rgba(156, 163, 175, 0.95)',
-            backdropFilter: 'blur(10px)',
-            color: 'white',
-            border: '1px solid rgba(156, 163, 175, 0.3)',
-          },
-          icon: '🗑️',
-        })
-
-        // Sync with server if user is logged in
+      clearCart: (opts) => {
+        set({ items: [], adminDeliveryFeeOverride: null })
+        if (!opts?.silent) {
+          toast.success('Cart cleared', {
+            duration: 2000,
+            style: {
+              background: 'rgba(156, 163, 175, 0.95)',
+              backdropFilter: 'blur(10px)',
+              color: 'white',
+              border: '1px solid rgba(156, 163, 175, 0.3)',
+            },
+            icon: '🗑️',
+          })
+        }
         if (get().userId) {
           get().syncWithServer()
         }
@@ -412,9 +420,55 @@ export const useCartStore = create<CartStore>()(
       },
 
       syncWithServer: async () => {
-        // This would sync cart with server for logged-in users
-        // Implementation depends on backend API
-        console.log('Syncing cart with server...')
+        const uid = get().userId
+        if (!uid) return
+        const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null
+        if (!token) return
+        const items = get().items
+        try {
+          const res = await fetch('/api/cart', {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({
+              items: items.map((i) => ({
+                productId: i.productId,
+                variationId: i.variationId ?? null,
+                quantity: i.quantity,
+              })),
+            }),
+          })
+          if (!res.ok) throw new Error('Sync failed')
+        } catch (e) {
+          console.error('Cart sync failed:', e)
+        }
+      },
+
+      setUserId: (userId) => set({ userId }),
+
+      loadUserCart: async () => {
+        const uid = get().userId
+        if (!uid) return
+        const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null
+        if (!token) return
+        try {
+          const res = await fetch('/api/cart', {
+            headers: { Authorization: `Bearer ${token}` },
+          })
+          if (!res.ok) throw new Error('Fetch failed')
+          const data = (await res.json()) as { items?: CartItem[] }
+          const raw = data.items ?? []
+          const items: CartItem[] = raw.map((i: any) => ({
+            ...i,
+            addedAt: i.addedAt ? new Date(i.addedAt) : new Date(),
+            updatedAt: i.updatedAt ? new Date(i.updatedAt) : new Date(),
+          }))
+          set({ items })
+        } catch (e) {
+          console.error('Load user cart failed:', e)
+        }
       },
 
       // Getters

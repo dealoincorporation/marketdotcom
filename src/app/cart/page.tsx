@@ -18,6 +18,7 @@ import {
   X
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
@@ -38,12 +39,25 @@ export default function CartPage() {
     removeItem,
     clearCart,
     getTotalItems,
-    getTotalPrice
+    getTotalPrice,
+    adminDeliveryFeeOverride,
+    setAdminDeliveryFeeOverride,
   } = useCartStore()
 
   const totalItems = getTotalItems()
   const totalPrice = getTotalPrice()
-  const deliveryFee = totalPrice > 10000 ? 0 : 1500 // Free delivery over ₦10,000
+  // Delivery fees calculated per product (same logic as checkout)
+  const baseDeliveryFee = 500
+  const perItemFee = 100
+  const calculatedDeliveryFee = items.length === 0 ? 0 : items.reduce((total, item) => {
+    const f = item.deliveryFee
+    if (f === null || f === undefined)
+      return total + baseDeliveryFee / items.length + perItemFee * item.quantity
+    if (f === 0) return total
+    return total + f * item.quantity
+  }, 0)
+  const isAdmin = user?.role === "ADMIN"
+  const deliveryFee = isAdmin && adminDeliveryFeeOverride != null ? adminDeliveryFeeOverride : calculatedDeliveryFee
   const finalTotal = totalPrice + deliveryFee
   const eta = getEstimatedDeliveryTime()
 
@@ -252,30 +266,51 @@ export default function CartPage() {
                           {item.name}
                         </h3>
                         <p className="text-xs sm:text-sm text-gray-600 text-center sm:text-left">
-                          ₦{item.price.toLocaleString()} per {item.variation?.quantity && item.variation?.unit 
-                            ? `${item.variation.quantity}${item.variation.unit}` 
-                            : item.unit}
+                          ₦{item.price.toLocaleString()} per {item.variation?.name?.trim() || item.unit}
                         </p>
                         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mt-3">
                           {/* Quantity Controls */}
-                          <div className="flex items-center justify-center sm:justify-start space-x-2">
+                          <div className="flex items-center justify-center sm:justify-start gap-1">
                             <Button
                               size="sm"
                               variant="outline"
-                              onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                              onClick={() => updateQuantity(item.id, Math.max(1, item.quantity - 1))}
                               disabled={item.quantity <= 1}
-                              className="h-8 w-8 p-0"
+                              className="h-8 w-8 p-0 shrink-0"
                             >
                               <Minus className="h-3 w-3" />
                             </Button>
-                            <span className="w-8 text-center font-medium text-sm">
-                              {item.quantity}
-                            </span>
+                            <input
+                              type="number"
+                              inputMode="numeric"
+                              pattern="[0-9]*"
+                              min={1}
+                              max={item.maxQuantity ?? 999}
+                              value={item.quantity}
+                              onChange={(e) => {
+                                const raw = e.target.value.replace(/\D/g, "")
+                                if (raw === "") return
+                                const val = parseInt(raw, 10)
+                                if (!Number.isNaN(val)) updateQuantity(item.id, Math.min(Math.max(1, val), item.maxQuantity ?? 999))
+                              }}
+                              onBlur={(e) => {
+                                const raw = e.target.value.replace(/\D/g, "")
+                                if (raw === "" || parseInt(raw, 10) < 1) {
+                                  updateQuantity(item.id, 1)
+                                  return
+                                }
+                                const val = parseInt(raw, 10)
+                                if (!Number.isNaN(val)) updateQuantity(item.id, Math.min(Math.max(1, val), item.maxQuantity ?? 999))
+                              }}
+                              className="w-12 h-8 text-center text-sm font-medium border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                              aria-label={`Quantity for ${item.name}`}
+                            />
                             <Button
                               size="sm"
                               variant="outline"
-                              onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                              className="h-8 w-8 p-0"
+                              onClick={() => updateQuantity(item.id, Math.min(item.quantity + 1, item.maxQuantity ?? 999))}
+                              disabled={item.quantity >= (item.maxQuantity ?? 999)}
+                              className="h-8 w-8 p-0 shrink-0"
                             >
                               <Plus className="h-3 w-3" />
                             </Button>
@@ -296,7 +331,7 @@ export default function CartPage() {
                                 ₦{(item.price * item.quantity).toLocaleString()}
                               </p>
                               <p className="text-xs text-gray-600">
-                                ₦{item.price.toLocaleString()} each
+                                ₦{item.price.toLocaleString()} per {item.variation?.name?.trim() || item.unit}
                               </p>
                             </div>
                           </div>
@@ -319,7 +354,7 @@ export default function CartPage() {
                           ₦{(item.price * item.quantity).toLocaleString()}
                         </p>
                         <p className="text-sm text-gray-600">
-                          ₦{item.price.toLocaleString()} each
+                          ₦{item.price.toLocaleString()} per {item.variation?.name?.trim() || item.unit}
                         </p>
                       </div>
                     </div>
@@ -330,7 +365,7 @@ export default function CartPage() {
               <div className="p-4 sm:p-6 border-t">
                 <Button
                   variant="outline"
-                  onClick={clearCart}
+                  onClick={() => clearCart()}
                   className="text-red-600 border-red-200 hover:bg-red-50 w-full sm:w-auto"
                 >
                   <Trash2 className="mr-2 h-4 w-4" />
@@ -417,20 +452,59 @@ export default function CartPage() {
                   <span className="font-semibold text-orange-700">₦{totalPrice.toLocaleString()}</span>
                 </div>
 
-                <div className="flex justify-between text-sm sm:text-base bg-gray-50 p-3 rounded-lg border border-gray-100">
+                <div className="flex flex-col gap-2 sm:gap-0 sm:flex-row sm:justify-between sm:items-center text-sm sm:text-base bg-gray-50 p-3 rounded-lg border border-gray-100">
                   <span className="text-gray-700">Delivery Fee</span>
-                  <span className={`font-medium ${deliveryFee === 0 ? "text-green-600" : "text-orange-700"}`}>
-                    {deliveryFee === 0 ? "Free" : `₦${deliveryFee.toLocaleString()}`}
-                  </span>
+                  {isAdmin ? (
+                    <div className="flex flex-col gap-1 sm:gap-0 sm:flex-row sm:items-center sm:gap-2">
+                      <div className="flex items-center gap-1">
+                        <span className="text-gray-500 text-xs sm:text-sm">₦</span>
+                        <Input
+                          type="number"
+                          inputMode="numeric"
+                          min={0}
+                          step={100}
+                          value={deliveryFee}
+                          onChange={(e) => {
+                            const v = e.target.value.replace(/\D/g, "")
+                            if (v === "") {
+                              setAdminDeliveryFeeOverride(null)
+                              return
+                            }
+                            const n = parseInt(v, 10)
+                            if (!Number.isNaN(n) && n >= 0) setAdminDeliveryFeeOverride(n)
+                          }}
+                          onBlur={(e) => {
+                            const v = e.target.value.replace(/\D/g, "")
+                            if (v === "") setAdminDeliveryFeeOverride(null)
+                          }}
+                          className="w-24 h-8 text-sm font-medium border-orange-200 focus:ring-orange-500"
+                          aria-label="Admin: override delivery fee"
+                        />
+                      </div>
+                      {adminDeliveryFeeOverride != null && (
+                        <button
+                          type="button"
+                          onClick={() => setAdminDeliveryFeeOverride(null)}
+                          className="text-xs text-orange-600 hover:text-orange-700 font-medium underline"
+                        >
+                          Reset to calculated
+                        </button>
+                      )}
+                    </div>
+                  ) : (
+                    <span className={`font-medium ${deliveryFee === 0 ? "text-green-600" : "text-orange-700"}`}>
+                      {deliveryFee === 0 ? "Free" : `₦${deliveryFee.toLocaleString()}`}
+                    </span>
+                  )}
                 </div>
-
-                {deliveryFee === 0 && (
-                  <div className="bg-green-50 border border-green-200 rounded-lg p-3">
-                    <p className="text-xs text-green-700 font-medium">
-                      🎉 Free delivery on orders over ₦10,000
-                    </p>
-                  </div>
-                )}
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                  <p className="text-xs text-blue-800 font-medium">
+                    Delivery fees calculated per product
+                    {isAdmin && adminDeliveryFeeOverride != null && (
+                      <span className="ml-1 text-orange-700">· Admin override active</span>
+                    )}
+                  </p>
+                </div>
 
                 <div className="relative">
                   <Separator className="bg-orange-200" />
@@ -499,10 +573,6 @@ export default function CartPage() {
                     <li className="flex items-center space-x-2">
                       <div className="w-1.5 h-1.5 bg-orange-400 rounded-full"></div>
                       <span>Orders after 3 PM delivered next day</span>
-                    </li>
-                    <li className="flex items-center space-x-2">
-                      <div className="w-1.5 h-1.5 bg-blue-400 rounded-full"></div>
-                      <span className="text-blue-700 font-medium">Delivery fees calculated per product</span>
                     </li>
                   </ul>
                 </div>

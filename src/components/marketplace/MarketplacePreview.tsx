@@ -85,9 +85,9 @@ export function MarketplacePreview(props: { limit?: number }) {
         </div>
 
         {isLoading ? (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-4">
             {Array.from({ length: Math.max(4, Math.min(8, limit)) }).map((_, i) => (
-              <div key={i} className="h-44 sm:h-52 rounded-xl bg-white/70 border border-orange-100 animate-pulse" />
+              <div key={i} className="h-36 sm:h-44 md:h-52 rounded-xl bg-white/70 border border-orange-100 animate-pulse" />
             ))}
           </div>
         ) : items.length === 0 ? (
@@ -105,13 +105,13 @@ export function MarketplacePreview(props: { limit?: number }) {
             </CardContent>
           </Card>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-4">
             {items.map((p, idx) => {
-              // Use normalizeImageUrls to properly handle product images
-              const normalizedImages = normalizeImageUrls(p.images, undefined)
+              // Use normalizeImageUrls to properly handle product images (images array + image field)
+              const normalizedImages = normalizeImageUrls(p.images, (p as any).image)
               // Only use default image if there are NO product images at all
-              const img = normalizedImages.length > 0 
-                ? normalizedImages[0] 
+              const img = normalizedImages.length > 0
+                ? normalizedImages[0]
                 : "/market_image.jpeg"
               const price = computePriceLabel(p)
               const category = p.category?.name
@@ -127,7 +127,7 @@ export function MarketplacePreview(props: { limit?: number }) {
                 >
                   <Link href={`/marketplace/${p.id}`} className="block">
                     <Card className="h-full hover:shadow-lg transition-shadow border-orange-100 bg-white/90">
-                      <div className="relative h-28 sm:h-32 bg-gray-100 rounded-t-lg overflow-hidden">
+                      <div className="relative h-24 sm:h-28 md:h-32 bg-gray-100 rounded-t-lg overflow-hidden">
                         <img 
                           src={img} 
                           alt={p.name} 
@@ -152,10 +152,10 @@ export function MarketplacePreview(props: { limit?: number }) {
                           )}
                         </div>
                       </div>
-                      <CardContent className="p-3">
-                        <p className="font-semibold text-gray-900 truncate">{p.name}</p>
+                      <CardContent className="p-2 sm:p-3">
+                        <p className="font-semibold text-gray-900 text-sm sm:text-base truncate">{p.name}</p>
                         {category ? <p className="text-xs text-gray-500 mt-0.5 truncate">{category}</p> : null}
-                        <p className="text-sm font-bold text-orange-600 mt-2">{price}</p>
+                        <p className="text-xs sm:text-sm font-bold text-orange-600 mt-1 sm:mt-2">{price}</p>
                       </CardContent>
                     </Card>
                   </Link>

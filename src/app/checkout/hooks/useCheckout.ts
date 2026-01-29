@@ -75,7 +75,7 @@ export function useCheckout() {
   const baseDeliveryFee = 500
   const perItemFee = 100
   
-  const deliveryFee = items.reduce((total, item) => {
+  const calculatedDeliveryFee = items.reduce((total, item) => {
     const itemDeliveryFee = item.deliveryFee
     
     if (itemDeliveryFee === null || itemDeliveryFee === undefined) {
@@ -89,7 +89,8 @@ export function useCheckout() {
       return total + (itemDeliveryFee * item.quantity)
     }
   }, 0)
-  
+
+  const deliveryFee = calculatedDeliveryFee
   const walletDeduction = useWallet ? Math.min(walletBalance, subtotal + deliveryFee) : 0
   const finalTotal = subtotal + deliveryFee - walletDeduction
 

@@ -1,24 +1,28 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef, Suspense } from "react"
 import Link from "next/link"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { useAuth } from "@/contexts/AuthContext"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Loader2, LogIn, Mail, Lock, ArrowRight } from "lucide-react"
+import { Loader2, LogIn, Mail, Lock, ArrowRight, Eye, EyeOff } from "lucide-react"
 import { AuthLayout } from "@/components/auth-layout"
 import { loginSchema, type LoginFormData } from "@/lib/validations/auth"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
+import toast from "react-hot-toast"
 
-export default function LoginPage() {
+function LoginForm() {
   const [rememberMe, setRememberMe] = useState(false)
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
+  const welcomeToastShown = useRef(false)
   const router = useRouter()
+  const searchParams = useSearchParams()
   const { user, login } = useAuth()
 
   const {
@@ -40,13 +44,32 @@ export default function LoginPage() {
     }
   }, [user, router])
 
+  // Toast: message param (e.g. from verify-email), or "Welcome back!" for returning users
+  useEffect(() => {
+    if (welcomeToastShown.current) return
+    const message = searchParams.get("message")
+    if (message) {
+      welcomeToastShown.current = true
+      toast.success(message)
+      return
+    }
+    if (typeof window !== "undefined" && localStorage.getItem("hasLoggedInBefore") === "true") {
+      welcomeToastShown.current = true
+      toast("Welcome back! Sign in to continue.", { icon: "👋" })
+    }
+  }, [searchParams])
+
   const onSubmit = async (data: LoginFormData) => {
     setLoading(true)
     setError("")
 
     try {
       await login(data.email, data.password, rememberMe)
-      router.push('/dashboard')
+      if (typeof window !== "undefined") {
+        localStorage.setItem("hasLoggedInBefore", "true")
+      }
+      toast.success("Signed in successfully! Redirecting...")
+      router.push("/dashboard")
     } catch (error: any) {
       setError(error.message || "Login failed. Please check your credentials.")
     } finally {
@@ -93,11 +116,19 @@ export default function LoginPage() {
             <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
             <Input
               id="password"
-              type="password"
+              type={showPassword ? "text" : "password"}
               placeholder="Enter your password"
               {...registerField("password")}
-              className={`h-12 text-base pl-10 ${errors.password ? "border-red-500" : ""}`}
+              className={`h-12 text-base pl-10 pr-10 ${errors.password ? "border-red-500" : ""}`}
             />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 focus:outline-none"
+              aria-label={showPassword ? "Hide password" : "Show password"}
+            >
+              {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+            </button>
           </div>
           {errors.password && (
             <p className="text-sm text-red-500 mt-1">{errors.password.message}</p>
@@ -151,5 +182,17 @@ export default function LoginPage() {
         </p>
       </div>
     </AuthLayout>
+  )
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-[60vh] flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-orange-500" />
+      </div>
+    }>
+      <LoginForm />
+    </Suspense>
   )
 }

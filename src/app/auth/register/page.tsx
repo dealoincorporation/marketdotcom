@@ -13,6 +13,7 @@ import { AuthLayout } from "@/components/auth-layout"
 import { registerSchema, type RegisterFormData } from "@/lib/validations/auth"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
+import toast from "react-hot-toast"
 
 export default function RegisterPage() {
   const [error, setError] = useState("")
@@ -63,7 +64,9 @@ export default function RegisterPage() {
       // Redirect to verification page after successful registration
       router.push('/auth/verify-email?email=' + encodeURIComponent(data.email.trim().toLowerCase()))
     } catch (error: any) {
-      setError(error.message || "Registration failed. Please try again.")
+      const errMsg = error.message || "Registration failed. Please try again."
+      setError(errMsg)
+      toast.error(errMsg)
     } finally {
       setLoading(false)
     }

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, ReactNode } from 'react'
+import { useState, useRef, useEffect, ReactNode } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
@@ -18,8 +18,12 @@ import {
   Plus,
   Minus,
   Users,
-  DollarSign,
+  Coins,
+  ChevronDown,
+  User,
+  LayoutDashboard,
 } from 'lucide-react'
+import { ProfileSettingsModal } from '@/components/profile/ProfileSettingsModal'
 import { Button } from '@/components/ui/button'
 import { useCartStore } from '@/lib/cart-store'
 import { useAuth } from '@/contexts/AuthContext'
@@ -64,6 +68,26 @@ export function DashboardLayout({
   const router = useRouter()
   const totalItems = getTotalItems()
   const [isCartOpen, setIsCartOpen] = useState(false)
+  const [mobileAccountOpen, setMobileAccountOpen] = useState(false)
+  const [profileDropdownOpen, setProfileDropdownOpen] = useState(false)
+  const [profileModalOpen, setProfileModalOpen] = useState(false)
+  const mobileAccountRef = useRef<HTMLDivElement>(null)
+  const profileDropdownRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (mobileAccountRef.current && !mobileAccountRef.current.contains(e.target as Node)) {
+        setMobileAccountOpen(false)
+      }
+      if (profileDropdownRef.current && !profileDropdownRef.current.contains(e.target as Node)) {
+        setProfileDropdownOpen(false)
+      }
+    }
+    if (mobileAccountOpen || profileDropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside)
+      return () => document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [mobileAccountOpen, profileDropdownOpen])
 
   const SidebarInner = (props: { showClose: boolean }) => {
     const { showClose } = props
@@ -211,7 +235,7 @@ export function DashboardLayout({
                   }`}
                   type="button"
                 >
-                  <DollarSign className="h-5 w-5 flex-shrink-0" />
+                  <Coins className="h-5 w-5 flex-shrink-0" />
                   <span className="text-sm md:text-base">Delivery Fees</span>
                 </button>
 
@@ -289,25 +313,91 @@ export function DashboardLayout({
             </div>
 
             <div className="flex items-center space-x-4">
-              <div className="hidden lg:block text-sm text-gray-600">
-                Welcome back,{' '}
-                <span className="font-medium text-gray-900">
-                  {user?.name || user?.email}
-                </span>
+              {/* Desktop Profile Dropdown */}
+              <div className="hidden lg:block relative" ref={profileDropdownRef}>
+                <button
+                  onClick={() => setProfileDropdownOpen(!profileDropdownOpen)}
+                  className="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-gray-100 transition-colors"
+                >
+                  <div className="w-8 h-8 bg-gradient-to-br from-orange-400 to-red-500 rounded-full flex items-center justify-center text-white font-semibold text-sm">
+                    {getInitials(user?.name || user?.email || 'U')}
+                  </div>
+                  <ChevronDown className={`h-4 w-4 text-gray-600 transition-transform ${profileDropdownOpen ? 'rotate-180' : ''}`} />
+                </button>
+
+                {profileDropdownOpen && (
+                  <div className="absolute right-0 top-full mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 z-[110] py-1">
+                    <div className="px-4 py-3 border-b border-gray-100">
+                      <p className="text-sm font-semibold text-gray-900">{user?.name || 'User'}</p>
+                      <p className="text-xs text-gray-500 truncate">{user?.email}</p>
+                    </div>
+                    <button
+                      onClick={() => {
+                        setProfileDropdownOpen(false)
+                        setProfileModalOpen(true)
+                      }}
+                      className="flex items-center gap-3 w-full px-4 py-3 text-left text-gray-700 hover:bg-gray-50 transition-colors"
+                    >
+                      <Settings className="h-4 w-4 text-gray-500" />
+                      <span className="text-sm font-medium">Profile Settings</span>
+                    </button>
+                    <div className="border-t border-gray-100 my-1" />
+                    <button
+                      onClick={() => {
+                        setProfileDropdownOpen(false)
+                        logout()
+                        router.push('/')
+                      }}
+                      className="flex items-center gap-3 w-full px-4 py-3 text-left text-red-600 hover:bg-red-50 transition-colors"
+                    >
+                      <LogOut className="h-4 w-4" />
+                      <span className="text-sm font-medium">Sign Out</span>
+                    </button>
+                  </div>
+                )}
               </div>
 
-              {/* Mobile Signout Button */}
-              <div className="lg:hidden relative">
+              {/* Mobile Account Dropdown (avoids accidental sign-out) */}
+              <div className="lg:hidden relative" ref={mobileAccountRef}>
                 <button
-                  onClick={() => {
-                    logout()
-                    router.push('/')
-                  }}
-                  className="bg-white hover:bg-red-50 border-2 border-gray-300 hover:border-red-300 rounded-md p-3 cursor-pointer active:scale-95 transition-all duration-150 active:bg-red-100 min-w-[48px] min-h-[48px] flex items-center justify-center touch-manipulation pointer-events-auto"
+                  onClick={() => setMobileAccountOpen(!mobileAccountOpen)}
+                  className="bg-white hover:bg-gray-50 border-2 border-gray-300 hover:border-gray-400 rounded-md p-3 cursor-pointer active:scale-95 transition-all duration-150 min-w-[48px] min-h-[48px] flex items-center justify-center touch-manipulation pointer-events-auto"
                   type="button"
+                  aria-expanded={mobileAccountOpen}
+                  aria-haspopup="true"
+                  aria-label="Account menu"
                 >
-                  <LogOut className="h-5 w-5 pointer-events-none text-red-600" />
+                  <User className="h-5 w-5 text-gray-700" />
+                  <ChevronDown className={`h-4 w-4 ml-0.5 text-gray-500 transition-transform ${mobileAccountOpen ? 'rotate-180' : ''}`} />
                 </button>
+                {mobileAccountOpen && (
+                  <div className="absolute right-0 top-full mt-1 w-52 py-1 bg-white rounded-lg shadow-lg border border-gray-200 z-[110]">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setMobileAccountOpen(false)
+                        setProfileModalOpen(true)
+                      }}
+                      className="flex items-center gap-3 w-full px-4 py-3 text-left text-gray-700 hover:bg-gray-50"
+                    >
+                      <Settings className="h-4 w-4 text-gray-500" />
+                      <span className="text-sm font-medium">Profile Settings</span>
+                    </button>
+                    <div className="border-t border-gray-100 my-1" />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setMobileAccountOpen(false)
+                        logout()
+                        router.push('/')
+                      }}
+                      className="flex items-center gap-3 w-full px-4 py-3 text-left text-red-600 hover:bg-red-50"
+                    >
+                      <LogOut className="h-4 w-4" />
+                      <span className="text-sm font-medium">Sign Out</span>
+                    </button>
+                  </div>
+                )}
               </div>
 
               {/* Desktop Cart Button */}
@@ -524,21 +614,47 @@ export function DashboardLayout({
                         <p className="text-sm font-medium text-gray-900 truncate">{item.name}</p>
                         <p className="text-xs text-gray-600">{formatCurrency(item.price * item.quantity)}</p>
                       </div>
-                      <div className="flex items-center space-x-2">
+                      <div className="flex items-center gap-1">
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                          className="h-8 w-8 p-0"
+                          onClick={() => updateQuantity(item.id, Math.max(1, item.quantity - 1))}
+                          disabled={item.quantity <= 1}
+                          className="h-8 w-8 p-0 shrink-0"
                         >
                           <Minus className="h-3 w-3" />
                         </Button>
-                        <span className="text-sm font-medium w-6 text-center">{item.quantity}</span>
+                        <input
+                          type="number"
+                          inputMode="numeric"
+                          pattern="[0-9]*"
+                          min={1}
+                          max={item.maxQuantity ?? 999}
+                          value={item.quantity}
+                          onChange={(e) => {
+                            const raw = e.target.value.replace(/\D/g, "")
+                            if (raw === "") return
+                            const val = parseInt(raw, 10)
+                            if (!Number.isNaN(val)) updateQuantity(item.id, Math.min(Math.max(1, val), item.maxQuantity ?? 999))
+                          }}
+                          onBlur={(e) => {
+                            const raw = e.target.value.replace(/\D/g, "")
+                            if (raw === "" || parseInt(raw, 10) < 1) {
+                              updateQuantity(item.id, 1)
+                              return
+                            }
+                            const val = parseInt(raw, 10)
+                            if (!Number.isNaN(val)) updateQuantity(item.id, Math.min(Math.max(1, val), item.maxQuantity ?? 999))
+                          }}
+                          className="w-11 h-8 text-center text-sm font-medium border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                          aria-label={`Quantity for ${item.name}`}
+                        />
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                          className="h-8 w-8 p-0"
+                          onClick={() => updateQuantity(item.id, Math.min(item.quantity + 1, item.maxQuantity ?? 999))}
+                          disabled={item.quantity >= (item.maxQuantity ?? 999)}
+                          className="h-8 w-8 p-0 shrink-0"
                         >
                           <Plus className="h-3 w-3" />
                         </Button>
@@ -597,6 +713,12 @@ export function DashboardLayout({
           </motion.div>
         </motion.div>
       )}
+
+      {/* Profile Settings Modal */}
+      <ProfileSettingsModal
+        isOpen={profileModalOpen}
+        onClose={() => setProfileModalOpen(false)}
+      />
     </div>
   )
 }

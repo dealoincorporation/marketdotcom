@@ -8,6 +8,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Loader2, Mail, CheckCircle, RefreshCw, Shield, Clock } from "lucide-react"
 import { AuthLayout } from "@/components/auth-layout"
 import { useAuth } from "@/contexts/AuthContext"
+import toast from "react-hot-toast"
 
 function VerifyEmailForm() {
   const [email, setEmail] = useState("")
@@ -21,6 +22,7 @@ function VerifyEmailForm() {
   const searchParams = useSearchParams()
   const { user } = useAuth()
   const inputRefs = useRef<(HTMLInputElement | null)[]>([])
+  const verifyToastShown = useRef(false)
 
   // Redirect authenticated users away from verify email page
   useEffect(() => {
@@ -34,6 +36,16 @@ function VerifyEmailForm() {
     if (emailParam) {
       setEmail(emailParam)
     }
+  }, [searchParams])
+
+  // Toast when landing from registration (about to verify)
+  useEffect(() => {
+    if (verifyToastShown.current || !searchParams.get("email")) return
+    verifyToastShown.current = true
+    toast("Check your email for the verification code. Enter it below to continue.", {
+      icon: "📧",
+      duration: 6000,
+    })
   }, [searchParams])
 
   const handleCodeChange = (index: number, value: string) => {

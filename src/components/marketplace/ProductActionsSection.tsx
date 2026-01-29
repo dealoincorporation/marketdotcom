@@ -29,7 +29,7 @@ export function ProductActionsSection({
   onAddToCart,
 }: ProductActionsSectionProps) {
   return (
-    <div className="relative mt-3 z-20" onClick={(e) => e.stopPropagation()}>
+    <div className="relative mt-1.5 sm:mt-3 z-20" onClick={(e) => e.stopPropagation()}>
       <div className="flex flex-col gap-2">
         {/* Options Button - Only show if product has variations */}
         {hasVariationChoices && (
@@ -51,10 +51,10 @@ export function ProductActionsSection({
             onAddToCart()
           }}
           disabled={!isActuallyInStock}
-          className="relative w-full bg-orange-600 text-white overflow-hidden group"
+          className="relative w-full bg-orange-600 text-white overflow-hidden group text-sm sm:text-base py-2 sm:py-2.5"
         >
           <span className="relative z-10 flex items-center justify-center">
-            <ShoppingCart className="h-4 w-4 mr-2" />
+            <ShoppingCart className="h-3 w-3 sm:h-4 sm:w-4 mr-1.5 sm:mr-2" />
             {selectedVariation
               ? `Add ${selectedVariation.label}`
               : "Add to Cart"}

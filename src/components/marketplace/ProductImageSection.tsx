@@ -28,12 +28,16 @@ export function ProductImageSection({
         e.stopPropagation()
       }}
     >
-      <div className="p-3 bg-gray-50 rounded-t-lg flex-shrink-0">
-        <div className="relative h-48 bg-gray-100 overflow-hidden rounded-lg">
-          <img 
-            src={displayImage} 
-            alt={product.name} 
-            className="w-full h-full object-cover pointer-events-none" 
+      <div className="p-2 sm:p-3 bg-gray-50 rounded-t-lg flex-shrink-0">
+        <div className="relative h-32 sm:h-40 md:h-48 bg-gray-100 overflow-hidden rounded-lg">
+          <img
+            src={displayImage}
+            alt={product.name}
+            className="w-full h-full object-cover pointer-events-none"
+            onError={(e) => {
+              const target = e.target as HTMLImageElement
+              if (target.src !== "/market_image.jpeg") target.src = "/market_image.jpeg"
+            }}
           />
 
           {/* Image navigation - hidden on mobile, visible on desktop */}

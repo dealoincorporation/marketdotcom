@@ -1,5 +1,6 @@
 "use client"
 
+import { useEffect } from "react"
 import { CreditCard, Shield, Check, X } from "lucide-react"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Label } from "@/components/ui/label"
@@ -71,14 +72,16 @@ export function PaymentMethodSection({
           </div>
 
           {/* Wallet Balance */}
-          <div className={`relative p-4 sm:p-6 rounded-xl border-2 transition-all duration-300 cursor-pointer ${
-            paymentMethod === "wallet"
-              ? 'border-green-500 bg-gradient-to-r from-green-50 to-emerald-50 shadow-lg'
-              : 'border-gray-200 hover:border-green-300 hover:shadow-md'
+          <div className={`relative p-4 sm:p-6 rounded-xl border-2 transition-all duration-300 ${
+            walletBalance <= 0
+              ? 'border-gray-200 bg-gray-50 opacity-50 blur-[2px] pointer-events-none cursor-not-allowed select-none'
+              : paymentMethod === "wallet"
+                ? 'border-green-500 bg-gradient-to-r from-green-50 to-emerald-50 shadow-lg cursor-pointer'
+                : 'border-gray-200 hover:border-green-300 hover:shadow-md cursor-pointer'
           }`}>
             <div className="flex items-start space-x-3 sm:space-x-4">
-              <RadioGroupItem value="wallet" id="wallet" className="text-green-600 mt-1" />
-              <Label htmlFor="wallet" className="flex-1 cursor-pointer min-w-0">
+              <RadioGroupItem value="wallet" id="wallet" className="text-green-600 mt-1" disabled={walletBalance <= 0} />
+              <Label htmlFor="wallet" className={`flex-1 min-w-0 ${walletBalance <= 0 ? 'cursor-not-allowed' : 'cursor-pointer'}`}>
                 <div className="flex flex-col sm:flex-row sm:items-center space-y-3 sm:space-y-0 sm:space-x-4">
                   <div className="p-3 sm:p-4 bg-gradient-to-r from-green-100 to-emerald-100 rounded-xl flex-shrink-0">
                     <span className="text-2xl sm:text-3xl">💰</span>

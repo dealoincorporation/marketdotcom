@@ -1,16 +1,20 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import Link from "next/link"
 import { motion, AnimatePresence } from "framer-motion"
 import { useAuth } from "@/contexts/AuthContext"
 import { Button } from "@/components/ui/button"
-import { ShoppingBag, Menu, X, ChevronDown, User, LogOut, LayoutDashboard } from "lucide-react"
+import { ShoppingBag, Menu, X, ChevronDown, User, LogOut, LayoutDashboard, Settings } from "lucide-react"
+import { ProfileSettingsModal } from "@/components/profile/ProfileSettingsModal"
 
 export function ModernNavigation() {
   const [isOpen, setIsOpen] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
-  const { user, logout, isLoading } = useAuth()
+  const [profileDropdownOpen, setProfileDropdownOpen] = useState(false)
+  const [profileModalOpen, setProfileModalOpen] = useState(false)
+  const profileDropdownRef = useRef<HTMLDivElement>(null)
+  const { user, isLoading, logout } = useAuth()
 
   useEffect(() => {
     const handleScroll = () => {
@@ -21,10 +25,18 @@ export function ModernNavigation() {
     return () => window.removeEventListener("scroll", handleScroll)
   }, [])
 
-  const handleSignOut = async () => {
-    logout()
-    setIsOpen(false)
-  }
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (profileDropdownRef.current && !profileDropdownRef.current.contains(e.target as Node)) {
+        setProfileDropdownOpen(false)
+      }
+    }
+    if (profileDropdownOpen) {
+      document.addEventListener("mousedown", handleClickOutside)
+      return () => document.removeEventListener("mousedown", handleClickOutside)
+    }
+  }, [profileDropdownOpen])
 
   const navItems = [
     { name: "Marketplace", href: "/marketplace", external: true },
@@ -176,19 +188,49 @@ export function ModernNavigation() {
                   initial={{ opacity: 0, x: 20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ duration: 0.6, delay: 0.5 }}
-                  className="flex items-center space-x-2"
+                  className="relative"
+                  ref={profileDropdownRef}
                 >
-                  <div className="text-sm text-gray-600">
-                    Hi, {user?.name?.split(' ')[0] || 'User'}
-                  </div>
-                  <Button
-                    variant="ghost"
-                    onClick={handleSignOut}
-                    className="text-gray-700 hover:text-red-600 hover:bg-red-50 font-medium"
+                  <button
+                    onClick={() => setProfileDropdownOpen(!profileDropdownOpen)}
+                    className="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-gray-100 transition-colors"
                   >
-                    <LogOut className="h-4 w-4 mr-2" />
-                    Sign Out
-                  </Button>
+                    <div className="w-8 h-8 bg-gradient-to-br from-orange-400 to-red-500 rounded-full flex items-center justify-center text-white font-semibold text-sm">
+                      {user?.name?.charAt(0)?.toUpperCase() || user?.email?.charAt(0)?.toUpperCase() || 'U'}
+                    </div>
+                    <ChevronDown className={`h-4 w-4 text-gray-600 transition-transform ${profileDropdownOpen ? 'rotate-180' : ''}`} />
+                  </button>
+
+                  {profileDropdownOpen && (
+                    <div className="absolute right-0 top-full mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 z-[110] py-1">
+                      <div className="px-4 py-3 border-b border-gray-100">
+                        <p className="text-sm font-semibold text-gray-900">{user?.name || 'User'}</p>
+                        <p className="text-xs text-gray-500 truncate">{user?.email}</p>
+                      </div>
+                      <button
+                        onClick={() => {
+                          setProfileDropdownOpen(false)
+                          setProfileModalOpen(true)
+                        }}
+                        className="flex items-center gap-3 w-full px-4 py-3 text-left text-gray-700 hover:bg-gray-50 transition-colors"
+                      >
+                        <Settings className="h-4 w-4 text-gray-500" />
+                        <span className="text-sm font-medium">Profile Settings</span>
+                      </button>
+                      <div className="border-t border-gray-100 my-1" />
+                      <button
+                        onClick={() => {
+                          setProfileDropdownOpen(false)
+                          logout()
+                          window.location.href = "/"
+                        }}
+                        className="flex items-center gap-3 w-full px-4 py-3 text-left text-red-600 hover:bg-red-50 transition-colors"
+                      >
+                        <LogOut className="h-4 w-4" />
+                        <span className="text-sm font-medium">Sign Out</span>
+                      </button>
+                    </div>
+                  )}
                 </motion.div>
               </>
             ) : (
@@ -302,14 +344,6 @@ export function ModernNavigation() {
                         Go to Dashboard
                       </Button>
                     </Link>
-                    <Button
-                      onClick={handleSignOut}
-                      variant="outline"
-                      className="w-full justify-center border-red-300 text-red-700 hover:bg-red-50 font-medium"
-                    >
-                      <LogOut className="h-4 w-4 mr-2" />
-                      Sign Out
-                    </Button>
                   </>
                 ) : (
                   <>
@@ -356,6 +390,12 @@ export function ModernNavigation() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Profile Settings Modal */}
+      <ProfileSettingsModal
+        isOpen={profileModalOpen}
+        onClose={() => setProfileModalOpen(false)}
+      />
     </motion.nav>
   )
 }

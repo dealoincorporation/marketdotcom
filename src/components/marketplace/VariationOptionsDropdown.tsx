@@ -32,7 +32,7 @@ export function VariationOptionsDropdown({
           onShowOptionsChange(!showOptions)
         }}
         disabled={!isActuallyInStock}
-        className="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-300"
+        className="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-300 text-xs sm:text-sm py-2"
         onMouseEnter={() => onShowOptionsChange(true)}
         onMouseLeave={() => {
           // Delay hiding to allow user to move to dropdown

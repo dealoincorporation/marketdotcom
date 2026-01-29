@@ -184,39 +184,53 @@ export function SideModal({
                 <label className="block text-sm font-medium text-gray-700 mb-3">
                   Select Quantity
                 </label>
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-3">
                   <button
                     type="button"
                     onClick={() => handleQuantityChange(quantity - 1)}
                     disabled={quantity <= 1}
-                    className="p-2 rounded-lg border-2 border-gray-300 hover:border-orange-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    className="p-2.5 rounded-lg border-2 border-gray-300 hover:border-orange-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                     aria-label="Decrease quantity"
                   >
                     <Minus className="h-5 w-5 text-gray-600" />
                   </button>
                   <input
                     type="number"
-                    min="1"
-                    max={maxQuantity}
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    min={1}
+                    max={availableStock}
                     value={quantity}
                     onChange={(e) => {
-                      const val = parseInt(e.target.value) || 1
-                      handleQuantityChange(Math.min(Math.max(1, val), availableStock))
+                      const raw = e.target.value.replace(/\D/g, "")
+                      if (raw === "") return
+                      const val = parseInt(raw, 10)
+                      if (!Number.isNaN(val)) handleQuantityChange(Math.min(Math.max(1, val), availableStock))
                     }}
-                    className="w-20 text-center text-xl font-bold border-2 border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                    onBlur={(e) => {
+                      const raw = e.target.value.replace(/\D/g, "")
+                      if (raw === "" || parseInt(raw, 10) < 1) {
+                        handleQuantityChange(1)
+                        return
+                      }
+                      const val = parseInt(raw, 10)
+                      if (!Number.isNaN(val)) handleQuantityChange(Math.min(Math.max(1, val), availableStock))
+                    }}
+                    className="w-24 min-w-[5rem] text-center text-xl font-bold border-2 border-gray-300 rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                    aria-label="Quantity"
                   />
                   <button
                     type="button"
                     onClick={() => handleQuantityChange(quantity + 1)}
                     disabled={quantity >= availableStock}
-                    className="p-2 rounded-lg border-2 border-gray-300 hover:border-orange-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    className="p-2.5 rounded-lg border-2 border-gray-300 hover:border-orange-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                     aria-label="Increase quantity"
                   >
                     <Plus className="h-5 w-5 text-gray-600" />
                   </button>
                 </div>
                 <p className="text-xs text-gray-500 mt-2 text-center">
-                  Available: {availableStock} {availableStock === 1 ? "item" : "items"}
+                  Type a number or use ± · Up to {availableStock} {availableStock === 1 ? "item" : "items"}
                 </p>
               </div>
 

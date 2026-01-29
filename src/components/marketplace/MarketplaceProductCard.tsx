@@ -101,7 +101,7 @@ export function MarketplaceProductCard(props: MarketplaceProductCardProps) {
           />
 
           {/* Content Section */}
-          <CardContent className="p-4 flex-1 flex flex-col overflow-visible gap-0">
+          <CardContent className="p-2 sm:p-3 md:p-4 flex-1 flex flex-col overflow-visible gap-0">
             <ProductInfoSection
               product={product}
               options={options}

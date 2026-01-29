@@ -2,6 +2,9 @@
 
 import { CreditCard } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { useAuth } from "@/contexts/AuthContext"
+import { useCartStore } from "@/lib/cart-store"
 
 interface PaymentSummaryProps {
   subtotal: number
@@ -26,6 +29,10 @@ export function PaymentSummary({
   onBack,
   onPlaceOrder,
 }: PaymentSummaryProps) {
+  const { user } = useAuth()
+  const { adminDeliveryFeeOverride, setAdminDeliveryFeeOverride } = useCartStore()
+  const isAdmin = user?.role === "ADMIN"
+
   return (
     <div className="lg:col-span-1">
       <div className="sticky top-8 bg-white/70 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 overflow-hidden">
@@ -42,13 +49,52 @@ export function PaymentSummary({
               <span className="text-gray-700 font-medium text-sm sm:text-base">Subtotal</span>
               <span className="font-bold text-gray-900 text-sm sm:text-base">₦{subtotal.toLocaleString()}</span>
             </div>
-            <div className="flex justify-between items-center py-3 px-3 sm:px-4 bg-gray-50 rounded-lg">
+            <div className="flex flex-col gap-2 sm:gap-0 sm:flex-row sm:justify-between sm:items-center py-3 px-3 sm:px-4 bg-gray-50 rounded-lg">
               <span className="text-gray-700 font-medium text-sm sm:text-base">Delivery Fee</span>
-              <span className={`font-bold text-sm sm:text-base ${deliveryFee === 0 ? 'text-green-600' : 'text-gray-900'}`}>
-                {deliveryFee === 0 ? 'Free' : `₦${deliveryFee.toLocaleString()}`}
-              </span>
+              {isAdmin ? (
+                <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:gap-2">
+                  <div className="flex items-center gap-1">
+                    <span className="text-gray-500 text-xs sm:text-sm">₦</span>
+                    <Input
+                      type="number"
+                      inputMode="numeric"
+                      min={0}
+                      step={100}
+                      value={deliveryFee}
+                      onChange={(e) => {
+                        const v = e.target.value.replace(/\D/g, "")
+                        if (v === "") {
+                          setAdminDeliveryFeeOverride(null)
+                          return
+                        }
+                        const n = parseInt(v, 10)
+                        if (!Number.isNaN(n) && n >= 0) setAdminDeliveryFeeOverride(n)
+                      }}
+                      onBlur={(e) => {
+                        const v = e.target.value.replace(/\D/g, "")
+                        if (v === "") setAdminDeliveryFeeOverride(null)
+                      }}
+                      className="w-24 h-8 text-sm font-bold border-orange-200 focus:ring-orange-500"
+                      aria-label="Admin: override delivery fee"
+                    />
+                  </div>
+                  {adminDeliveryFeeOverride != null && (
+                    <button
+                      type="button"
+                      onClick={() => setAdminDeliveryFeeOverride(null)}
+                      className="text-xs text-orange-600 hover:text-orange-700 font-medium underline text-left sm:text-right"
+                    >
+                      Reset to calculated
+                    </button>
+                  )}
+                </div>
+              ) : (
+                <span className={`font-bold text-sm sm:text-base ${deliveryFee === 0 ? 'text-green-600' : 'text-gray-900'}`}>
+                  {deliveryFee === 0 ? 'Free' : `₦${deliveryFee.toLocaleString()}`}
+                </span>
+              )}
             </div>
-            {deliveryFee === 0 && (
+            {!isAdmin && deliveryFee === 0 && (
               <div className="bg-green-50 border border-green-200 rounded-lg p-3 mb-3">
                 <p className="text-xs sm:text-sm text-green-800 font-medium">
                   🎉 {typeof window !== 'undefined' && localStorage.getItem('freeDeliveryMessage') 
