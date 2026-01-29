@@ -257,21 +257,6 @@ export function DashboardLayout({
               </>
             )}
           </div>
-
-          <div className="flex-shrink-0 border-t border-gray-200 pt-3 mt-auto px-3 md:px-4 pb-4">
-            <button
-              onClick={() => {
-                logout()
-                router.push('/')
-                setIsMobileMenuOpen(false)
-              }}
-              className="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-left transition-all duration-200 text-red-600 hover:bg-red-50 hover:text-red-700 active:bg-red-100 cursor-pointer touch-manipulation"
-              type="button"
-            >
-              <LogOut className="h-5 w-5 flex-shrink-0" />
-              <span className="text-sm md:text-base font-medium">Sign Out</span>
-            </button>
-          </div>
         </nav>
       </>
     )
@@ -340,18 +325,6 @@ export function DashboardLayout({
                     >
                       <Settings className="h-4 w-4 text-gray-500" />
                       <span className="text-sm font-medium">Profile Settings</span>
-                    </button>
-                    <div className="border-t border-gray-100 my-1" />
-                    <button
-                      onClick={() => {
-                        setProfileDropdownOpen(false)
-                        logout()
-                        router.push('/')
-                      }}
-                      className="flex items-center gap-3 w-full px-4 py-3 text-left text-red-600 hover:bg-red-50 transition-colors"
-                    >
-                      <LogOut className="h-4 w-4" />
-                      <span className="text-sm font-medium">Sign Out</span>
                     </button>
                   </div>
                 )}
