@@ -117,10 +117,10 @@ export default function CartPage() {
                 Start Shopping
               </Button>
             </Link>
-            <Link href="/">
+            <Link href="/dashboard">
               <Button variant="outline" className="w-full text-sm sm:text-base">
                 <ArrowLeft className="mr-2 h-3 w-3 sm:h-4 sm:w-4" />
-                Back to Home
+                Back to Dashboard
               </Button>
             </Link>
           </div>
@@ -135,15 +135,24 @@ export default function CartPage() {
       <header className="sticky top-0 z-[100] bg-white shadow-sm border-b backdrop-blur-sm bg-white/95">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
-            {/* Logo */}
-            <Link href="/" className="flex items-center space-x-2 flex-shrink-0">
-              <img
-                src="/mrktdotcom-logo.png"
-                alt="Marketdotcom Logo"
-                className="h-24 w-24 sm:h-32 sm:w-32 md:h-36 md:w-36 lg:h-40 lg:w-40 object-contain"
-              />
-              <span className="text-lg font-bold text-gray-900 hidden sm:block">Cart</span>
-            </Link>
+            {/* Back Button & Logo */}
+            <div className="flex items-center space-x-3 flex-shrink-0">
+              <Link 
+                href="/dashboard" 
+                className="p-2 rounded-lg hover:bg-gray-100 transition-colors flex items-center justify-center"
+                aria-label="Back to Dashboard"
+              >
+                <ArrowLeft className="h-5 w-5 text-gray-700" />
+              </Link>
+              <Link href="/" className="flex items-center space-x-2">
+                <img
+                  src="/mrktdotcom-logo.png"
+                  alt="Marketdotcom Logo"
+                  className="h-24 w-24 sm:h-32 sm:w-32 md:h-36 md:w-36 lg:h-40 lg:w-40 object-contain"
+                />
+                <span className="text-lg font-bold text-gray-900 hidden sm:block">Cart</span>
+              </Link>
+            </div>
 
             {/* Desktop Navigation */}
             <div className="hidden lg:flex items-center space-x-4">

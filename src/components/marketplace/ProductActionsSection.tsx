@@ -29,7 +29,7 @@ export function ProductActionsSection({
   onAddToCart,
 }: ProductActionsSectionProps) {
   return (
-    <div className="relative mt-1.5 sm:mt-3 z-20" onClick={(e) => e.stopPropagation()}>
+    <div className="relative mt-2 sm:mt-3 z-20" onClick={(e) => e.stopPropagation()}>
       <div className="flex flex-col gap-2">
         {/* Options Button - Only show if product has variations */}
         {hasVariationChoices && (
@@ -51,13 +51,15 @@ export function ProductActionsSection({
             onAddToCart()
           }}
           disabled={!isActuallyInStock}
-          className="relative w-full bg-orange-600 text-white overflow-hidden group text-sm sm:text-base py-2 sm:py-2.5"
+          className="relative w-full bg-orange-600 text-white overflow-hidden group text-xs sm:text-sm md:text-base py-2 sm:py-2.5"
         >
           <span className="relative z-10 flex items-center justify-center">
             <ShoppingCart className="h-3 w-3 sm:h-4 sm:w-4 mr-1.5 sm:mr-2" />
-            {selectedVariation
-              ? `Add ${selectedVariation.label}`
-              : "Add to Cart"}
+            <span className="truncate max-w-[140px] sm:max-w-none">
+              {selectedVariation
+                ? `Add ${selectedVariation.label}`
+                : "Add to Cart"}
+            </span>
           </span>
           {/* Sliding background animation - slides from left to right on hover */}
           <span className="absolute inset-0 bg-gradient-to-r from-orange-700 to-red-600 transform -translate-x-full group-hover:translate-x-0 transition-transform duration-500 ease-in-out"></span>

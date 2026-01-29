@@ -32,7 +32,7 @@ export function VariationOptionsDropdown({
           onShowOptionsChange(!showOptions)
         }}
         disabled={!isActuallyInStock}
-        className="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-300 text-xs sm:text-sm py-2"
+        className="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-300 text-xs sm:text-sm py-1.5 sm:py-2 h-auto min-h-[32px] sm:min-h-[36px]"
         onMouseEnter={() => onShowOptionsChange(true)}
         onMouseLeave={() => {
           // Delay hiding to allow user to move to dropdown
@@ -44,8 +44,8 @@ export function VariationOptionsDropdown({
           }, 200)
         }}
       >
-        <span className="mr-2">Options</span>
-        <ChevronDown className="h-4 w-4" />
+        <span className="mr-2 truncate flex-1 text-left">Options</span>
+        <ChevronDown className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
       </Button>
       
       {/* Options Dropdown */}
