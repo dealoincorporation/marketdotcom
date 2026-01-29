@@ -3,7 +3,7 @@
 import { ChevronDown } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { formatPrice } from "./utils"
-import { normalizeImageUrl, normalizeImageUrls } from "@/lib/image-utils"
+import { normalizeImageUrls } from "@/lib/image-utils"
 import type { MarketplaceProduct, VariationOption } from "./types"
 
 interface VariationOptionsDropdownProps {
@@ -48,107 +48,73 @@ export function VariationOptionsDropdown({
         <ChevronDown className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
       </Button>
       
-      {/* Options Dropdown */}
+      {/* Options dropdown – single contained layout, no overflow */}
       {showOptions && (
         <div
           data-options-dropdown
-          className="absolute left-0 right-0 bottom-full mb-2.5 w-full bg-white rounded-lg shadow-2xl border border-gray-200 z-[60] max-h-64 overflow-y-auto ring-1 ring-black/5"
+          className="absolute left-0 right-0 bottom-full mb-2.5 w-full min-w-[272px] bg-white rounded-xl shadow-xl border border-gray-200 z-[60] overflow-hidden ring-1 ring-black/5"
           onMouseEnter={() => onShowOptionsChange(true)}
           onMouseLeave={() => {
             setTimeout(() => onShowOptionsChange(false), 300)
           }}
         >
-          <div className="p-2.5 sm:p-3 space-y-1.5">
-            {options.map((option) => {
-              const variation = option.kind === "variation"
-                ? product.variations.find((v) => v.id === option.id)
-                : undefined
-              const stock = variation ? variation.stock : product.stock
-              
-              // Get image for the option
-              // For standard (base) options, use the product's standard image (first image from images array or image field)
-              // For variation options, use variation image or option image
-              let normalizedImage: string
-              if (option.kind === "base") {
-                // Standard option - prioritize option.image (which should be set from buildVariationOptions)
-                // Then try product images array, then product.image field, finally default
-                const standardImages = normalizeImageUrls(
-                  option.image,
-                  product.images,
-                  (product as any).image
-                )
-                normalizedImage = standardImages.length > 0 
-                  ? standardImages[0] 
-                  : "/market_image.jpeg"
-              } else {
-                // Variation option - use variation image, option image, or product images as fallback
-                const variationImages = normalizeImageUrls(
-                  variation?.image,
-                  option.image,
-                  product.images,
-                  (product as any).image
-                )
-                normalizedImage = variationImages.length > 0 
-                  ? variationImages[0] 
-                  : "/market_image.jpeg"
-              }
-              
-              return (
-                <button
-                  key={option.id}
-                  type="button"
-                  onClick={(e) => {
-                    e.preventDefault()
-                    e.stopPropagation()
-                    onVariationSelect(option)
-                  }}
-                  disabled={stock <= 0}
-                  className="w-full text-left p-2.5 sm:p-3 rounded-lg hover:bg-orange-50 border-2 border-transparent hover:border-orange-200 transition-all disabled:opacity-50 disabled:cursor-not-allowed min-h-[52px] sm:min-h-[56px] flex items-center"
-                >
-                  {/* Mobile: Stack vertically */}
-                  <div className="flex flex-col sm:hidden gap-2">
-                    <div className="flex items-center gap-2">
-                      {/* Variation Image */}
-                      <img
-                        src={normalizedImage}
-                        alt={option.label}
-                        className="w-10 h-10 object-cover rounded-md flex-shrink-0 border border-gray-200"
-                      />
-                      {/* Variety Name */}
-                      <div className="min-w-0 flex-1">
-                        <p className="font-medium text-gray-900 text-sm leading-tight break-words">{option.label}</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center justify-between gap-2 pl-12 min-w-0">
-                      <p className="text-xs text-gray-600 shrink-0">Stock: {stock}</p>
-                      <span className="text-sm font-semibold text-orange-600 truncate min-w-0">
-                        {formatPrice(option.price)}
-                      </span>
-                    </div>
-                  </div>
+          <div className="max-h-[280px] overflow-y-auto overscroll-contain p-2">
+            <ul className="space-y-1" role="list">
+              {options.map((option) => {
+                const variation = option.kind === "variation"
+                  ? product.variations.find((v) => v.id === option.id)
+                  : undefined
+                const stock = variation ? variation.stock : product.stock
 
-                  {/* Desktop: Horizontal layout */}
-                  <div className="hidden sm:flex items-center justify-between gap-2 min-w-0">
-                    <div className="flex items-center gap-3 flex-1 min-w-0">
-                      {/* Variation Image */}
-                      <img
-                        src={normalizedImage}
-                        alt={option.label}
-                        className="w-12 h-12 object-cover rounded-md flex-shrink-0 border border-gray-200"
-                      />
-                      {/* Variety Name and Stock */}
-                      <div className="min-w-0 flex-1">
-                        <p className="font-medium text-gray-900 truncate">{option.label}</p>
-                        <p className="text-sm text-gray-600">Stock: {stock}</p>
+                let normalizedImage: string
+                if (option.kind === "base") {
+                  const standardImages = normalizeImageUrls(
+                    option.image,
+                    product.images,
+                    (product as any).image
+                  )
+                  normalizedImage = standardImages.length > 0 ? standardImages[0] : "/market_image.jpeg"
+                } else {
+                  const variationImages = normalizeImageUrls(
+                    variation?.image,
+                    option.image,
+                    product.images,
+                    (product as any).image
+                  )
+                  normalizedImage = variationImages.length > 0 ? variationImages[0] : "/market_image.jpeg"
+                }
+
+                return (
+                  <li key={option.id}>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.preventDefault()
+                        e.stopPropagation()
+                        onVariationSelect(option)
+                      }}
+                      disabled={stock <= 0}
+                      className="w-full text-left rounded-lg hover:bg-orange-50/80 border border-transparent hover:border-orange-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-400 focus-visible:ring-offset-1 overflow-hidden"
+                    >
+                      <div className="flex items-center gap-3 p-2.5 min-w-0 w-full">
+                        <span className="flex-shrink-0 w-11 h-11 rounded-lg overflow-hidden bg-gray-100 border border-gray-200">
+                          <img src={normalizedImage} alt="" className="w-full h-full object-cover" />
+                        </span>
+                        <span className="flex-1 min-w-0 flex flex-col items-start gap-0.5 overflow-hidden">
+                          <span className="font-medium text-gray-900 text-sm truncate w-full text-left">
+                            {option.label}
+                          </span>
+                          <span className="text-xs text-gray-500">Stock: {stock}</span>
+                        </span>
+                        <span className="flex-shrink-0 text-sm font-semibold text-orange-600 tabular-nums whitespace-nowrap">
+                          {formatPrice(option.price)}
+                        </span>
                       </div>
-                    </div>
-                    <span className="text-sm font-semibold text-orange-600 flex-shrink-0 truncate max-w-[90px]">
-                      {formatPrice(option.price)}
-                    </span>
-                  </div>
-                </button>
-              )
-            })}
+                    </button>
+                  </li>
+                )
+              })}
+            </ul>
           </div>
         </div>
       )}
