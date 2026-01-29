@@ -91,13 +91,13 @@ export function SideModal({
             onClick={onClose}
           />
 
-      {/* Side Modal */}
+      {/* Centered Modal */}
       <motion.div
-        initial={{ x: "100%" }}
-        animate={{ x: 0 }}
-        exit={{ x: "100%" }}
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.95 }}
         transition={{ type: "spring", damping: 25, stiffness: 200 }}
-        className="fixed right-0 top-0 bottom-0 z-[101] w-full max-w-md bg-white shadow-2xl overflow-hidden flex flex-col"
+        className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-[101] w-[90vw] max-w-md max-h-[85vh] bg-white shadow-2xl rounded-lg overflow-hidden flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
             {/* Header */}

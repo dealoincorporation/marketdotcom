@@ -257,6 +257,22 @@ export function DashboardLayout({
               </>
             )}
           </div>
+
+          {/* Desktop Sign Out Button - Hidden on mobile (sign out is in header dropdown) */}
+          <div className="hidden md:flex flex-shrink-0 border-t border-gray-200 pt-3 mt-auto px-3 md:px-4 pb-4">
+            <button
+              onClick={() => {
+                logout()
+                router.push('/')
+                setIsMobileMenuOpen(false)
+              }}
+              className="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-left transition-all duration-200 text-red-600 hover:bg-red-50 hover:text-red-700 active:bg-red-100 cursor-pointer touch-manipulation"
+              type="button"
+            >
+              <LogOut className="h-5 w-5 flex-shrink-0" />
+              <span className="text-sm md:text-base font-medium">Sign Out</span>
+            </button>
+          </div>
         </nav>
       </>
     )

@@ -103,9 +103,32 @@ export function VariationOptionsDropdown({
                     onVariationSelect(option)
                   }}
                   disabled={stock <= 0}
-                  className="w-full text-left p-3 rounded-lg hover:bg-orange-50 border-2 border-transparent hover:border-orange-200 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full text-left p-2 sm:p-3 rounded-lg hover:bg-orange-50 border-2 border-transparent hover:border-orange-200 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  <div className="flex items-center justify-between">
+                  {/* Mobile: Stack vertically */}
+                  <div className="flex flex-col sm:hidden gap-2">
+                    <div className="flex items-center gap-2">
+                      {/* Variation Image */}
+                      <img
+                        src={normalizedImage}
+                        alt={option.label}
+                        className="w-10 h-10 object-cover rounded-md flex-shrink-0 border border-gray-200"
+                      />
+                      {/* Variety Name */}
+                      <div className="min-w-0 flex-1">
+                        <p className="font-medium text-gray-900 text-sm leading-tight break-words">{option.label}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between pl-12">
+                      <p className="text-xs text-gray-600">Stock: {stock}</p>
+                      <span className="text-sm font-semibold text-orange-600">
+                        {formatPrice(option.price)}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Desktop: Horizontal layout */}
+                  <div className="hidden sm:flex items-center justify-between">
                     <div className="flex items-center gap-3 flex-1 min-w-0">
                       {/* Variation Image */}
                       <img
