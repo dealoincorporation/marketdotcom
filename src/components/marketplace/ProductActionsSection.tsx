@@ -29,8 +29,8 @@ export function ProductActionsSection({
   onAddToCart,
 }: ProductActionsSectionProps) {
   return (
-    <div className="relative mt-2 sm:mt-3 z-20" onClick={(e) => e.stopPropagation()}>
-      <div className="flex flex-col gap-2">
+    <div className="relative mt-2.5 sm:mt-3 z-20 flex-shrink-0" onClick={(e) => e.stopPropagation()}>
+      <div className="flex flex-col gap-2.5 sm:gap-3">
         {/* Options Button - Only show if product has variations */}
         {hasVariationChoices && (
           <VariationOptionsDropdown

@@ -52,13 +52,13 @@ export function VariationOptionsDropdown({
       {showOptions && (
         <div
           data-options-dropdown
-          className="absolute left-0 right-0 bottom-full mb-2 w-full bg-white rounded-lg shadow-2xl border border-gray-200 z-[60] max-h-64 overflow-y-auto ring-1 ring-black/5"
+          className="absolute left-0 right-0 bottom-full mb-2.5 w-full bg-white rounded-lg shadow-2xl border border-gray-200 z-[60] max-h-64 overflow-y-auto ring-1 ring-black/5"
           onMouseEnter={() => onShowOptionsChange(true)}
           onMouseLeave={() => {
             setTimeout(() => onShowOptionsChange(false), 300)
           }}
         >
-          <div className="p-2">
+          <div className="p-2.5 sm:p-3 space-y-1.5">
             {options.map((option) => {
               const variation = option.kind === "variation"
                 ? product.variations.find((v) => v.id === option.id)
@@ -103,7 +103,7 @@ export function VariationOptionsDropdown({
                     onVariationSelect(option)
                   }}
                   disabled={stock <= 0}
-                  className="w-full text-left p-2 sm:p-3 rounded-lg hover:bg-orange-50 border-2 border-transparent hover:border-orange-200 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full text-left p-2.5 sm:p-3 rounded-lg hover:bg-orange-50 border-2 border-transparent hover:border-orange-200 transition-all disabled:opacity-50 disabled:cursor-not-allowed min-h-[52px] sm:min-h-[56px] flex items-center"
                 >
                   {/* Mobile: Stack vertically */}
                   <div className="flex flex-col sm:hidden gap-2">
@@ -119,16 +119,16 @@ export function VariationOptionsDropdown({
                         <p className="font-medium text-gray-900 text-sm leading-tight break-words">{option.label}</p>
                       </div>
                     </div>
-                    <div className="flex items-center justify-between pl-12">
-                      <p className="text-xs text-gray-600">Stock: {stock}</p>
-                      <span className="text-sm font-semibold text-orange-600">
+                    <div className="flex items-center justify-between gap-2 pl-12 min-w-0">
+                      <p className="text-xs text-gray-600 shrink-0">Stock: {stock}</p>
+                      <span className="text-sm font-semibold text-orange-600 truncate min-w-0">
                         {formatPrice(option.price)}
                       </span>
                     </div>
                   </div>
 
                   {/* Desktop: Horizontal layout */}
-                  <div className="hidden sm:flex items-center justify-between">
+                  <div className="hidden sm:flex items-center justify-between gap-2 min-w-0">
                     <div className="flex items-center gap-3 flex-1 min-w-0">
                       {/* Variation Image */}
                       <img
@@ -142,7 +142,7 @@ export function VariationOptionsDropdown({
                         <p className="text-sm text-gray-600">Stock: {stock}</p>
                       </div>
                     </div>
-                    <span className="text-sm font-semibold text-orange-600 ml-2 flex-shrink-0">
+                    <span className="text-sm font-semibold text-orange-600 flex-shrink-0 truncate max-w-[90px]">
                       {formatPrice(option.price)}
                     </span>
                   </div>

@@ -31,7 +31,7 @@ export function ProductInfoSection({
         e.stopPropagation()
       }}
     >
-      <div className="flex items-start justify-between gap-1.5 sm:gap-3 mb-2 sm:mb-2">
+      <div className="flex items-start justify-between gap-2 sm:gap-3 mb-2 sm:mb-2">
         <div className="min-w-0 flex-1">
           <h3 className="font-semibold text-gray-900 text-sm sm:text-base md:text-lg leading-tight line-clamp-2 mb-1">
             {product.name}
@@ -45,24 +45,24 @@ export function ProductInfoSection({
         </Badge>
       </div>
 
-      <div className="mt-auto pt-1 sm:pt-2 space-y-1.5 sm:space-y-2">
+      <div className="mt-auto pt-1.5 sm:pt-2 space-y-1.5 sm:space-y-2">
         {/* Category */}
         <div className="text-[10px] sm:text-xs md:text-sm text-gray-600 truncate">
           <span className="font-medium">{product.category?.name}</span>
         </div>
         
-        {/* Price - Different display for mobile vs desktop */}
-        <div className="flex flex-col min-w-0">
+        {/* Price - kept inside card with min-w-0 and wrap/truncate */}
+        <div className="min-w-0 w-full">
           {/* Mobile: Show simplified price */}
-          <span className="text-base sm:text-xl md:text-2xl font-bold text-orange-600 block sm:hidden leading-tight">
+          <span className="text-base sm:text-lg md:text-xl font-bold text-orange-600 block sm:hidden leading-tight break-words">
             {mobilePriceLabel}
           </span>
           {/* Desktop: Show full price range */}
-          <span className="text-base sm:text-xl md:text-2xl font-bold text-orange-600 hidden sm:block leading-tight">
+          <span className="text-base sm:text-lg md:text-xl font-bold text-orange-600 hidden sm:block leading-tight break-words">
             {priceLabel}
           </span>
           {priceLabel.includes(' - ') && (
-            <span className="text-[10px] sm:text-xs text-gray-500 mt-0.5 hidden sm:inline">Price range</span>
+            <span className="text-[10px] sm:text-xs text-gray-500 mt-0.5 hidden sm:block">Price range</span>
           )}
         </div>
       </div>

@@ -28,8 +28,8 @@ export function ProductImageSection({
         e.stopPropagation()
       }}
     >
-      <div className="p-2 sm:p-3 bg-gray-50 rounded-t-lg flex-shrink-0">
-        <div className="relative h-32 sm:h-40 md:h-48 bg-gray-100 overflow-hidden rounded-lg">
+      <div className="p-2.5 sm:p-3 md:p-3.5 bg-gray-50 rounded-t-lg flex-shrink-0">
+        <div className="relative h-36 sm:h-44 md:h-52 bg-gray-100 overflow-hidden rounded-lg">
           <img
             src={displayImage}
             alt={product.name}

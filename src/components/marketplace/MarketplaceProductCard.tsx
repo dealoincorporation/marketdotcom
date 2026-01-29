@@ -91,7 +91,7 @@ export function MarketplaceProductCard(props: MarketplaceProductCardProps) {
         transition={{ duration: 0.2 }}
         className="h-full"
       >
-        <Card className="relative h-full flex flex-col bg-white border border-gray-200 rounded-lg overflow-visible hover:shadow-lg active:shadow-md transition-all duration-200 touch-manipulation select-none">
+        <Card className="relative h-full flex flex-col min-h-[340px] sm:min-h-[380px] bg-white border border-gray-200 rounded-lg overflow-visible hover:shadow-lg active:shadow-md transition-all duration-200 touch-manipulation select-none">
           {/* Image Section */}
           <ProductImageSection
             product={product}
@@ -101,7 +101,7 @@ export function MarketplaceProductCard(props: MarketplaceProductCardProps) {
           />
 
           {/* Content Section */}
-          <CardContent className="p-2.5 sm:p-3 md:p-4 flex-1 flex flex-col overflow-visible gap-2 sm:gap-0">
+          <CardContent className="p-3 sm:p-4 flex-1 flex flex-col overflow-visible gap-2.5 sm:gap-3 min-h-0">
             <ProductInfoSection
               product={product}
               options={options}
