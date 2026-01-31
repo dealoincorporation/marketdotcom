@@ -1,17 +1,22 @@
 import { NextRequest, NextResponse } from "next/server"
 import { getUserFromRequest } from "@/lib/auth"
 import { getPrismaClient } from "@/lib/prisma"
+import { isSlotDateToday, isSlotStartInPast } from "@/lib/delivery-slots"
 
-// GET /api/delivery-slots - Get all available delivery slots
+// GET /api/delivery-slots - Get all available delivery slots (including today, from current time)
 export async function GET(request: NextRequest) {
   try {
     const prisma = await getPrismaClient()
+
+    // Start of today (local) so we include today's slots
+    const now = new Date()
+    const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0)
 
     const slots = await prisma.deliverySlot.findMany({
       where: {
         isAvailable: true,
         date: {
-          gte: new Date() // Only future dates
+          gte: startOfToday
         }
       },
       orderBy: [
@@ -20,7 +25,16 @@ export async function GET(request: NextRequest) {
       ]
     })
 
-    return NextResponse.json(slots)
+    // For slots on today, hide time slots whose start time has already passed
+    const filtered = slots.filter((slot) => {
+      const slotDate = new Date(slot.date)
+      if (isSlotDateToday(slotDate, now) && isSlotStartInPast(slotDate, slot.timeSlot, now)) {
+        return false
+      }
+      return true
+    })
+
+    return NextResponse.json(filtered)
   } catch (error) {
     console.error("Error fetching delivery slots:", error)
     return NextResponse.json(

@@ -32,18 +32,18 @@ export function DeliveryAddressSection({
   onAddAddress,
 }: DeliveryAddressSectionProps) {
   return (
-    <div className="bg-white/70 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 overflow-hidden">
-      <div className="bg-gradient-to-r from-orange-500 to-red-500 p-6">
-        <h2 className="text-lg sm:text-xl font-bold text-white flex items-center">
-          <MapPin className="h-5 w-5 sm:h-6 sm:w-6 mr-2 sm:mr-3 flex-shrink-0" />
+    <div className="bg-white/70 backdrop-blur-sm rounded-xl sm:rounded-2xl shadow-xl border border-white/20 overflow-hidden w-full max-w-full min-w-0">
+      <div className="bg-gradient-to-r from-orange-500 to-red-500 p-4 sm:p-6">
+        <h2 className="text-lg sm:text-xl font-bold text-white flex items-center gap-2">
+          <MapPin className="h-5 w-5 sm:h-6 sm:w-6 flex-shrink-0" />
           <span className="break-words">Choose Delivery Address</span>
         </h2>
-        <p className="text-orange-100 mt-1 text-sm sm:text-base">Select where you'd like your order delivered</p>
+        <p className="text-orange-100 mt-1 text-sm sm:text-base break-words">Select where you'd like your order delivered</p>
       </div>
-      <div className="p-6">
+      <div className="p-4 sm:p-6 min-w-0">
         <RadioGroup value={selectedAddress} onValueChange={onAddressSelect} className="space-y-3 sm:space-y-4">
           {addresses.map(address => (
-            <div key={address.id} className={`relative p-3 sm:p-4 md:p-6 rounded-xl border-2 transition-all duration-300 cursor-pointer ${
+            <div key={address.id} className={`relative p-3 sm:p-4 md:p-6 rounded-xl border-2 transition-all duration-300 cursor-pointer min-w-0 overflow-hidden ${
               selectedAddress === address.id
                 ? 'border-orange-500 bg-gradient-to-r from-orange-50 to-red-50 shadow-lg'
                 : 'border-gray-200 hover:border-gray-300 hover:shadow-md'
@@ -152,8 +152,8 @@ export function DeliveryAddressSection({
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-6">
-                <div className="space-y-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+                <div className="space-y-2 min-w-0">
                   <Label htmlFor="city" className="text-sm font-semibold text-gray-700">City</Label>
                   <Input
                     id="city"
@@ -173,8 +173,8 @@ export function DeliveryAddressSection({
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-6">
-                <div className="space-y-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+                <div className="space-y-2 min-w-0">
                   <Label htmlFor="postalCode" className="text-sm font-semibold text-gray-700">Postal Code <span className="text-gray-500">(Optional)</span></Label>
                   <Input
                     id="postalCode"

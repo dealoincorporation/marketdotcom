@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 import { getUserFromRequest } from "@/lib/auth"
 import { getPrismaClient } from "@/lib/prisma"
+import { calculatePointsFromAmount } from "@/lib/points"
 import { sendOrderConfirmationEmail, sendAdminOrderNotification } from "@/lib/email"
 
 export async function POST(request: Request) {
@@ -131,8 +132,16 @@ export async function POST(request: Request) {
       })
     }
 
-    // Award points for purchase
-    const pointsEarned = Math.floor(totalAmount / 100) // 1 point per ₦100 spent
+    // Award points for purchase (threshold-based: e.g. every ₦50,000 = 1 or 10 points)
+    const pointsSettings = await prisma.pointsSettings.findFirst({
+      where: { isActive: true },
+      orderBy: { createdAt: 'desc' }
+    })
+    const pointsEarned = calculatePointsFromAmount(totalAmount, pointsSettings ? {
+      amountThreshold: pointsSettings.amountThreshold,
+      pointsPerThreshold: pointsSettings.pointsPerThreshold,
+      isActive: pointsSettings.isActive
+    } : null)
     if (pointsEarned > 0) {
       await prisma.user.update({
         where: { id: user.userId },

@@ -36,23 +36,23 @@ export function ProductBasicInfo({
       </CardHeader>
       <CardContent className="p-6">
         <div className="space-y-6">
-          {/* Product Group */}
+          {/* Product (for Category → Product → Variant) */}
           <div className="space-y-2">
             <Label htmlFor="groupName" className="text-sm font-semibold text-gray-700 flex items-center gap-2">
-              Product Group
-              <span className="text-xs font-normal text-gray-400">(optional)</span>
+              Product
+              <span className="text-xs font-normal text-gray-400">(e.g. Rice, Beans — optional)</span>
             </Label>
             <Input
               id="groupName"
               value={formData.groupName || ''}
               onChange={(e) => onInputChange('groupName', e.target.value)}
-              placeholder='e.g. "Rice" (then use Name = "Mama Gold", "Caprice", etc)'
+              placeholder='e.g. Rice, Beans, Oloyin'
               className="h-12 text-base border-2 border-gray-300 focus:border-orange-500 focus:ring-2 focus:ring-orange-200 rounded-lg"
             />
             <div className="flex items-start gap-2 bg-blue-50 border border-blue-200 rounded-lg p-3">
               <Info className="h-4 w-4 text-blue-600 mt-0.5 flex-shrink-0" />
               <p className="text-xs text-blue-700">
-                Use this to group multiple brand products under one product in filters (PricePally-style).
+                Set this so you can browse by Category → Product → Variant in the dashboard. Example: Category: Grains and Cereals → Product: Rice → Variant: this product (e.g. Mama&apos;s Pride Basmati 5kg).
               </p>
             </div>
           </div>

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { getUserFromRequest } from "@/lib/auth"
 import { getPrismaClient } from "@/lib/prisma"
-import { generateReferralCode } from "@/lib/helpers"
+import { generateReferralCode } from "@/lib/helpers/index"
 
 // Force dynamic rendering since this route uses authentication and headers
 export const dynamic = 'force-dynamic'

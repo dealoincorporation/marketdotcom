@@ -3,7 +3,7 @@
 import Link from "next/link"
 import { useState } from "react"
 import { motion } from "framer-motion"
-import { Shield, Facebook, Instagram, Linkedin } from "lucide-react"
+import { Shield, Instagram, Linkedin, MessageCircle, Users } from "lucide-react"
 
 export function Footer() {
   const [subscriptionEmail, setSubscriptionEmail] = useState("")
@@ -196,18 +196,21 @@ export function Footer() {
                   Connecting farmers, markets, and homes with affordable, quality food—one smart shop at a time.
                 </p>
 
-                {/* Social Links */}
-                <motion.div className="flex space-x-4">
+                {/* Social & Contact Links */}
+                <motion.div className="flex flex-wrap gap-3">
                   {[
-                    { name: "Facebook", icon: Facebook, href: "#" },
-                    { name: "Instagram", icon: Instagram, href: "#" },
-                    { name: "LinkedIn", icon: Linkedin, href: "#" }
+                    { name: "WhatsApp", icon: MessageCircle, href: "https://wa.link/ig48j8" },
+                    { name: "WhatsApp Community", icon: Users, href: "https://whatsapp.com/channel/0029VbAyTyFIN9ihlQWcnq3u" },
+                    { name: "Instagram", icon: Instagram, href: "https://www.instagram.com/marketdotcom.ng?igsh=MWl2MDZ5dDlxbWN4Zw==" },
+                    { name: "LinkedIn", icon: Linkedin, href: "https://www.linkedin.com/in/marketdotcom-1898093a5/" }
                   ].map((social, index) => {
                     const IconComponent = social.icon
                     return (
                       <motion.a
                         key={social.name}
                         href={social.href}
+                        target="_blank"
+                        rel="noopener noreferrer"
                         initial={{ opacity: 0, scale: 0.8 }}
                         whileInView={{ opacity: 1, scale: 1 }}
                         transition={{ duration: 0.4, delay: index * 0.1 }}
@@ -316,7 +319,7 @@ export function Footer() {
 
                 <motion.div className="space-y-4">
                   <motion.div className="flex items-start space-x-3">
-                    <motion.div className="bg-orange-600/20 p-2 rounded-lg">
+                    <motion.div className="bg-orange-600/20 p-2 rounded-lg flex-shrink-0">
                       <svg className="h-5 w-5 text-orange-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -324,31 +327,48 @@ export function Footer() {
                     </motion.div>
                     <motion.div>
                       <p className="text-gray-300 font-medium">Address</p>
-                      <p className="text-gray-400 text-sm">38 Agberu Rd, Off Alasoro Street,<br />Elebu Oja, Ibadan, Oyo State</p>
+                      <a href="https://maps.google.com/?q=Road+4+Glorious+Estate+Badore+Ajah+Lagos" target="_blank" rel="noopener noreferrer" className="text-gray-400 text-sm hover:text-orange-400 transition-colors">
+                        Road 4, Glorious Estate, Badore Ajah Lagos State.
+                      </a>
                     </motion.div>
                   </motion.div>
 
                   <motion.div className="flex items-start space-x-3">
-                    <motion.div className="bg-orange-600/20 p-2 rounded-lg">
+                    <motion.div className="bg-orange-600/20 p-2 rounded-lg flex-shrink-0">
                       <svg className="h-5 w-5 text-orange-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                       </svg>
                     </motion.div>
                     <motion.div>
                       <p className="text-gray-300 font-medium">Phone</p>
-                      <p className="text-gray-400 text-sm">+234-903-181-2756</p>
+                      <a href="tel:+2348138353576" className="text-gray-400 text-sm hover:text-orange-400 transition-colors">08138353576</a>
                     </motion.div>
                   </motion.div>
 
                   <motion.div className="flex items-start space-x-3">
-                    <motion.div className="bg-orange-600/20 p-2 rounded-lg">
+                    <motion.div className="bg-orange-600/20 p-2 rounded-lg flex-shrink-0">
                       <svg className="h-5 w-5 text-orange-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                       </svg>
                     </motion.div>
                     <motion.div>
                       <p className="text-gray-300 font-medium">Email</p>
-                      <p className="text-gray-400 text-sm">info@marketdotcom.ng</p>
+                      <a href="mailto:marketdotcominfo@gmail.com" className="text-gray-400 text-sm hover:text-orange-400 transition-colors">marketdotcominfo@gmail.com</a>
+                    </motion.div>
+                  </motion.div>
+
+                  <motion.div className="flex items-start space-x-3">
+                    <motion.div className="bg-orange-600/20 p-2 rounded-lg flex-shrink-0">
+                      <MessageCircle className="h-5 w-5 text-orange-400" />
+                    </motion.div>
+                    <motion.div>
+                      <p className="text-gray-300 font-medium">WhatsApp</p>
+                      <a href="https://wa.link/ig48j8" target="_blank" rel="noopener noreferrer" className="text-gray-400 text-sm hover:text-orange-400 transition-colors block">
+                        Chat with us
+                      </a>
+                      <a href="https://whatsapp.com/channel/0029VbAyTyFIN9ihlQWcnq3u" target="_blank" rel="noopener noreferrer" className="text-gray-400 text-sm hover:text-orange-400 transition-colors block mt-1">
+                        Join our Community
+                      </a>
                     </motion.div>
                   </motion.div>
                 </motion.div>

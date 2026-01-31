@@ -3,7 +3,7 @@
 import { motion } from 'framer-motion'
 import { Package } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { validateProductForm } from '@/lib/helpers'
+import { validateProductForm } from "@/lib/helpers/index"
 import { ProductFormProps } from './types'
 import { ProductImageUpload } from './ProductImageUpload'
 import { ProductBasicInfo } from './ProductBasicInfo'

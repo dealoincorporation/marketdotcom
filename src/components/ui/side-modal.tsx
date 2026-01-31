@@ -141,23 +141,23 @@ export function SideModal({
                         type="button"
                         onClick={() => handleVariationChange(option.id)}
                         disabled={option.stock <= 0}
-                        className={`w-full text-left p-3 rounded-lg border-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed ${
+                        className={`w-full text-left p-3 rounded-lg border-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed min-w-0 ${
                           currentVariationId === option.id
                             ? "bg-orange-50 border-orange-500"
                             : "bg-gray-50 border-gray-200 hover:border-orange-300"
                         }`}
                       >
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2">
+                        <div className="flex items-center justify-between gap-2 min-w-0">
+                          <div className="flex items-center gap-2 min-w-0 flex-1 overflow-hidden">
                             {currentVariationId === option.id && (
-                              <Check className="h-4 w-4 text-green-600" />
+                              <Check className="h-4 w-4 flex-shrink-0 text-green-600" />
                             )}
-                            <div>
-                              <p className="font-medium text-gray-900">{option.label}</p>
+                            <div className="min-w-0 overflow-hidden">
+                              <p className="font-medium text-gray-900 truncate">{option.label}</p>
                               <p className="text-xs text-gray-600">Stock: {option.stock}</p>
                             </div>
                           </div>
-                          <span className="text-sm font-semibold text-orange-600">
+                          <span className="text-sm font-semibold text-orange-600 flex-shrink-0 truncate max-w-[6rem]">
                             ₦{option.price.toLocaleString()}
                           </span>
                         </div>
@@ -235,10 +235,10 @@ export function SideModal({
               </div>
 
               {/* Total Price */}
-              <div className="p-4 bg-gray-50 rounded-lg">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-gray-700">Total:</span>
-                  <span className="text-2xl font-bold text-orange-600">
+              <div className="p-4 bg-gray-50 rounded-lg min-w-0 overflow-hidden">
+                <div className="flex items-center justify-between gap-2 min-w-0">
+                  <span className="text-sm font-medium text-gray-700 flex-shrink-0">Total:</span>
+                  <span className="text-2xl font-bold text-orange-600 truncate">
                     ₦{(variationPrice * quantity).toLocaleString()}
                   </span>
                 </div>

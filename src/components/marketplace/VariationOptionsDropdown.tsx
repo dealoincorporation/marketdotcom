@@ -48,11 +48,11 @@ export function VariationOptionsDropdown({
         <ChevronDown className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
       </Button>
       
-      {/* Options dropdown – single contained layout, no overflow */}
+      {/* Options dropdown – contained within viewport, no page overflow */}
       {showOptions && (
         <div
           data-options-dropdown
-          className="absolute left-0 right-0 bottom-full mb-2.5 w-full min-w-[272px] bg-white rounded-xl shadow-xl border border-gray-200 z-[60] overflow-hidden ring-1 ring-black/5"
+          className="absolute left-0 right-0 bottom-full mb-2.5 w-full max-w-[min(272px,calc(100vw-2rem))] min-w-0 bg-white rounded-xl shadow-xl border border-gray-200 z-[60] overflow-hidden ring-1 ring-black/5"
           onMouseEnter={() => onShowOptionsChange(true)}
           onMouseLeave={() => {
             setTimeout(() => onShowOptionsChange(false), 300)
@@ -106,7 +106,7 @@ export function VariationOptionsDropdown({
                           </span>
                           <span className="text-xs text-gray-500">Stock: {stock}</span>
                         </span>
-                        <span className="flex-shrink-0 text-sm font-semibold text-orange-600 tabular-nums whitespace-nowrap">
+                        <span className="flex-shrink-0 text-sm font-semibold text-orange-600 tabular-nums truncate max-w-[5.5rem]">
                           {formatPrice(option.price)}
                         </span>
                       </div>

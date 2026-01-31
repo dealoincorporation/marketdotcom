@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { ProductFormType, Variation } from '../types'
-import { validateProductForm } from '@/lib/helpers'
+import { validateProductForm } from "@/lib/helpers/index"
 import { normalizeImageUrls } from '@/lib/image-utils'
 
 interface UseProductFormProps {

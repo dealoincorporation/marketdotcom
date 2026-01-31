@@ -546,10 +546,14 @@ export function useCheckout() {
       const enabledTimeSlots = slotConfig.timeSlots.filter(slot => slot.enabled).map(slot => slot.time)
 
       const slotsToCreate = []
-      for (let i = 1; i <= slotConfig.daysAhead; i++) {
+      // Start from today (i = 0) so users can get delivery as soon as they order
+      for (let i = 0; i < slotConfig.daysAhead; i++) {
         const date = new Date()
         date.setDate(date.getDate() + i)
-        const dateString = date.toISOString().split('T')[0]
+        const y = date.getFullYear()
+        const m = String(date.getMonth() + 1).padStart(2, '0')
+        const d = String(date.getDate()).padStart(2, '0')
+        const dateString = `${y}-${m}-${d}`
 
         for (const timeSlot of enabledTimeSlots) {
           slotsToCreate.push({

@@ -213,7 +213,7 @@ export default function MarketplacePage() {
 
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 overflow-x-hidden">
       {/* Sticky Header */}
       <header className="sticky top-0 z-[100] bg-white shadow-sm border-b backdrop-blur-sm bg-white/95">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

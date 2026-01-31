@@ -269,13 +269,15 @@ model ReferralSettings {
 }
 
 model PointsSettings {
-  id                    String   @id @default(cuid()) @map("_id")
-  pointsPerNaira        Float    @default(0.1) // Points earned per ₦1 spent
-  nairaPerPoint         Float    @default(10)  // ₦ earned per point when converting
-  minimumPointsToConvert Int     @default(100) // Minimum points needed to convert
-  conversionCooldownDays Int     @default(30) // Days between conversions
-  isActive              Boolean  @default(true)
-  description           String?
+  id                     String   @id @default(cuid()) @map("_id")
+  amountThreshold         Int      @default(50000) // Every ₦X spent = one "block" (e.g. 50,000)
+  pointsPerThreshold      Int      @default(1)    // Points per block (e.g. 1 or 10)
+  pointsPerNaira          Float    @default(0.01) // Legacy: points per ₦1 (optional)
+  nairaPerPoint           Float    @default(10)   // ₦ value per point when converting
+  minimumPointsToConvert  Int      @default(100)  // Minimum points needed to convert
+  conversionCooldownDays  Int      @default(30)   // Days between conversions
+  isActive                Boolean  @default(true)
+  description             String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

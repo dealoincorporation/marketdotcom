@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 import { getPrismaClient } from "@/lib/prisma"
 import { PaystackService } from "@/lib/paystack"
+import { calculatePointsFromAmount } from "@/lib/points"
 import crypto from "crypto"
 
 const PAYSTACK_SECRET_KEY = process.env.PAYSTACK_SECRET_KEY!
@@ -132,7 +133,15 @@ async function handleSuccessfulPayment(data: any, prisma: any) {
     })
 
     if (!existingReward) {
-      const pointsEarned = Math.floor(order.finalAmount / 100) // 1 point per ₦100
+      const pointsSettings = await prisma.pointsSettings.findFirst({
+        where: { isActive: true },
+        orderBy: { createdAt: 'desc' }
+      })
+      const pointsEarned = calculatePointsFromAmount(Number(order.finalAmount), pointsSettings ? {
+        amountThreshold: pointsSettings.amountThreshold,
+        pointsPerThreshold: pointsSettings.pointsPerThreshold,
+        isActive: pointsSettings.isActive
+      } : null)
       if (pointsEarned > 0) {
         await prisma.user.update({
           where: { id: order.userId },

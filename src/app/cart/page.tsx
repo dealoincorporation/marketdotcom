@@ -24,7 +24,7 @@ import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { useCartStore } from "@/lib/cart-store"
 import { useRouter } from "next/navigation"
-import { getEstimatedDeliveryTime } from "@/lib/helpers"
+import { getEstimatedDeliveryTime } from "@/lib/helpers/index"
 import { normalizeImageUrls, normalizeImageUrl } from "@/lib/image-utils"
 
 export default function CartPage() {

@@ -20,7 +20,18 @@ export function validateEmail(email: string): boolean {
  */
 export function validatePhone(phone: string): boolean {
   const phoneRegex = /^[\d\s\-\+\(\)]+$/
-  return phoneRegex.test(phone) && phone.replace(/\D/g, '').length >= 10
+  return phoneRegex.test(phone) && phone.replace(/\D/g, "").length >= 10
+}
+
+/** Nigerian phone format - alias for backward compatibility */
+export function isValidPhone(phone: string): boolean {
+  const phoneRegex = /^(\+234|234|0)[789]\d{9}$/
+  return phoneRegex.test(phone)
+}
+
+/** Alias for validateEmail */
+export function isValidEmail(email: string): boolean {
+  return validateEmail(email)
 }
 
 /**

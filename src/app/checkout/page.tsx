@@ -65,14 +65,14 @@ export default function CheckoutPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 overflow-x-hidden">
+    <div className="min-h-screen min-h-[100dvh] bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 overflow-x-hidden w-full max-w-full">
       <CheckoutHeader step={step} totalItems={totalItems} subtotal={subtotal} />
 
-      <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-6 sm:py-8 md:py-12 overflow-x-hidden">
+      <div className="max-w-7xl mx-auto w-full px-3 sm:px-4 md:px-6 lg:px-8 py-4 sm:py-6 md:py-8 lg:py-12 overflow-x-hidden box-border pb-[env(safe-area-inset-bottom)]">
         {step === 1 && (
-          <div className="grid lg:grid-cols-3 gap-12">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8 lg:gap-12 min-w-0">
             {/* Delivery Information */}
-            <div className="lg:col-span-2 space-y-8">
+            <div className="lg:col-span-2 space-y-6 sm:space-y-8 min-w-0 overflow-hidden">
               <DeliveryAddressSection
                 addresses={addresses}
                 selectedAddress={selectedAddress}
@@ -116,7 +116,7 @@ export default function CheckoutPage() {
         )}
 
         {step === 2 && (
-          <div className="grid lg:grid-cols-3 gap-12">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8 lg:gap-12 min-w-0">
             {/* Payment Information */}
             <div className="lg:col-span-2 space-y-8">
               <PaymentMethodSection

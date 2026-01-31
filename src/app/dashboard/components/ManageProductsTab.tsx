@@ -32,6 +32,7 @@ import { useNotification } from "@/hooks/useNotification"
 interface Product {
   id: string
   name: string
+  groupName?: string | null
   description: string
   basePrice: number
   categoryId: string
@@ -74,6 +75,7 @@ export default function ManageProductsTab({
   const { notification, showConfirm, showConfirmPromise, showError, showSuccess, closeNotification } = useNotification()
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedCategory, setSelectedCategory] = useState("all")
+  const [selectedProductGroup, setSelectedProductGroup] = useState("all")
   const [stockFilter, setStockFilter] = useState("all")
   const [sortBy, setSortBy] = useState("name")
   const [selectedProducts, setSelectedProducts] = useState<string[]>([])
@@ -89,18 +91,37 @@ export default function ManageProductsTab({
     return `₦${price.toLocaleString()}`
   }
 
-  // Filter and sort products
+  // Category → Product (group) → Variants: unique product groups in selected category
+  const categoryProducts = selectedCategory === "all"
+    ? products
+    : products.filter((p) => p.categoryId === selectedCategory)
+  const productGroupOptions = Array.from(
+    new Set(
+      categoryProducts.map((p) => p.groupName || p.name).filter(Boolean)
+    )
+  ).sort((a, b) => String(a).localeCompare(String(b)))
+
+  // Reset product group when category changes
+  const effectiveProductGroup =
+    selectedProductGroup === "all" || productGroupOptions.includes(selectedProductGroup)
+      ? selectedProductGroup
+      : "all"
+
+  // Filter and sort products (Variants = actual product records under Category → Product)
   const filteredProducts = products
     .filter(product => {
       const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                           product.description.toLowerCase().includes(searchTerm.toLowerCase())
       const matchesCategory = selectedCategory === "all" || product.categoryId === selectedCategory
+      const matchesProductGroup =
+        effectiveProductGroup === "all" ||
+        (product.groupName || product.name) === effectiveProductGroup
       const matchesStock = stockFilter === "all" ||
                           (stockFilter === "in-stock" && product.inStock) ||
                           (stockFilter === "out-of-stock" && !product.inStock) ||
                           (stockFilter === "low-stock" && product.stock < 10)
 
-      return matchesSearch && matchesCategory && matchesStock
+      return matchesSearch && matchesCategory && matchesProductGroup && matchesStock
     })
     .sort((a, b) => {
       switch (sortBy) {
@@ -441,15 +462,39 @@ export default function ManageProductsTab({
 
         <div className="flex flex-col sm:flex-row gap-2">
           <div className="flex gap-2 flex-wrap">
-            <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+            <Select
+              value={selectedCategory}
+              onValueChange={(v) => {
+                setSelectedCategory(v)
+                setSelectedProductGroup("all")
+              }}
+            >
               <SelectTrigger className="w-full sm:w-40">
-                <SelectValue placeholder="All Categories" />
+                <SelectValue placeholder="Category" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Categories</SelectItem>
                 {categories.map((category) => (
                   <SelectItem key={category.id} value={category.id}>
                     {category.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            <Select
+              value={effectiveProductGroup}
+              onValueChange={setSelectedProductGroup}
+              disabled={selectedCategory === "all"}
+            >
+              <SelectTrigger className="w-full sm:w-40">
+                <SelectValue placeholder={selectedCategory === "all" ? "Select category first" : "Product"} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Products</SelectItem>
+                {productGroupOptions.map((group) => (
+                  <SelectItem key={group} value={group}>
+                    {group}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -543,11 +588,31 @@ export default function ManageProductsTab({
         </Button>
       </div>
 
-      {/* Products Table */}
+      {/* Breadcrumb: Category → Product → Variants */}
+      {(selectedCategory !== "all" || effectiveProductGroup !== "all") && (
+        <div className="mb-4 px-3 py-2 bg-gray-50 rounded-lg border border-gray-200 text-sm text-gray-700">
+          <span className="font-medium">Browse:</span>{" "}
+          <span>
+            Category: <strong>{selectedCategory === "all" ? "All" : categories.find((c) => c.id === selectedCategory)?.name ?? "—"}</strong>
+          </span>
+          <span className="mx-2">→</span>
+          <span>
+            Product: <strong>{effectiveProductGroup === "all" ? "All" : effectiveProductGroup}</strong>
+          </span>
+          <span className="mx-2">→</span>
+          <span>
+            Variants: <strong>{filteredProducts.length} item(s)</strong>
+          </span>
+        </div>
+      )}
+
+      {/* Products Table (Variants) */}
       <Card className="shadow-md">
         <CardHeader>
-          <CardTitle className="flex items-center justify-between">
-            <span>Products ({filteredProducts.length})</span>
+          <CardTitle className="flex items-center justify-between flex-wrap gap-2">
+            <span>
+              {effectiveProductGroup !== "all" ? "Variants" : "Products"} ({filteredProducts.length})
+            </span>
             <Badge variant="outline" className="text-xs">
               {filteredProducts.length} of {totalProducts} shown
             </Badge>
@@ -598,6 +663,12 @@ export default function ManageProductsTab({
                       <span className="text-gray-500">Category:</span>
                       <span className="ml-1 text-gray-900">{product.category.name}</span>
                     </div>
+                    {(product.groupName || product.name) && (
+                      <div>
+                        <span className="text-gray-500">Product:</span>
+                        <span className="ml-1 text-gray-900">{product.groupName || product.name}</span>
+                      </div>
+                    )}
                     <div>
                       <span className="text-gray-500">Price:</span>
                       <span className="ml-1 font-medium text-gray-900">{formatPrice(product.basePrice)}</span>
@@ -690,6 +761,7 @@ export default function ManageProductsTab({
                         </div>
                       </td>
                       <td className="py-4 px-4 text-gray-600">{product.category.name}</td>
+                      <td className="py-4 px-4 text-gray-600 text-sm">{product.groupName || "—"}</td>
                       <td className="py-4 px-4 font-medium text-gray-900">
                         {formatPrice(product.basePrice)}
                       </td>

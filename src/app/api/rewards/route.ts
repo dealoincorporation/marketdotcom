@@ -33,11 +33,13 @@ export async function GET(request: NextRequest) {
     const tierName = tier === 1 ? 'Bronze' : tier === 2 ? 'Silver' : tier === 3 ? 'Gold' : 'Platinum'
     const pointsToNextTier = tier * 1000 - totalPoints
 
-    // Get points settings for conversion rates
+    // Get points settings for conversion rates and earning display
     const pointsSettings = await prisma.pointsSettings.findFirst({
       where: { isActive: true }
     }) || {
-      pointsPerNaira: 0.1,
+      amountThreshold: 50000,
+      pointsPerThreshold: 1,
+      pointsPerNaira: 0.01,
       nairaPerPoint: 10,
       minimumPointsToConvert: 100
     }
@@ -55,9 +57,11 @@ export async function GET(request: NextRequest) {
         createdAt: reward.createdAt
       })),
       pointsSettings: {
-        pointsPerNaira: pointsSettings.pointsPerNaira,
-        nairaPerPoint: pointsSettings.nairaPerPoint,
-        minimumPointsToConvert: pointsSettings.minimumPointsToConvert
+        amountThreshold: pointsSettings.amountThreshold ?? 50000,
+        pointsPerThreshold: pointsSettings.pointsPerThreshold ?? 1,
+        pointsPerNaira: pointsSettings.pointsPerNaira ?? 0.01,
+        nairaPerPoint: pointsSettings.nairaPerPoint ?? 10,
+        minimumPointsToConvert: pointsSettings.minimumPointsToConvert ?? 100
       }
     })
 

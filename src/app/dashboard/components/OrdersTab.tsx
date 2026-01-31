@@ -14,7 +14,8 @@ import {
   DollarSign,
   Trash2,
   Navigation,
-  RefreshCw
+  RefreshCw,
+  Download
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -59,7 +60,13 @@ interface Order {
     address: string
     city: string
     state: string
+    postalCode?: string | null
+    phone?: string
+    scheduledDate?: string | Date
+    scheduledTime?: string
+    deliveryNotes?: string | null
   }
+  deliveryFee?: number
 }
 
 interface OrdersTabProps {
@@ -111,6 +118,70 @@ export default function OrdersTab({ orders, isAdmin, onOrderStatusChange, onOrde
       await onRefreshOrders()
       setTimeout(() => setIsRefreshing(false), 500)
     }
+  }
+
+  const handleExportOrders = () => {
+    const list = filteredOrders.length > 0 ? filteredOrders : orders
+    const headers = [
+      'Order ID',
+      'Order Date',
+      'Customer Name',
+      'Customer Email',
+      'Status',
+      'Delivery Date',
+      'Delivery Time',
+      'Address',
+      'City',
+      'State',
+      'Postal Code',
+      'Phone',
+      'Delivery Notes',
+      'Items Summary',
+      'Subtotal (₦)',
+      'Delivery Fee (₦)',
+      'Total (₦)'
+    ]
+    const rows = list.map((order) => {
+      const d = order.delivery
+      const deliveryDate = d?.scheduledDate
+        ? new Date(d.scheduledDate as string).toLocaleDateString('en-US', { dateStyle: 'short' })
+        : ''
+      const itemsSummary = (order.items || [])
+        .map(
+          (item) =>
+            `${item.quantity}x ${(item.product?.name ?? item.name ?? 'Item')}${item.variation?.name ? ` (${item.variation.name})` : ''}`
+        )
+        .join('; ')
+      const customerName = order.user?.name ?? order.customerName ?? ''
+      const customerEmail = order.user?.email ?? order.customerEmail ?? ''
+      const subtotal = (order.totalAmount ?? order.total ?? 0) - (order.deliveryFee ?? 0)
+      return [
+        order.id,
+        new Date(order.createdAt).toLocaleString('en-US', { dateStyle: 'short', timeStyle: 'short' }),
+        customerName,
+        customerEmail,
+        order.status,
+        deliveryDate,
+        d?.scheduledTime ?? '',
+        d?.address ?? '',
+        d?.city ?? '',
+        d?.state ?? '',
+        d?.postalCode ?? '',
+        d?.phone ?? '',
+        d?.deliveryNotes ?? '',
+        itemsSummary,
+        subtotal.toFixed(2),
+        (order.deliveryFee ?? 0).toFixed(2),
+        (order.finalAmount ?? order.totalAmount ?? order.total ?? 0).toFixed(2)
+      ]
+    })
+    import('xlsx').then((XLSX) => {
+      const data = [headers, ...rows]
+      const ws = XLSX.utils.aoa_to_sheet(data)
+      const wb = XLSX.utils.book_new()
+      XLSX.utils.book_append_sheet(wb, ws, 'Orders')
+      XLSX.writeFile(wb, `orders_export_${new Date().toISOString().slice(0, 10)}.xlsx`)
+    })
   }
 
   // Normalize status for display (ON_DELIVERY -> shipped)
@@ -238,18 +309,31 @@ export default function OrdersTab({ orders, isAdmin, onOrderStatusChange, onOrde
             </p>
           )}
         </div>
-        {onRefreshOrders && (
-          <Button
-            onClick={handleRefresh}
-            disabled={isRefreshing || ordersLoading}
-            variant="outline"
-            size="sm"
-            className="flex items-center space-x-2"
-          >
-            <RefreshCw className={`h-4 w-4 ${isRefreshing || ordersLoading ? 'animate-spin' : ''}`} />
-            <span>Refresh</span>
-          </Button>
-        )}
+        <div className="flex items-center gap-2">
+          {onRefreshOrders && (
+            <Button
+              onClick={handleRefresh}
+              disabled={isRefreshing || ordersLoading}
+              variant="outline"
+              size="sm"
+              className="flex items-center space-x-2"
+            >
+              <RefreshCw className={`h-4 w-4 ${isRefreshing || ordersLoading ? 'animate-spin' : ''}`} />
+              <span>Refresh</span>
+            </Button>
+          )}
+          {isAdmin && orders.length > 0 && (
+            <Button
+              onClick={handleExportOrders}
+              variant="outline"
+              size="sm"
+              className="flex items-center space-x-2 border-green-300 text-green-700 hover:bg-green-50"
+            >
+              <Download className="h-4 w-4" />
+              <span>Export to Excel</span>
+            </Button>
+          )}
+        </div>
       </div>
 
       {/* Status Filter */}

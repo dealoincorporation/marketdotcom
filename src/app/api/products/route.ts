@@ -62,7 +62,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { name, description, basePrice, categoryId, stock, unit, inStock, deliveryFee, variations, images, image } = body
+    const { name, groupName, description, basePrice, categoryId, stock, unit, inStock, deliveryFee, variations, images, image } = body
 
     if (!name || !categoryId || basePrice === undefined) {
       return NextResponse.json(
@@ -77,6 +77,7 @@ export async function POST(request: NextRequest) {
     const product = await prisma.product.create({
       data: {
         name,
+        groupName: groupName && String(groupName).trim() ? String(groupName).trim() : null,
         description,
         basePrice: parseFloat(basePrice),
         categoryId,

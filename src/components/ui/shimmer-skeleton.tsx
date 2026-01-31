@@ -1,6 +1,6 @@
 "use client"
 
-import { cn } from "@/lib/helpers"
+import { cn } from "@/lib/helpers/index"
 
 interface ShimmerSkeletonProps {
   className?: string

@@ -121,7 +121,7 @@ export function CreateDeliverySlotsModal({
             <p className="text-sm text-blue-800 font-medium">
               This will create <strong className="text-blue-900 text-base">{totalSlots}</strong> delivery slots
               ({slotConfig.daysAhead} days × {enabledSlotsCount} time slots)
-              starting tomorrow.
+              starting today.
             </p>
           </div>
         </div>

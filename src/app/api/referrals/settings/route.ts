@@ -6,6 +6,12 @@ import { getPrismaClient } from "@/lib/prisma"
 export const dynamic = 'force-dynamic'
 
 export async function GET(request: NextRequest) {
+  const defaults = {
+    referrerReward: "100",
+    refereeReward: "50",
+    isActive: true,
+    description: "Refer a friend and earn rewards!"
+  }
   try {
     const prisma = await getPrismaClient()
 
@@ -18,12 +24,7 @@ export async function GET(request: NextRequest) {
 
     // If no settings exist, return defaults
     if (!settings) {
-      return NextResponse.json({
-        referrerReward: "100",
-        refereeReward: "50",
-        isActive: true,
-        description: "Refer a friend and earn rewards!"
-      })
+      return NextResponse.json(defaults)
     }
 
     return NextResponse.json({
@@ -33,8 +34,16 @@ export async function GET(request: NextRequest) {
       description: settings.description
     })
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error fetching referral settings:", error)
+    // When DB is unreachable (e.g. DNS/network), return defaults so app doesn't break
+    const isConnectionError =
+      error instanceof Error &&
+      (error.name === 'PrismaClientInitializationError' ||
+        /connection|DNS|ECONNREFUSED|ENOTFOUND/i.test(error.message))
+    if (isConnectionError) {
+      return NextResponse.json(defaults)
+    }
     return NextResponse.json(
       { error: "Failed to fetch referral settings" },
       { status: 500 }

@@ -86,8 +86,11 @@ export default function AdminTab({
   })
   const [referralSettingsLoading, setReferralSettingsLoading] = useState(false)
   const [showPointsSettings, setShowPointsSettings] = useState(false)
+  const [pointsSettingsLoading, setPointsSettingsLoading] = useState(false)
   const [pointsSettings, setPointsSettings] = useState({
-    pointsPerNaira: 0.1,
+    amountThreshold: 50000,
+    pointsPerThreshold: 1,
+    pointsPerNaira: 0.01,
     nairaPerPoint: 10,
     minimumPointsToConvert: 100,
     conversionCooldownDays: 30,
@@ -231,6 +234,57 @@ export default function AdminTab({
 
     fetchReferralSettings()
   }, [])
+
+  // Fetch points settings
+  useEffect(() => {
+    const fetchPointsSettings = async () => {
+      try {
+        const response = await fetch('/api/points-settings')
+        if (response.ok) {
+          const data = await response.json()
+          setPointsSettings({
+            amountThreshold: data.amountThreshold ?? 50000,
+            pointsPerThreshold: data.pointsPerThreshold ?? 1,
+            pointsPerNaira: data.pointsPerNaira ?? 0.01,
+            nairaPerPoint: data.nairaPerPoint ?? 10,
+            minimumPointsToConvert: data.minimumPointsToConvert ?? 100,
+            conversionCooldownDays: data.conversionCooldownDays ?? 30,
+            isActive: data.isActive !== false,
+            description: data.description ?? "Earn points on every purchase and convert to cash!"
+          })
+        }
+      } catch (error) {
+        console.error('Error fetching points settings:', error)
+      }
+    }
+    fetchPointsSettings()
+  }, [])
+
+  const handleSavePointsSettings = async () => {
+    try {
+      setPointsSettingsLoading(true)
+      const token = localStorage.getItem('token')
+      const response = await fetch('/api/points-settings', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        },
+        body: JSON.stringify(pointsSettings)
+      })
+      if (response.ok) {
+        alert('Points settings saved successfully!')
+      } else {
+        const err = await response.json().catch(() => ({}))
+        alert(err?.error || 'Failed to save points settings')
+      }
+    } catch (error) {
+      console.error('Error saving points settings:', error)
+      alert('Error saving points settings')
+    } finally {
+      setPointsSettingsLoading(false)
+    }
+  }
 
   return (
     <motion.div
@@ -557,16 +611,51 @@ export default function AdminTab({
           <Card className="shadow-md">
             <CardHeader>
               <CardTitle>Configure Points & Rewards</CardTitle>
+              <p className="text-sm text-gray-500 mt-1">Earn points per purchase: every ₦X spent = Y points (e.g. ₦50,000 = 1 point; ₦100,000 = 2 points)</p>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
                   <label className="block text-sm font-medium text-gray-700">
-                    Points per ₦1 Spent
+                    Amount threshold (₦)
                   </label>
                   <input
                     type="number"
-                    step="0.1"
+                    min={1}
+                    value={pointsSettings.amountThreshold}
+                    onChange={(e) => setPointsSettings({
+                      ...pointsSettings,
+                      amountThreshold: parseInt(e.target.value, 10) || 50000
+                    })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                  />
+                  <p className="text-xs text-gray-500">Every purchase up to this amount = one block (e.g. 50,000)</p>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-gray-700">
+                    Points per threshold
+                  </label>
+                  <input
+                    type="number"
+                    min={0}
+                    value={pointsSettings.pointsPerThreshold}
+                    onChange={(e) => setPointsSettings({
+                      ...pointsSettings,
+                      pointsPerThreshold: parseInt(e.target.value, 10) || 0
+                    })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                  />
+                  <p className="text-xs text-gray-500">Points per block (e.g. 1 or 10). ₦100K with ₦50K threshold = 2 × this</p>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-gray-700">
+                    Points per ₦1 Spent (legacy)
+                  </label>
+                  <input
+                    type="number"
+                    step="0.01"
                     value={pointsSettings.pointsPerNaira}
                     onChange={(e) => setPointsSettings({
                       ...pointsSettings,
@@ -574,7 +663,7 @@ export default function AdminTab({
                     })}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
                   />
-                  <p className="text-xs text-gray-500">Points earned for every naira spent</p>
+                  <p className="text-xs text-gray-500">Optional; earning uses threshold above</p>
                 </div>
 
                 <div className="space-y-2">
@@ -657,11 +746,27 @@ export default function AdminTab({
               </div>
 
               <div className="flex justify-end space-x-3 pt-4 border-t">
-                <Button variant="outline">
+                <Button
+                  variant="outline"
+                  onClick={() => setPointsSettings({
+                    amountThreshold: 50000,
+                    pointsPerThreshold: 1,
+                    pointsPerNaira: 0.01,
+                    nairaPerPoint: 10,
+                    minimumPointsToConvert: 100,
+                    conversionCooldownDays: 30,
+                    isActive: true,
+                    description: "Earn points on every purchase and convert to cash!"
+                  })}
+                >
                   Reset to Default
                 </Button>
-                <Button className="bg-orange-600 hover:bg-orange-700">
-                  Save Settings
+                <Button
+                  className="bg-orange-600 hover:bg-orange-700"
+                  onClick={handleSavePointsSettings}
+                  disabled={pointsSettingsLoading}
+                >
+                  {pointsSettingsLoading ? 'Saving...' : 'Save Settings'}
                 </Button>
               </div>
             </CardContent>

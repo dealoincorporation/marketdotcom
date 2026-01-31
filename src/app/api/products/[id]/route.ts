@@ -54,7 +54,7 @@ export async function PUT(
 
     const { id } = await params
     const body = await request.json()
-    const { name, description, basePrice, categoryId, stock, unit, inStock, deliveryFee, variations, images, image } = body
+    const { name, groupName, description, basePrice, categoryId, stock, unit, inStock, deliveryFee, variations, images, image } = body
 
     const normalizedImages = normalizeImageUrls(images, image)
     const primaryImage = normalizedImages.length > 0 ? normalizedImages[0] : normalizeImageUrl(image)
@@ -63,6 +63,7 @@ export async function PUT(
       where: { id },
       data: {
         name,
+        groupName: groupName !== undefined ? (groupName && String(groupName).trim() ? String(groupName).trim() : null) : undefined,
         description,
         basePrice: parseFloat(basePrice),
         categoryId,

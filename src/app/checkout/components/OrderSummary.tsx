@@ -36,17 +36,17 @@ export function OrderSummary({
   const isAdmin = user?.role === "ADMIN"
 
   return (
-    <div className="lg:col-span-1">
-      <div className="sticky top-8 space-y-6">
+    <div className="lg:col-span-1 min-w-0 w-full max-w-full overflow-hidden order-first lg:order-none">
+      <div className="sticky top-4 sm:top-8 space-y-4 sm:space-y-6">
         {/* Order Items */}
-        <div className="bg-gradient-to-br from-orange-50 to-white rounded-2xl shadow-xl border border-orange-200 overflow-hidden">
-          <div className="bg-gradient-to-r from-orange-500 to-orange-600 p-6">
-            <h2 className="text-xl font-bold text-white flex items-center">
+        <div className="bg-gradient-to-br from-orange-50 to-white rounded-xl sm:rounded-2xl shadow-xl border border-orange-200 overflow-hidden w-full max-w-full min-w-0">
+          <div className="bg-gradient-to-r from-orange-500 to-orange-600 p-4 sm:p-6">
+            <h2 className="text-lg sm:text-xl font-bold text-white flex items-center gap-2 break-words">
               🛒 Order Summary
             </h2>
-            <p className="text-orange-100 mt-1">{totalItems} items in your cart</p>
+            <p className="text-orange-100 mt-1 text-sm sm:text-base">{totalItems} items in your cart</p>
           </div>
-          <div className="p-6">
+          <div className="p-4 sm:p-6 min-w-0">
             <div className="space-y-3 sm:space-y-4 mb-6">
               {items.map(item => (
                 <div key={item.id} className="flex items-start space-x-3 p-3 bg-gray-50 rounded-lg">
@@ -141,15 +141,15 @@ export function OrderSummary({
 
             <Button
               onClick={onContinue}
-              className="w-full h-12 sm:h-14 mt-6 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-300 border-0 text-sm sm:text-base"
+              className="w-full h-12 sm:h-14 mt-4 sm:mt-6 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-300 border-0 text-sm sm:text-base"
               disabled={!canContinue}
             >
               Continue to Payment →
             </Button>
 
             {!selectedAddress && (
-              <p className="text-xs sm:text-sm text-red-600 mt-2 flex items-center justify-center">
-                <span className="mr-1">⚠️</span> Please select a delivery address
+              <p className="text-xs sm:text-sm text-red-600 mt-2 flex items-center justify-center flex-wrap gap-1 text-center">
+                <span>⚠️</span> Please select a delivery address
               </p>
             )}
             {selectedAddress && (!deliveryDate || !deliveryTime) && (

@@ -22,7 +22,7 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { useAuth } from "@/contexts/AuthContext"
-import { formatCurrency } from "@/lib/helpers"
+import { formatCurrency } from "@/lib/helpers/index"
 import toast from "react-hot-toast"
 
 interface ReferredUser {

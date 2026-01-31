@@ -1,15 +1,32 @@
 /**
  * Formatting utilities for display
  */
+import { format, formatDistanceToNow, isValid } from "date-fns"
 
 /**
- * Formats currency to Nigerian Naira
+ * Formats currency to Nigerian Naira (Intl)
  */
 export function formatCurrency(amount: number): string {
-  return `₦${amount.toLocaleString('en-NG', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  })}`
+  return new Intl.NumberFormat("en-NG", {
+    style: "currency",
+    currency: "NGN",
+  }).format(amount)
+}
+
+/**
+ * Format number with commas
+ */
+export function formatNumber(num: number): string {
+  return new Intl.NumberFormat("en-NG").format(num)
+}
+
+/**
+ * Get relative time (e.g. "2 hours ago")
+ */
+export function getRelativeTime(date: Date | string): string {
+  const dateObj = typeof date === "string" ? new Date(date) : date
+  if (!isValid(dateObj)) return "Invalid date"
+  return formatDistanceToNow(dateObj, { addSuffix: true })
 }
 
 /**
@@ -23,12 +40,9 @@ export function formatCurrencyNoDecimals(amount: number): string {
  * Formats date to readable string
  */
 export function formatDate(date: Date | string): string {
-  const d = typeof date === 'string' ? new Date(date) : date
-  return d.toLocaleDateString('en-NG', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  })
+  const d = typeof date === "string" ? new Date(date) : date
+  if (!isValid(d)) return "Invalid date"
+  return format(d, "MMM dd, yyyy")
 }
 
 /**
@@ -66,7 +80,7 @@ export function formatRelativeTime(date: Date | string): string {
  */
 export function truncateText(text: string, maxLength: number): string {
   if (text.length <= maxLength) return text
-  return text.slice(0, maxLength) + '...'
+  return text.slice(0, maxLength - 3) + "..."
 }
 
 /**

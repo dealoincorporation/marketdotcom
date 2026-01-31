@@ -46,15 +46,15 @@ export function DeliveryScheduleSection({
   )
 
   return (
-    <div className="bg-white/70 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20">
-      <div className="bg-gradient-to-r from-orange-500 to-red-500 p-4 sm:p-6">
+    <div className="bg-white/70 backdrop-blur-sm rounded-xl sm:rounded-2xl shadow-xl border border-white/20 overflow-hidden w-full max-w-full min-w-0">
+      <div className="bg-gradient-to-r from-orange-500 to-red-500 p-4 sm:p-6 min-w-0">
         <h2 className="text-lg sm:text-xl font-bold text-white flex items-center flex-wrap">
           <Calendar className="h-5 w-5 sm:h-6 sm:w-6 mr-2 sm:mr-3 flex-shrink-0" />
           <span className="break-words">Schedule Your Delivery</span>
         </h2>
         <p className="text-orange-100 mt-1 text-sm sm:text-base break-words">Choose when you'd like your order delivered</p>
       </div>
-      <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
+      <div className="p-4 sm:p-6 space-y-4 sm:space-y-6 min-w-0">
         {/* Selected Delivery Date Display */}
         {deliveryDate && (
           <div className="bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-200 rounded-xl p-4 mb-4">

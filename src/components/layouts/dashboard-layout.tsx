@@ -27,7 +27,7 @@ import { ProfileSettingsModal } from '@/components/profile/ProfileSettingsModal'
 import { Button } from '@/components/ui/button'
 import { useCartStore } from '@/lib/cart-store'
 import { useAuth } from '@/contexts/AuthContext'
-import { formatCurrency, getInitials } from '@/lib/helpers'
+import { formatCurrency, getInitials } from "@/lib/helpers/index"
 type DashboardTab = "marketplace" | "orders" | "manage-products" | "manage-categories" | "manage-deliveries" | "manage-delivery-fees" | "manage-referrals" | "wallet" | "admin"
 
 interface DashboardLayoutProps {
@@ -120,11 +120,11 @@ export function DashboardLayout({
           </div>
         </div>
 
-        <nav className="flex-1 overflow-y-auto px-3 md:px-4 py-4 space-y-1 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
+        <nav className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden px-3 md:px-4 py-4 space-y-1 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
           <Link
             href="/"
             onClick={() => setIsMobileMenuOpen(false)}
-            className="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-left transition-all duration-200 text-gray-600 hover:bg-gray-50 hover:text-gray-900 active:bg-gray-100"
+            className="hidden md:flex w-full items-center space-x-3 px-4 py-3 rounded-lg text-left transition-all duration-200 text-gray-600 hover:bg-gray-50 hover:text-gray-900 active:bg-gray-100"
           >
             <ArrowLeft className="h-5 w-5 flex-shrink-0" />
             <span className="font-medium">Back to Home</span>
@@ -158,23 +158,6 @@ export function DashboardLayout({
                 <div className="pt-3 mt-3 border-t border-gray-200">
                   <p className="px-4 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">Admin</p>
                 </div>
-
-                <button
-                  onClick={() => {
-                    onTabChange('admin')
-                    setIsMobileMenuOpen(false)
-                  }}
-                  className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-left transition-all duration-200 cursor-pointer touch-manipulation ${
-                    activeTab === 'admin'
-                      ? 'bg-gradient-to-r from-orange-50 to-red-50 text-orange-600 border-l-4 border-orange-600 shadow-sm font-semibold'
-                      : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900 active:bg-gray-100'
-                  }`}
-                  type="button"
-                >
-                  <Settings className="h-5 w-5 flex-shrink-0" />
-                  <span className="text-sm md:text-base">Admin Panel</span>
-                </button>
-
                 <button
                   onClick={() => {
                     onTabChange('manage-products')
@@ -190,7 +173,6 @@ export function DashboardLayout({
                   <Box className="h-5 w-5 flex-shrink-0" />
                   <span className="text-sm md:text-base">Manage Products</span>
                 </button>
-
                 <button
                   onClick={() => {
                     onTabChange('manage-categories')
@@ -206,7 +188,6 @@ export function DashboardLayout({
                   <Package className="h-5 w-5 flex-shrink-0" />
                   <span className="text-sm md:text-base">Manage Categories</span>
                 </button>
-
                 <button
                   onClick={() => {
                     onTabChange('manage-deliveries')
@@ -222,7 +203,6 @@ export function DashboardLayout({
                   <Truck className="h-5 w-5 flex-shrink-0" />
                   <span className="text-sm md:text-base">Manage Deliveries</span>
                 </button>
-
                 <button
                   onClick={() => {
                     onTabChange('manage-delivery-fees')
@@ -237,22 +217,6 @@ export function DashboardLayout({
                 >
                   <Coins className="h-5 w-5 flex-shrink-0" />
                   <span className="text-sm md:text-base">Delivery Fees</span>
-                </button>
-
-                <button
-                  onClick={() => {
-                    onTabChange('manage-referrals')
-                    setIsMobileMenuOpen(false)
-                  }}
-                  className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-left transition-all duration-200 cursor-pointer touch-manipulation ${
-                    activeTab === 'manage-referrals'
-                      ? 'bg-gradient-to-r from-orange-50 to-red-50 text-orange-600 border-l-4 border-orange-600 shadow-sm font-semibold'
-                      : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900 active:bg-gray-100'
-                  }`}
-                  type="button"
-                >
-                  <Users className="h-5 w-5 flex-shrink-0" />
-                  <span className="text-sm md:text-base">Manage Referrals</span>
                 </button>
               </>
             )}
@@ -306,7 +270,7 @@ export function DashboardLayout({
                   <img
                     src="/mrktdotcom-logo.png"
                     alt="Marketdotcom Logo"
-                    className="h-20 w-20 sm:h-24 sm:w-24 md:h-28 md:w-28 lg:h-32 lg:w-32 object-contain"
+                    className="h-24 w-24 sm:h-32 sm:w-32 md:h-36 md:w-36 lg:h-40 lg:w-40 object-contain"
                   />
                   <span className="hidden md:block text-xl font-bold text-gray-900">Marketdotcom</span>
                 </motion.div>
@@ -342,6 +306,43 @@ export function DashboardLayout({
                       <Settings className="h-4 w-4 text-gray-500" />
                       <span className="text-sm font-medium">Profile Settings</span>
                     </button>
+                    {user?.role === 'ADMIN' && (
+                      <>
+                        <div className="border-t border-gray-100 my-1" />
+                        <button
+                          onClick={() => {
+                            setProfileDropdownOpen(false)
+                            onTabChange('admin')
+                          }}
+                          className="flex items-center gap-3 w-full px-4 py-3 text-left text-gray-700 hover:bg-gray-50 transition-colors"
+                        >
+                          <LayoutDashboard className="h-4 w-4 text-gray-500" />
+                          <span className="text-sm font-medium">Admin Panel</span>
+                        </button>
+                        <button
+                          onClick={() => {
+                            setProfileDropdownOpen(false)
+                            onTabChange('manage-referrals')
+                          }}
+                          className="flex items-center gap-3 w-full px-4 py-3 text-left text-gray-700 hover:bg-gray-50 transition-colors"
+                        >
+                          <Users className="h-4 w-4 text-gray-500" />
+                          <span className="text-sm font-medium">Manage Referrals</span>
+                        </button>
+                      </>
+                    )}
+                    <div className="border-t border-gray-100 my-1" />
+                    <button
+                      onClick={() => {
+                        setProfileDropdownOpen(false)
+                        logout()
+                        router.push('/')
+                      }}
+                      className="flex items-center gap-3 w-full px-4 py-3 text-left text-red-600 hover:bg-red-50 transition-colors"
+                    >
+                      <LogOut className="h-4 w-4" />
+                      <span className="text-sm font-medium">Sign Out</span>
+                    </button>
                   </div>
                 )}
               </div>
@@ -372,6 +373,32 @@ export function DashboardLayout({
                       <Settings className="h-4 w-4 text-gray-500" />
                       <span className="text-sm font-medium">Profile Settings</span>
                     </button>
+                    {user?.role === 'ADMIN' && (
+                      <>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setMobileAccountOpen(false)
+                            onTabChange('admin')
+                          }}
+                          className="flex items-center gap-3 w-full px-4 py-3 text-left text-gray-700 hover:bg-gray-50"
+                        >
+                          <LayoutDashboard className="h-4 w-4 text-gray-500" />
+                          <span className="text-sm font-medium">Admin Panel</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setMobileAccountOpen(false)
+                            onTabChange('manage-referrals')
+                          }}
+                          className="flex items-center gap-3 w-full px-4 py-3 text-left text-gray-700 hover:bg-gray-50"
+                        >
+                          <Users className="h-4 w-4 text-gray-500" />
+                          <span className="text-sm font-medium">Manage Referrals</span>
+                        </button>
+                      </>
+                    )}
                     <div className="border-t border-gray-100 my-1" />
                     <button
                       type="button"
@@ -433,7 +460,7 @@ export function DashboardLayout({
         </aside>
 
         {/* Main Content */}
-        <div className="flex-1 overflow-y-auto min-w-0 pb-20 md:pb-0 md:ml-64">
+        <div className="flex-1 overflow-y-auto min-w-0 pb-[max(7rem,calc(5.5rem+env(safe-area-inset-bottom,0px)))] md:pb-0 md:ml-64">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -471,7 +498,7 @@ export function DashboardLayout({
       </div>
 
       {/* Bottom Navigation - Mobile Only */}
-      <nav className="fixed bottom-0 left-0 right-0 z-[60] md:hidden bg-white/95 backdrop-blur border-t border-gray-200">
+      <nav className="fixed bottom-0 left-0 right-0 z-[60] md:hidden bg-white/95 backdrop-blur border-t border-gray-200 pb-[env(safe-area-inset-bottom,0px)]">
         <div className="max-w-7xl mx-auto px-2 py-2">
           <div className="grid grid-cols-4 gap-1">
             <button

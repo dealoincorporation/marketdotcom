@@ -432,8 +432,8 @@ export default function MarketplaceTab({
         </CardContent>
       </Card>
 
-      {/* Products Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-4 gap-4 md:gap-6">
+      {/* Products Grid — same layout as /marketplace (2 cols on mobile) */}
+      <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-4 gap-3 sm:gap-4 md:gap-5">
         {searchFilteredProducts.map((product) => (
           <MarketplaceProductCard
             key={product.id}
