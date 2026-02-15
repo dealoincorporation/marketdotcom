@@ -68,56 +68,20 @@ export function useDashboard(): UseDashboardReturn {
     }
   }
 
-  // Pre-seeded categories for when API is unavailable or no categories exist
-  const defaultCategories: any[] = [
-    { id: 'fruits', name: '🍎 Fruits', description: 'Fresh fruits and produce', image: '/categories/fruits.jpg' },
-    { id: 'vegetables', name: '🥕 Vegetables', description: 'Fresh vegetables and greens', image: '/categories/vegetables.jpg' },
-    { id: 'grains', name: '🌾 Grains & Cereals', description: 'Rice, beans, corn and other grains', image: '/categories/grains.jpg' },
-    { id: 'proteins', name: '🥩 Proteins', description: 'Meat, fish, eggs and protein sources', image: '/categories/proteins.jpg' },
-    { id: 'dairy', name: '🥛 Dairy', description: 'Milk, cheese, yogurt and dairy products', image: '/categories/dairy.jpg' },
-    { id: 'beverages', name: '🥤 Beverages', description: 'Drinks, juices and beverages', image: '/categories/beverages.jpg' },
-    { id: 'snacks', name: '🍿 Snacks', description: 'Chips, nuts, and snack foods', image: '/categories/snacks.jpg' },
-    { id: 'spices', name: '🌿 Spices & Seasonings', description: 'Herbs, spices and cooking essentials', image: '/categories/spices.jpg' },
-    { id: 'bakery', name: '🍞 Bakery', description: 'Bread, pastries and baked goods', image: '/categories/bakery.jpg' },
-    { id: 'frozen', name: '🧊 Frozen Foods', description: 'Frozen meals and products', image: '/categories/frozen.jpg' },
-    { id: 'canned', name: '🥫 Canned Goods', description: 'Canned foods and preserves', image: '/categories/canned.jpg' },
-    { id: 'organic', name: '🌱 Organic Products', description: 'Certified organic foods', image: '/categories/organic.jpg' }
-  ]
-
   const fetchCategories = async () => {
     setCategoriesLoading(true)
     try {
       const response = await fetch('/api/categories')
       if (response.ok) {
         const result = await response.json()
-        // Handle both new format { success: true, data: [] } and legacy format []
         const data = result.data || result
-
-        // If API returns empty array, use default categories
-        // Otherwise merge with defaults, avoiding duplicates
-        if (!data || data.length === 0) {
-          setCategories(defaultCategories)
-        } else {
-          // Create a map to avoid duplicates by name
-          const categoryMap = new Map()
-
-          // Add default categories first
-          defaultCategories.forEach(cat => categoryMap.set(cat.name.toLowerCase(), cat))
-
-          // Add API categories (will override defaults if same name)
-          data.forEach((cat: Category) => categoryMap.set(cat.name.toLowerCase(), cat))
-
-          // Convert back to array
-          setCategories(Array.from(categoryMap.values()))
-        }
+        setCategories(Array.isArray(data) ? data : [])
       } else {
-        // If API fails, use default categories
-        setCategories(defaultCategories)
+        setCategories([])
       }
     } catch (error) {
       console.error('Error fetching categories:', error)
-      // Fallback to default categories
-      setCategories(defaultCategories)
+      setCategories([])
     } finally {
       setCategoriesLoading(false)
     }

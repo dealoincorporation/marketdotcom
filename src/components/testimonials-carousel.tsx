@@ -7,35 +7,35 @@ import { Button } from "@/components/ui/button"
 
 const testimonials = [
   {
-    name: "Sarah O.",
+    name: "Amaka O.",
     role: "Student, UI",
     text: "Marketdotcom has transformed how I shop for groceries. The thrift plan is a game-changer for my monthly budget!",
     rating: 5,
     image: "/sarah.jpeg"
   },
   {
-    name: "Michael T.",
+    name: "Chukwuemeka T.",
     role: "Family Man",
     text: "The quality of foodstuff is always top-notch, and delivery is prompt. Best decision I made for my family!",
     rating: 5,
     image: "/michael.jpeg"
   },
   {
-    name: "Ben A.",
+    name: "Tunde A.",
     role: "NYSC Member",
     text: "As a corp member, the student packages have been a lifesaver. Affordable and convenient!",
     rating: 5,
     image: "/ben.jpeg"
   },
   {
-    name: "Grace K.",
+    name: "Folake K.",
     role: "Working Professional",
     text: "The personal shopping service saves me so much time. Fresh produce delivered right to my door!",
     rating: 5,
     image: "/grace.jpeg"
   },
   {
-    name: "David L.",
+    name: "Ibrahim L.",
     role: "Restaurant Owner",
     text: "Consistent quality and reliable delivery. Marketdotcom is now our primary supplier for fresh ingredients.",
     rating: 5,

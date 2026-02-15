@@ -130,7 +130,7 @@ export function OrderSummary({
                 </div>
               </div>
 
-              {/* Delivery Fee and slot info, only after date & time selected */}
+              {/* Delivery note (admin-set) and optional free-delivery message, only after date & time selected */}
               {deliveryDate && deliveryTime && (
                 <>
                   {deliverySlotDescription && (
@@ -139,12 +139,6 @@ export function OrderSummary({
                       <p className="text-sm text-amber-900">{deliverySlotDescription}</p>
                     </div>
                   )}
-                  <div className="flex flex-col gap-2 sm:gap-0 sm:flex-row sm:justify-between sm:items-center bg-gray-50 p-3 rounded-lg">
-                    <span className="text-gray-700 text-sm sm:text-base">Delivery Fee</span>
-                    <span className={`font-semibold text-sm sm:text-base ${deliveryFee === 0 ? 'text-green-600' : 'text-orange-700'}`}>
-                      {deliveryFee === 0 ? 'Free' : `₦${deliveryFee.toLocaleString()}`}
-                    </span>
-                  </div>
                   {deliveryFee === 0 && (
                     <div className="bg-green-50 border border-green-200 rounded-lg p-3">
                       <p className="text-xs sm:text-sm text-green-800 font-medium">

@@ -13,7 +13,7 @@ export async function POST(request: NextRequest) {
     // Validate input
     if (!email || !password) {
       return NextResponse.json(
-        { message: "Email and password are required" },
+        { message: "Email and password are required." },
         { status: 400 }
       )
     }
@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
 
     if (!user) {
       return NextResponse.json(
-        { message: "Invalid credentials" },
+        { message: "No account found with this email." },
         { status: 401 }
       )
     }
@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
     // Check if email is verified
     if (!user.emailVerified) {
       return NextResponse.json(
-        { message: "Please verify your email before logging in" },
+        { message: "Please verify your email before logging in." },
         { status: 403 }
       )
     }
@@ -52,7 +52,7 @@ export async function POST(request: NextRequest) {
     // Check if user has a password set
     if (!user.password) {
       return NextResponse.json(
-        { message: "Invalid credentials" },
+        { message: "Wrong password. Try again or reset your password." },
         { status: 401 }
       )
     }
@@ -61,7 +61,7 @@ export async function POST(request: NextRequest) {
     const isValidPassword = await bcrypt.compare(password, user.password)
     if (!isValidPassword) {
       return NextResponse.json(
-        { message: "Invalid credentials" },
+        { message: "Wrong password." },
         { status: 401 }
       )
     }

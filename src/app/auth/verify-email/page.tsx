@@ -70,7 +70,9 @@ function VerifyEmailForm() {
   const handleVerifyCode = async () => {
     if (verificationCode.length !== 6) {
       setStatus("error")
-      setMessage("Please enter the complete 6-digit verification code.")
+      const msg = "Please enter the complete 6-digit verification code."
+      setMessage(msg)
+      toast.error(msg)
       return
     }
 
@@ -91,18 +93,23 @@ function VerifyEmailForm() {
       if (response.ok) {
         setStatus("success")
         setMessage(data.message)
+        toast.success("Email verified! Redirecting to sign in...")
         // Redirect to login after 3 seconds
         setTimeout(() => {
           router.push("/auth/login?message=Email verified successfully. You can now sign in.")
         }, 3000)
       } else {
+        const errMsg = data.message || "Verification failed. Check the code and try again."
         setStatus("error")
-        setMessage(data.message || "Verification failed")
+        setMessage(errMsg)
+        toast.error(errMsg)
       }
     } catch (error) {
       console.error("Verification error:", error)
+      const msg = "Something went wrong. Please try again."
       setStatus("error")
-      setMessage("An error occurred during verification. Please try again.")
+      setMessage(msg)
+      toast.error(msg)
     } finally {
       setVerifying(false)
     }
@@ -112,6 +119,7 @@ function VerifyEmailForm() {
     if (!email) {
       setStatus("error")
       setMessage("Please provide an email address")
+      toast.error("Please provide an email address.")
       return
     }
 
@@ -133,15 +141,20 @@ function VerifyEmailForm() {
         setResent(true)
         setStatus("success")
         setMessage("Verification code sent successfully. Please check your inbox.")
+        toast.success("Verification code sent! Check your inbox.")
         setTimeout(() => setResent(false), 3000)
       } else {
+        const errMsg = data.message || "Failed to send verification code."
         setStatus("error")
-        setMessage(data.message || "Failed to send verification code")
+        setMessage(errMsg)
+        toast.error(errMsg)
       }
     } catch (error) {
       console.error("Resend error:", error)
+      const msg = "Something went wrong. Please try again."
       setStatus("error")
-      setMessage("An error occurred. Please try again.")
+      setMessage(msg)
+      toast.error(msg)
     } finally {
       setResending(false)
     }

@@ -45,6 +45,8 @@ interface AddressStore {
   formatAddress: (address: Address) => string
 }
 
+const DELIVERY_STATE = 'Lagos'
+
 const validateAddress = (address: Partial<Address>): { isValid: boolean; errors: string[] } => {
   const errors: string[] = []
 
@@ -52,6 +54,9 @@ const validateAddress = (address: Partial<Address>): { isValid: boolean; errors:
   if (!address.address?.trim()) errors.push('Street address is required')
   if (!address.city?.trim()) errors.push('City is required')
   if (!address.state?.trim()) errors.push('State is required')
+  else if (address.state.trim().toLowerCase() !== DELIVERY_STATE.toLowerCase()) {
+    errors.push('Delivery is only available in Lagos. Please use a Lagos address.')
+  }
   if (!address.phone?.trim()) errors.push('Phone number is required')
   else if (!/^\+?[\d\s\-\(\)]{10,}$/.test(address.phone.replace(/\s/g, ''))) {
     errors.push('Please enter a valid phone number')

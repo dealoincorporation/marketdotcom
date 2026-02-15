@@ -152,6 +152,22 @@ export function ProductVariationsSection({
                         className="w-full h-10 sm:h-11 text-sm sm:text-base bg-white border-2 border-gray-300 focus:border-orange-500 focus:ring-2 focus:ring-orange-200 rounded-lg"
                       />
                     </div>
+                    <div className="col-span-1">
+                      <Label className="text-xs sm:text-sm font-medium text-gray-700 mb-1.5 sm:mb-2 block">Weight (kg)</Label>
+                      <Input
+                        type="number"
+                        min="0"
+                        step="0.1"
+                        value={variation.weightKg ?? ''}
+                        onChange={(e) => {
+                          const val = e.target.value
+                          onUpdateVariation(index, 'weightKg', val === '' ? null : parseFloat(val) || 0)
+                        }}
+                        placeholder="e.g. 2.5"
+                        className="w-full h-10 sm:h-11 text-sm sm:text-base bg-white border-2 border-gray-300 focus:border-orange-500 focus:ring-2 focus:ring-orange-200 rounded-lg"
+                      />
+                      <p className="text-xs text-gray-500 mt-1">Used for delivery fee (weight-based). Empty = use product weight.</p>
+                    </div>
                   </div>
 
                   {/* Variation Image Upload */}

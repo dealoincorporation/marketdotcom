@@ -75,7 +75,9 @@ function LoginForm() {
       const safeRedirect = redirectTo && redirectTo.startsWith("/") && !redirectTo.startsWith("//") ? redirectTo : "/dashboard"
       router.push(safeRedirect)
     } catch (error: any) {
-      setError(error.message || "Login failed. Please check your credentials.")
+      const msg = error.message || "Login failed. Please check your credentials."
+      setError(msg)
+      toast.error(msg)
     } finally {
       setLoading(false)
     }

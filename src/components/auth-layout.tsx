@@ -4,6 +4,7 @@ import { motion } from "framer-motion"
 import { Star, ArrowLeft, Home } from "lucide-react"
 import Link from "next/link"
 import { ImageSlider } from "./image-slider"
+import { HERO_IMAGES } from "@/lib/constants"
 
 interface AuthLayoutProps {
   children: React.ReactNode
@@ -19,7 +20,7 @@ export function AuthLayout({ children, title, subtitle }: AuthLayoutProps) {
         {/* Background Image Slider */}
         <div className="absolute inset-0">
           <ImageSlider
-            images={["/market_image.jpeg", "/cart_image.jpeg", "/vegetables.webp"]}
+            images={[...HERO_IMAGES]}
             className="h-full w-full"
           />
         </div>
@@ -47,7 +48,7 @@ export function AuthLayout({ children, title, subtitle }: AuthLayoutProps) {
               <p className="text-sm text-white italic font-medium">
                 "Marketdotcom has transformed how I shop for groceries. The thrift plan is a game-changer!"
               </p>
-              <p className="text-xs text-orange-200 mt-2 font-medium">— Sarah O., Student</p>
+              <p className="text-xs text-orange-200 mt-2 font-medium">— Amaka O., Student</p>
             </motion.div>
           </motion.div>
         </div>

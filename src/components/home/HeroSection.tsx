@@ -5,15 +5,7 @@ import { motion } from "framer-motion"
 import { ShoppingBag, Shield, Truck, Heart } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { ImageSlider } from "@/components/image-slider"
-
-const HERO_IMAGES = [
-  "/hero/hero-image_one.jpeg",
-  "/hero/hero-image_two.jpeg",
-  "/hero/hero-image_three.jpeg",
-  "/hero/hero-image_four.jpeg",
-  "/hero/hero-image_five.jpeg",
-  "/hero/hero-image_six.jpeg",
-]
+import { HERO_IMAGES } from "@/lib/constants"
 
 export function HeroSection() {
   return (
@@ -48,7 +40,7 @@ export function HeroSection() {
                   transition={{ duration: 0.8, delay: 0.4 }}
                 >
                   <ImageSlider
-                    images={HERO_IMAGES}
+                    images={[...HERO_IMAGES]}
                     className="h-64 sm:h-80 w-full"
                   />
                 </motion.div>
@@ -142,7 +134,7 @@ export function HeroSection() {
                 className="max-w-lg mx-auto"
               >
                 <ImageSlider
-                  images={HERO_IMAGES}
+                  images={[...HERO_IMAGES]}
                   className="h-96 w-full"
                 />
               </motion.div>

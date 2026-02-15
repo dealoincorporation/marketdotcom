@@ -10,6 +10,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Loader2, Lock, CheckCircle, XCircle, Eye, EyeOff } from "lucide-react"
 import { AuthLayout } from "@/components/auth-layout"
 import { useAuth } from "@/contexts/AuthContext"
+import toast from "react-hot-toast"
 
 function ResetPasswordForm() {
   const [password, setPassword] = useState("")
@@ -38,7 +39,9 @@ function ResetPasswordForm() {
       setToken(tokenParam)
     } else {
       setStatus("error")
-      setMessage("Invalid or missing reset token. Please request a new password reset link.")
+      const msg = "Invalid or missing reset link. Please request a new password reset."
+      setMessage(msg)
+      toast.error(msg)
     }
   }, [searchParams])
 
@@ -48,18 +51,21 @@ function ResetPasswordForm() {
     if (!token) {
       setStatus("error")
       setMessage("Invalid reset token.")
+      toast.error("Invalid or missing reset link. Request a new one.")
       return
     }
 
     if (password.length < 6) {
       setStatus("error")
       setMessage("Password must be at least 6 characters long.")
+      toast.error("Password must be at least 6 characters long.")
       return
     }
 
     if (password !== confirmPassword) {
       setStatus("error")
       setMessage("Passwords do not match.")
+      toast.error("Passwords do not match.")
       return
     }
 
@@ -83,19 +89,24 @@ function ResetPasswordForm() {
       if (response.ok) {
         setStatus("success")
         setMessage("Password reset successfully! You can now sign in with your new password.")
+        toast.success("Password reset successfully! Redirecting to sign in...")
 
         // Redirect to login after 3 seconds
         setTimeout(() => {
           router.push("/auth/login?message=Password reset successful. Please sign in with your new password.")
         }, 3000)
       } else {
+        const errMsg = data.message || "Failed to reset password. Please try again."
         setStatus("error")
-        setMessage(data.message || "Failed to reset password. Please try again.")
+        setMessage(errMsg)
+        toast.error(errMsg)
       }
     } catch (error) {
       console.error("Reset password error:", error)
+      const errMsg = "Something went wrong. Please try again."
       setStatus("error")
-      setMessage("An error occurred. Please try again.")
+      setMessage(errMsg)
+      toast.error(errMsg)
     } finally {
       setIsLoading(false)
     }

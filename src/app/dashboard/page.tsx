@@ -113,6 +113,7 @@ function DashboardContent() {
       maxQuantity: actualVariation ? actualVariation.stock : product.stock,
       categoryId: product.categoryId,
       categoryName: product.category?.name,
+      weight: actualVariation?.weightKg ?? product.weightKg ?? 0,
     }
     addItem(cartItem)
   }

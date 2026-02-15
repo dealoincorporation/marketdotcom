@@ -2,6 +2,7 @@ import { NextResponse } from "next/server"
 import { getUserFromRequest } from "@/lib/auth"
 import { getPrismaClient } from "@/lib/prisma"
 import { PaystackService } from "@/lib/paystack"
+import { createOrderFromPayload } from "@/lib/orderCreate"
 import { sendAdminPaymentNotification, sendAdminOrderNotification, sendOrderConfirmationEmail, sendOrderStatusUpdateEmail } from "@/lib/email"
 
 export async function POST(request: Request) {
@@ -76,6 +77,42 @@ export async function POST(request: Request) {
       })
     }
 
+    // Create order from PendingCheckout when user paid without a pre-created order (Paystack flow: order only after payment)
+    let createdFromPending = false
+    let slotAtCapacity = false
+    if (!order && transactionData.status === "success") {
+      const pending = await prisma.pendingCheckout.findUnique({
+        where: { reference, userId: user.userId }
+      })
+      if (pending) {
+        const orderData = pending.orderData as Record<string, unknown>
+        slotAtCapacity = Boolean(orderData?.slotAtCapacity)
+        const { orderId: newOrderId } = await createOrderFromPayload(prisma, user.userId, orderData as any, {
+          transactionId: reference,
+          skipEmails: true, // verify block below sends all emails/notifications
+          setConfirmed: true
+        })
+        await prisma.payment.create({
+          data: {
+            orderId: newOrderId,
+            userId: user.userId,
+            amount: transactionData.amount / 100,
+            currency: "NGN",
+            method: "PAYSTACK",
+            status: "COMPLETED",
+            transactionId: reference,
+            gatewayResponse: transactionData
+          }
+        })
+        await prisma.pendingCheckout.delete({ where: { reference } }).catch(() => {})
+        const created = await prisma.order.findUnique({ where: { id: newOrderId } })
+        if (!created) throw new Error('Order not found after create')
+        order = created
+        createdFromPending = true
+        console.log('Order created from PendingCheckout after successful payment:', order.id)
+      }
+    }
+
     if (!order) {
       console.error('Order not found for payment verification:', { reference, userId: user.userId })
       return NextResponse.json(
@@ -99,10 +136,9 @@ export async function POST(request: Request) {
       // Log but don't fail - amounts might differ due to rounding or fees
     }
 
-    // IDEMPOTENCY CHECK: Don't update if already completed
-    if (order.paymentStatus === "COMPLETED" && transactionData.status === 'success') {
+    // IDEMPOTENCY CHECK: Don't update if already completed (unless we just created from PendingCheckout and need to send emails)
+    if (order.paymentStatus === "COMPLETED" && transactionData.status === 'success' && !createdFromPending) {
       console.log('Order already completed, skipping duplicate update:', order.id)
-      // Still return success to acknowledge verification
       return NextResponse.json({
         success: true,
         message: "Payment already verified",
@@ -311,6 +347,7 @@ export async function POST(request: Request) {
       paymentStatus: paymentStatus,
       orderStatus: orderStatus,
       orderId: order.id, // Return orderId for frontend redirect
+      slotAtCapacity, // So frontend can show "delivery next day" message when order was placed with full slot
       transactionData: {
         reference: transactionData.reference,
         amount: transactionData.amount / 100,

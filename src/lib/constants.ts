@@ -180,3 +180,13 @@ export const NOTIFICATION_CONFIG = {
   maxPerPage: 20,
   retentionDays: 90,
 } as const
+
+/** Hero / promotional slider images (home hero + auth panel) */
+export const HERO_IMAGES = [
+  "/hero/hero-image_one.jpeg",
+  "/hero/hero-image_two.jpeg",
+  "/hero/hero-image_three.jpeg",
+  "/hero/hero-image_four.jpeg",
+  "/hero/hero-image_five.jpeg",
+  "/hero/hero-image_six.jpeg",
+] as const

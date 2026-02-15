@@ -96,6 +96,13 @@ export async function PUT(
       coordinates
     } = body
 
+    if (state !== undefined && (!state || String(state).trim().toLowerCase() !== 'lagos')) {
+      return NextResponse.json(
+        { error: 'Delivery is only available in Lagos. Please use a Lagos address.' },
+        { status: 400 }
+      )
+    }
+
     // If this is set as default, unset other defaults
     if (isDefault) {
       await prisma.address.updateMany({
@@ -108,20 +115,24 @@ export async function PUT(
       })
     }
 
+    const updateData: Record<string, unknown> = {
+      type,
+      name,
+      address,
+      city,
+      postalCode,
+      phone,
+      isDefault,
+      deliveryNotes,
+      coordinates: coordinates ? JSON.stringify(coordinates) : undefined
+    }
+    if (state !== undefined) {
+      updateData.state = 'Lagos'
+    }
+
     const updatedAddress = await prisma.address.update({
       where: { id },
-      data: {
-        type,
-        name,
-        address,
-        city,
-        state,
-        postalCode,
-        phone,
-        isDefault,
-        deliveryNotes,
-        coordinates: coordinates ? JSON.stringify(coordinates) : undefined
-      }
+      data: updateData as any
     })
 
     return NextResponse.json(updatedAddress)

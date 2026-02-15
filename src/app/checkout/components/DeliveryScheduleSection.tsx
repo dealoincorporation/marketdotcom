@@ -8,6 +8,14 @@ import { Textarea } from "@/components/ui/textarea"
 import type { DeliverySlot } from "../types"
 import { useAuth } from "@/contexts/AuthContext"
 
+const DEFAULT_DELIVERY_INFO_POINTS = [
+  "Orders delivered within 4 hours of scheduled time",
+  "Place orders before 10 AM for same-day delivery",
+  "Orders after 3 PM delivered next day",
+  "Delivery fees calculated per product",
+  "SMS & email updates on delivery status",
+]
+
 interface DeliveryScheduleSectionProps {
   deliverySlots: DeliverySlot[]
   deliverySlotsLoading: boolean
@@ -21,6 +29,7 @@ interface DeliveryScheduleSectionProps {
   onShowDeliveryDateDropdown: (show: boolean) => void
   dropdownRef: React.RefObject<HTMLDivElement | null>
   onShowCreateSlotsModal: () => void
+  deliveryInfoPoints?: string[]
 }
 
 export function DeliveryScheduleSection({
@@ -36,8 +45,10 @@ export function DeliveryScheduleSection({
   onShowDeliveryDateDropdown,
   dropdownRef,
   onShowCreateSlotsModal,
+  deliveryInfoPoints = [],
 }: DeliveryScheduleSectionProps) {
   const { user } = useAuth()
+  const points = deliveryInfoPoints.filter(Boolean).length > 0 ? deliveryInfoPoints.filter(Boolean) : DEFAULT_DELIVERY_INFO_POINTS
   const uniqueDates = [...new Set(deliverySlots.map(slot => new Date(slot.date).toISOString().split('T')[0]))]
   const slotsForDate = deliverySlots.filter(
     slot => new Date(slot.date).toISOString().split('T')[0] === deliveryDate && slot.isAvailable
@@ -91,13 +102,13 @@ export function DeliveryScheduleSection({
             <div className="flex items-start">
               <AlertTriangle className="h-5 w-5 text-yellow-600 mt-0.5 mr-2 flex-shrink-0" />
               <div className="flex-1">
-                <h4 className="text-sm font-medium text-yellow-800 mb-1">Delivery dates not available</h4>
-                <p className="text-xs text-yellow-700 mb-3">
-                  No delivery slots have been configured yet. Configure delivery options to continue with your order.
-                </p>
-                <div className="flex flex-col sm:flex-row gap-2">
-                  {user?.role === 'ADMIN' && (
-                    <>
+                {user?.role === 'ADMIN' ? (
+                  <>
+                    <h4 className="text-sm font-medium text-yellow-800 mb-1">Delivery dates not available</h4>
+                    <p className="text-xs text-yellow-700 mb-3">
+                      No delivery slots have been configured yet. Configure delivery options to continue with your order.
+                    </p>
+                    <div className="flex flex-col sm:flex-row gap-2">
                       <Button
                         onClick={onShowCreateSlotsModal}
                         size="sm"
@@ -114,19 +125,16 @@ export function DeliveryScheduleSection({
                       >
                         Advanced Setup
                       </Button>
-                    </>
-                  )}
-                  {user?.role !== 'ADMIN' && (
-                    <Button
-                      onClick={onShowCreateSlotsModal}
-                      size="sm"
-                      className="bg-orange-600 hover:bg-orange-700 text-white text-xs px-3 py-1 h-8"
-                    >
-                      <Plus className="h-3 w-3 mr-1" />
-                      Configure Slots
-                    </Button>
-                  )}
-                </div>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <h4 className="text-sm font-medium text-yellow-800 mb-1">No delivery dates available</h4>
+                    <p className="text-xs text-yellow-700">
+                      No delivery slots are available at the moment. Please contact support or try again later.
+                    </p>
+                  </>
+                )}
               </div>
             </div>
           </div>
@@ -279,26 +287,12 @@ export function DeliveryScheduleSection({
             <div className="flex-1 min-w-0">
               <h3 className="font-bold text-orange-900 mb-2 text-sm sm:text-base break-words">🚚 Delivery Information</h3>
               <ul className="text-xs sm:text-sm text-orange-800 space-y-1 sm:space-y-1.5">
-                <li className="flex items-start">
-                  <Check className="h-3 w-3 sm:h-4 sm:w-4 mr-2 text-orange-600 flex-shrink-0 mt-0.5" />
-                  <span className="break-words">Orders delivered within 4 hours of scheduled time</span>
-                </li>
-                <li className="flex items-start">
-                  <Check className="h-3 w-3 sm:h-4 sm:w-4 mr-2 text-orange-600 flex-shrink-0 mt-0.5" />
-                  <span className="break-words">Place orders before 10 AM for same-day delivery</span>
-                </li>
-                <li className="flex items-start">
-                  <Check className="h-3 w-3 sm:h-4 sm:w-4 mr-2 text-orange-600 flex-shrink-0 mt-0.5" />
-                  <span className="break-words">Orders after 3 PM delivered next day</span>
-                </li>
-                <li className="flex items-start">
-                  <Check className="h-3 w-3 sm:h-4 sm:w-4 mr-2 text-orange-600 flex-shrink-0 mt-0.5" />
-                  <span className="break-words">Delivery fees calculated per product</span>
-                </li>
-                <li className="flex items-start">
-                  <Check className="h-3 w-3 sm:h-4 sm:w-4 mr-2 text-orange-600 flex-shrink-0 mt-0.5" />
-                  <span className="break-words">SMS & email updates on delivery status</span>
-                </li>
+                {points.map((text, i) => (
+                  <li key={i} className="flex items-start">
+                    <Check className="h-3 w-3 sm:h-4 sm:w-4 mr-2 text-orange-600 flex-shrink-0 mt-0.5" />
+                    <span className="break-words">{text}</span>
+                  </li>
+                ))}
               </ul>
             </div>
           </div>

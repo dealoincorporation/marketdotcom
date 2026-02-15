@@ -86,7 +86,7 @@ export function MarketplaceProductCard(props: MarketplaceProductCardProps) {
       maxQuantity: variation ? variation.stock : product.stock,
       categoryId: product.categoryId,
       categoryName: product.category?.name,
-      weight: (product as any).weightKg ?? 0,
+      weight: (variation as any)?.weightKg ?? (product as any).weightKg ?? 0,
       deliveryFee: (product as any).deliveryFee !== undefined ? (product as any).deliveryFee : null,
     })
 

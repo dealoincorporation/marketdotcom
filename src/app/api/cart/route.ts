@@ -56,7 +56,7 @@ export async function GET(request: NextRequest) {
         image: img,
         quantity: ci.quantity,
         unit,
-        weight: p.weightKg ?? 0,
+        weight: (v?.weightKg ?? p.weightKg) ?? 0,
         deliveryFee: p.deliveryFee ?? null,
         variation: v
           ? {

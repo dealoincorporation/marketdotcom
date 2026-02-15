@@ -108,16 +108,22 @@ PAYSTACK_SECRET_KEY="sk_test_your_paystack_secret_key"
 
 ### 4. Database Setup
 
-```bash
-# Generate Prisma client
-npx prisma generate
+Prisma CLI reads `DATABASE_URL` from `.env` only. If you use `.env.local`, run the npm scripts below (they load `.env.local` automatically). Or add `DATABASE_URL` to a `.env` file in the project root.
 
-# Run migrations
-npx prisma db push
+**MongoDB uses `db push` (schema sync), not `migrate dev`.**
+
+```bash
+# Generate Prisma client (uses .env.local if present)
+npm run db:generate
+
+# Sync schema to MongoDB (uses .env.local if present)
+npm run db:push
 
 # Seed the database
 npm run db:seed
 ```
+
+To run Prisma directly: put `DATABASE_URL` in `.env`, then `npx prisma generate` and `npx prisma db push`.
 
 ### 5. Start Development Server
 ```bash

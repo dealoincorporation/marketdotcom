@@ -10,17 +10,8 @@ export async function GET() {
   try {
     const prisma = await getPrismaClient()
 
-    // Check if database is available
     if (!prisma || typeof prisma.category?.findMany !== 'function') {
-      // Return fallback categories for better UX
-      const fallbackCategories = [
-        { id: '1', name: 'All', description: 'All products' },
-        { id: '2', name: 'Vegetables', description: 'Fresh vegetables' },
-        { id: '3', name: 'Fruits', description: 'Fresh fruits' },
-        { id: '4', name: 'Grains', description: 'Rice, beans, and grains' },
-        { id: '5', name: 'Proteins', description: 'Meat, fish, and eggs' }
-      ]
-      return NextResponse.json(fallbackCategories)
+      return NextResponse.json({ success: true, data: [] })
     }
 
     const categories = await prisma.category.findMany({
@@ -41,17 +32,8 @@ export async function GET() {
   } catch (error) {
     console.error("Error fetching categories:", error)
 
-    // Check if it's a database connection error
     if (error instanceof Error && (error.message.includes('server selection') || (error as any).code === 'P2010')) {
-      // Return fallback categories for better UX
-      const fallbackCategories = [
-        { id: '1', name: 'All', description: 'All products' },
-        { id: '2', name: 'Vegetables', description: 'Fresh vegetables' },
-        { id: '3', name: 'Fruits', description: 'Fresh fruits' },
-        { id: '4', name: 'Grains', description: 'Rice, beans, and grains' },
-        { id: '5', name: 'Proteins', description: 'Meat, fish, and eggs' }
-      ]
-      return NextResponse.json(fallbackCategories)
+      return NextResponse.json({ success: true, data: [] })
     }
 
     return NextResponse.json(

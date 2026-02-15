@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
-import { Package, Save, Search, Truck, ShoppingCart } from "lucide-react"
+import { Package, Save, Search, Truck, ShoppingCart, Info, Plus, Trash2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -32,6 +32,7 @@ interface DeliverySettingsData {
   feePerKg: number
   minimumOrderQuantity: number
   minimumOrderAmount: number
+  deliveryInfoPoints: string[]
 }
 
 interface ManageDeliveryFeesTabProps {
@@ -45,8 +46,10 @@ export default function ManageDeliveryFeesTab({ isAdmin }: ManageDeliveryFeesTab
     feePerKg: 50,
     minimumOrderQuantity: 1,
     minimumOrderAmount: 0,
+    deliveryInfoPoints: [],
   })
   const [settingsSaving, setSettingsSaving] = useState(false)
+  const [deliveryInfoSaving, setDeliveryInfoSaving] = useState(false)
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -64,6 +67,7 @@ export default function ManageDeliveryFeesTab({ isAdmin }: ManageDeliveryFeesTab
           feePerKg: data.feePerKg ?? 50,
           minimumOrderQuantity: data.minimumOrderQuantity ?? 1,
           minimumOrderAmount: data.minimumOrderAmount ?? 0,
+          deliveryInfoPoints: Array.isArray(data.deliveryInfoPoints) ? data.deliveryInfoPoints : [],
         })
       }
     } catch {
@@ -124,6 +128,7 @@ export default function ManageDeliveryFeesTab({ isAdmin }: ManageDeliveryFeesTab
           feePerKg: Number(settings.feePerKg),
           minimumOrderQuantity: Math.max(1, Math.floor(Number(settings.minimumOrderQuantity)) || 1),
           minimumOrderAmount: Math.max(0, Number(settings.minimumOrderAmount) || 0),
+          deliveryInfoPoints: settings.deliveryInfoPoints,
         }),
       })
       if (!res.ok) {
@@ -137,6 +142,58 @@ export default function ManageDeliveryFeesTab({ isAdmin }: ManageDeliveryFeesTab
     } finally {
       setSettingsSaving(false)
     }
+  }
+
+  const handleSaveDeliveryInfo = async () => {
+    try {
+      setDeliveryInfoSaving(true)
+      const token = localStorage.getItem("token")
+      const res = await fetch("/api/delivery-settings", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({
+          baseFee: Number(settings.baseFee),
+          feePerKg: Number(settings.feePerKg),
+          minimumOrderQuantity: Math.max(1, Math.floor(Number(settings.minimumOrderQuantity)) || 1),
+          minimumOrderAmount: Math.max(0, Number(settings.minimumOrderAmount) || 0),
+          deliveryInfoPoints: settings.deliveryInfoPoints.filter((s) => s.trim().length > 0),
+        }),
+      })
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}))
+        throw new Error(err.error || "Failed to save delivery information")
+      }
+      showSuccess("Delivery information saved", "Checkout delivery info updated. It will appear in the Schedule Your Delivery section.")
+      await fetchSettings()
+    } catch (err) {
+      showError("Failed to save delivery information", err instanceof Error ? err.message : "An error occurred")
+    } finally {
+      setDeliveryInfoSaving(false)
+    }
+  }
+
+  const handleDeliveryInfoPointChange = (index: number, value: string) => {
+    setSettings((s) => ({
+      ...s,
+      deliveryInfoPoints: s.deliveryInfoPoints.map((p, i) => (i === index ? value : p)),
+    }))
+  }
+
+  const addDeliveryInfoPoint = () => {
+    setSettings((s) => ({
+      ...s,
+      deliveryInfoPoints: [...s.deliveryInfoPoints, ""],
+    }))
+  }
+
+  const removeDeliveryInfoPoint = (index: number) => {
+    setSettings((s) => ({
+      ...s,
+      deliveryInfoPoints: s.deliveryInfoPoints.filter((_, i) => i !== index),
+    }))
   }
 
   const handleWeightChange = (productId: string, value: string) => {
@@ -345,6 +402,77 @@ export default function ManageDeliveryFeesTab({ isAdmin }: ManageDeliveryFeesTab
             Delivery fee = Base fee + (Fee per kg × total weight). Products with weight (kg) set below contribute to
             total weight. Leave weight empty to treat as 0. Use per-product delivery override for free or custom fee.
           </p>
+        </CardContent>
+      </Card>
+
+      {/* Checkout Delivery Information */}
+      <Card className="mb-6 shadow-md border-orange-200">
+        <CardHeader className="bg-gradient-to-r from-orange-50 to-red-50">
+          <CardTitle className="flex items-center gap-2 text-orange-800">
+            <Info className="h-5 w-5" />
+            Delivery Information (Checkout)
+          </CardTitle>
+          <p className="text-sm text-gray-600 mt-1">
+            Bullet points shown in the checkout under &quot;Schedule Your Delivery&quot;. Customers see this in the 🚚 Delivery Information box.
+          </p>
+        </CardHeader>
+        <CardContent className="p-6 space-y-4">
+          <div className="space-y-2">
+            {settings.deliveryInfoPoints.map((point, index) => (
+              <div key={index} className="flex gap-2 items-center">
+                <Input
+                  value={point}
+                  onChange={(e) => handleDeliveryInfoPointChange(index, e.target.value)}
+                  placeholder={`Bullet ${index + 1}`}
+                  className="flex-1 h-11"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  className="shrink-0 h-11 w-11 text-red-600 hover:text-red-700 hover:bg-red-50"
+                  onClick={() => removeDeliveryInfoPoint(index)}
+                  title="Remove line"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </div>
+            ))}
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={addDeliveryInfoPoint}
+              className="border-dashed border-orange-300 text-orange-700 hover:bg-orange-50"
+            >
+              <Plus className="h-4 w-4 mr-1" />
+              Add bullet point
+            </Button>
+            <Button
+              onClick={handleSaveDeliveryInfo}
+              disabled={deliveryInfoSaving}
+              className="bg-orange-600 hover:bg-orange-700 text-white"
+            >
+              {deliveryInfoSaving ? (
+                <>
+                  <span className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent inline-block mr-2" />
+                  Saving...
+                </>
+              ) : (
+                <>
+                  <Save className="h-4 w-4 mr-2" />
+                  Save delivery information
+                </>
+              )}
+            </Button>
+          </div>
+          {settings.deliveryInfoPoints.length === 0 && (
+            <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg p-3">
+              No bullet points yet. Add at least one and save to show delivery information in checkout. Empty lines are ignored when saving.
+            </p>
+          )}
         </CardContent>
       </Card>
 

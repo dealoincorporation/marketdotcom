@@ -1,5 +1,6 @@
 "use client"
 
+import { Suspense } from "react"
 import { useAuth } from "@/contexts/AuthContext"
 import { useRouter } from "next/navigation"
 import { CheckoutHeader } from "./components/CheckoutHeader"
@@ -11,9 +12,9 @@ import { PaymentSummary } from "./components/PaymentSummary"
 import { CheckoutConfirmation } from "./components/CheckoutConfirmation"
 import { CreateDeliverySlotsModal } from "./components/CreateDeliverySlotsModal"
 import { useCheckout } from "./hooks/useCheckout"
-import { toast } from "react-hot-toast"
+import { Loader2 } from "lucide-react"
 
-export default function CheckoutPage() {
+function CheckoutContent() {
   const { user } = useAuth()
   const router = useRouter()
 
@@ -66,6 +67,7 @@ export default function CheckoutPage() {
     deliverySlotDescription,
     showSlotFullModal,
     setShowSlotFullModal,
+    deliveryInfoPoints,
   } = useCheckout()
 
   if (!user) {
@@ -105,6 +107,7 @@ export default function CheckoutPage() {
                 onShowDeliveryDateDropdown={setShowDeliveryDateDropdown}
                 dropdownRef={dropdownRef}
                 onShowCreateSlotsModal={() => setShowCreateSlotsModal(true)}
+                deliveryInfoPoints={deliveryInfoPoints}
               />
             </div>
 
@@ -178,9 +181,9 @@ export default function CheckoutPage() {
         )}
       </div>
 
-      {/* Create Delivery Slots Modal */}
+      {/* Create Delivery Slots Modal (admin only) */}
       <CreateDeliverySlotsModal
-        open={showCreateSlotsModal}
+        open={showCreateSlotsModal && user?.role === 'ADMIN'}
         onOpenChange={setShowCreateSlotsModal}
         slotConfig={slotConfig}
         onSlotConfigChange={setSlotConfig}
@@ -188,13 +191,16 @@ export default function CheckoutPage() {
         onCreateSlots={createDeliverySlots}
       />
 
-      {/* Slot full – order noted for next day modal */}
+      {/* Slot full – deliveries exceeded for the day */}
       {showSlotFullModal && (
         <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/50">
           <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-6 space-y-4">
-            <h3 className="text-xl font-bold text-gray-900">Delivery slot at capacity</h3>
+            <h3 className="text-xl font-bold text-gray-900">Deliveries exceeded for this day</h3>
             <p className="text-gray-600">
-              This time slot has reached its maximum orders for the day. Your order will still be recorded and the admin will receive it. You may receive delivery on the next available day instead of this slot.
+              The number of orders we can deliver today has been reached. If you place your order now, <strong>your products will be delivered the next available day</strong>. You will get a notification when your delivery is scheduled.
+            </p>
+            <p className="text-sm text-gray-500">
+              You can choose another slot below if one is still available, or continue to place your order for delivery on the next day.
             </p>
             <div className="flex gap-3 pt-2">
               <button
@@ -212,12 +218,26 @@ export default function CheckoutPage() {
                 }}
                 className="flex-1 px-4 py-2.5 bg-orange-600 text-white rounded-lg font-medium hover:bg-orange-700"
               >
-                Place order anyway
+                Place order (next day delivery)
               </button>
             </div>
           </div>
         </div>
       )}
     </div>
+  )
+}
+
+export default function CheckoutPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+          <Loader2 className="h-8 w-8 animate-spin text-orange-500" />
+        </div>
+      }
+    >
+      <CheckoutContent />
+    </Suspense>
   )
 }

@@ -84,6 +84,13 @@ function generateOrderConfirmationHtml(data: OrderEmailData): string {
               </div>
             </div>
 
+            ${data.slotAtCapacity ? `
+            <div style="background: #fef3c7; border: 2px solid #d97706; border-radius: 12px; padding: 20px; margin: 20px 0;">
+              <p style="margin: 0 0 8px 0; font-size: 16px; font-weight: 600; color: #92400e;">⚠️ Delivery moved to next day</p>
+              <p style="margin: 0; font-size: 14px; color: #78350f;">The number of deliveries we could make for your chosen day was exceeded. Your order has been received and <strong>your products will be delivered the next available day</strong>. We will notify you when your delivery is scheduled.</p>
+            </div>
+            ` : ''}
+
             <h3 style="color: #ea580c; margin: 30px 0 20px 0; font-size: 22px; font-weight: 600;">🛒 Items Ordered</h3>
             <div style="background: white; border: 2px solid #ffedd5; border-radius: 12px; overflow: hidden; margin: 20px 0; box-shadow: 0 2px 8px rgba(249, 115, 22, 0.1);">
               <table class="order-table" style="width: 100%; border-collapse: collapse;">

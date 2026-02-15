@@ -12,6 +12,8 @@ export interface OrderEmailData {
   deliveryAddress: string
   deliveryDate: string
   deliveryTime: string
+  /** When true, the chosen day's delivery limit was exceeded; order will be delivered next available day */
+  slotAtCapacity?: boolean
 }
 
 export interface OrderStatusUpdateData {

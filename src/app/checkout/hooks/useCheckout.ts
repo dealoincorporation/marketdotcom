@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { useAuth } from "@/contexts/AuthContext"
 import { useCartStore } from "@/lib/cart-store"
 import { useAddressStore } from "@/lib/address-store"
@@ -9,6 +9,7 @@ import type { Address, DeliverySlot, NewAddress, SlotConfig } from "../types"
 export function useCheckout() {
   const { user } = useAuth()
   const router = useRouter()
+  const searchParams = useSearchParams()
   const { items, getTotalItems, getTotalPrice, clearCart } = useCartStore()
   const {
     addresses,
@@ -35,7 +36,7 @@ export function useCheckout() {
     name: "",
     address: "",
     city: "",
-    state: "",
+    state: "Lagos",
     postalCode: "",
     phone: ""
   })
@@ -71,6 +72,7 @@ export function useCheckout() {
     feePerKg: number
     minimumOrderQuantity: number
     minimumOrderAmount: number
+    deliveryInfoPoints: string[]
   } | null>(null)
 
   const totalItems = getTotalItems()
@@ -118,10 +120,17 @@ export function useCheckout() {
           feePerKg: data.feePerKg ?? 50,
           minimumOrderQuantity: data.minimumOrderQuantity ?? 1,
           minimumOrderAmount: data.minimumOrderAmount ?? 0,
+          deliveryInfoPoints: Array.isArray(data.deliveryInfoPoints) ? data.deliveryInfoPoints : [],
         })
       }
     } catch {
-      setDeliverySettings({ baseFee: 500, feePerKg: 50, minimumOrderQuantity: 1, minimumOrderAmount: 0 })
+      setDeliverySettings({
+        baseFee: 500,
+        feePerKg: 50,
+        minimumOrderQuantity: 1,
+        minimumOrderAmount: 0,
+        deliveryInfoPoints: [],
+      })
     }
   }
 
@@ -179,7 +188,7 @@ export function useCheckout() {
         name: "",
         address: "",
         city: "",
-        state: "",
+        state: "Lagos",
         postalCode: "",
         phone: ""
       })
@@ -218,7 +227,8 @@ export function useCheckout() {
         deliveryFee,
         walletDeduction: isFullWalletPayment ? Math.min(walletBalance, fullAmount) : walletDeduction,
         finalTotal: isFullWalletPayment ? fullAmount - Math.min(walletBalance, fullAmount) : finalTotal,
-        skipEmails: false // Send emails immediately for wallet payments
+        skipEmails: false, // Send emails immediately for wallet payments
+        slotAtCapacity: selectedSlotAtCapacity
       }
 
       const response = await fetch('/api/orders/create', {
@@ -238,10 +248,12 @@ export function useCheckout() {
       setOrderId(result.orderId) // Store orderId for confirmation page
       clearCart()
       setStep(3)
-      toast.success('🎉 Order placed successfully! Your order is being processed.', {
-        duration: 5000,
-        icon: '✅',
-      })
+      toast.success(
+        selectedSlotAtCapacity
+          ? "🎉 Order placed! Delivery will be the next available day (today's limit was reached). We'll notify you when it's scheduled."
+          : '🎉 Order placed successfully! Your order is being processed.',
+        { duration: 5000, icon: '✅' }
+      )
     } catch (error) {
       console.error('Error creating order:', error)
       toast.error(error instanceof Error ? error.message : 'Failed to create order')
@@ -249,27 +261,32 @@ export function useCheckout() {
     }
   }
 
-  // Handle Paystack payment
-  const handlePaystackPayment = async (orderId: string | null, amount: number) => {
+  // Handle Paystack payment. Order is created only after successful payment (no orderId; pass orderData).
+  const handlePaystackPayment = async (amount: number, options: { orderData?: object; orderId?: string | null }) => {
     try {
-      if (!orderId) {
-        throw new Error('Order ID is required for payment')
+      const { orderData, orderId } = options
+      if (!orderData && !orderId) {
+        throw new Error('Order data or order ID is required for payment')
       }
-      
-      console.log('Initializing Paystack payment...', { orderId, amount })
-      
+
+      console.log('Initializing Paystack payment...', { amount, hasOrderData: !!orderData })
       const token = localStorage.getItem('token')
+      const body: Record<string, unknown> = {
+        amount,
+        paymentMethod: paymentMethod || 'paystack'
+      }
+      if (orderData) {
+        body.orderData = orderData
+      } else if (orderId) {
+        body.orderId = orderId
+      }
       const paymentResponse = await fetch('/api/payments/initialize', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           ...(token ? { 'Authorization': `Bearer ${token}` } : {})
         },
-        body: JSON.stringify({
-          orderId: orderId,
-          amount,
-          paymentMethod: paymentMethod || 'paystack'
-        }),
+        body: JSON.stringify(body),
       })
 
       if (!paymentResponse.ok) {
@@ -381,17 +398,23 @@ export function useCheckout() {
         setStep(3)
         console.log('Redirected to step 3 (confirmation page)')
         
-        // Show success toast
-        toast.success('🎉 Payment successful! Your order has been confirmed and is being processed.', {
-          duration: 5000,
-          icon: '✅',
-          style: {
-            background: 'rgba(34, 197, 94, 0.95)',
-            backdropFilter: 'blur(10px)',
-            color: 'white',
-            border: '1px solid rgba(34, 197, 94, 0.3)',
-          },
-        })
+        // Show success toast (mention next-day delivery when slot was at capacity)
+        const slotFull = result.slotAtCapacity === true
+        toast.success(
+          slotFull
+            ? "🎉 Payment successful! Your order is confirmed. Delivery will be the next available day (today's limit was reached). We'll notify you when it's scheduled."
+            : '🎉 Payment successful! Your order has been confirmed and is being processed.',
+          {
+            duration: 6000,
+            icon: '✅',
+            style: {
+              background: 'rgba(34, 197, 94, 0.95)',
+              backdropFilter: 'blur(10px)',
+              color: 'white',
+              border: '1px solid rgba(34, 197, 94, 0.3)',
+            },
+          }
+        )
       } else {
         // Payment failed or pending
         console.error('Payment verification failed:', result)
@@ -472,74 +495,36 @@ export function useCheckout() {
         // For wallet payment, create order immediately
         await createOrderAfterPayment()
       } else if (paymentMethod === 'paystack') {
-        // For Paystack (card/bank transfer), create order first, then initialize payment
-        // Order will be updated to CONFIRMED after payment verification
-        const orderId = await createOrderBeforePayment()
-        await handlePaystackPayment(orderId, finalTotal)
+        // For Paystack: no order until payment succeeds. Initialize with orderData, then open Paystack.
+        const orderData = {
+          items: items.map(item => ({
+            productId: item.productId,
+            variationId: item.variationId || null,
+            name: item.name,
+            quantity: item.quantity,
+            unitPrice: item.price,
+            totalPrice: item.price * item.quantity,
+            unit: item.unit
+          })),
+          deliveryAddress: addresses.find(addr => addr.id === selectedAddress) || null,
+          deliveryDate,
+          deliveryTime,
+          deliveryNotes,
+          paymentMethod,
+          useWallet,
+          subtotal,
+          deliveryFee,
+          walletDeduction,
+          finalTotal,
+          skipEmails: true,
+          slotAtCapacity: selectedSlotAtCapacity
+        }
+        await handlePaystackPayment(finalTotal, { orderData })
       }
     } catch (error) {
       console.error('Error placing order:', error)
       toast.error(error instanceof Error ? error.message : 'Failed to place order')
       setLoading(false)
-    }
-  }
-
-  // Create order before payment (for Paystack flow)
-  const createOrderBeforePayment = async (): Promise<string> => {
-    try {
-      const token = localStorage.getItem('token')
-      const orderData = {
-        items: items.map(item => ({
-          productId: item.productId,
-          variationId: item.variationId || null,
-          name: item.name,
-          quantity: item.quantity,
-          unitPrice: item.price,
-          totalPrice: item.price * item.quantity,
-          unit: item.unit
-        })),
-        deliveryAddress: addresses.find(addr => addr.id === selectedAddress) || null,
-        deliveryDate,
-        deliveryTime,
-        deliveryNotes,
-        paymentMethod,
-        useWallet,
-        subtotal,
-        deliveryFee,
-        walletDeduction,
-        finalTotal,
-        skipEmails: true // Skip emails for Paystack - will send after payment confirmation
-      }
-
-      console.log('Creating order before payment...', { itemsCount: items.length, finalTotal })
-      
-      const response = await fetch('/api/orders/create', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
-        },
-        body: JSON.stringify(orderData),
-      })
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ error: 'Failed to create order' }))
-        console.error('Order creation failed:', errorData)
-        throw new Error(errorData.error || 'Failed to create order')
-      }
-
-      const result = await response.json()
-      console.log('Order created successfully:', result.orderId)
-      
-      if (!result.orderId) {
-        throw new Error('Order created but no orderId returned')
-      }
-      
-      return result.orderId
-    } catch (error) {
-      console.error('Error creating order before payment:', error)
-      toast.error(error instanceof Error ? error.message : 'Failed to create order. Please try again.')
-      throw error
     }
   }
 
@@ -570,6 +555,17 @@ export function useCheckout() {
 
     loadData()
   }, [user, items, router, fetchAddresses, getDefaultAddress])
+
+  // When Paystack redirects to /checkout?reference=xxx, verify payment and show confirmation
+  const verifiedRef = useRef<string | null>(null)
+  useEffect(() => {
+    const reference = searchParams.get('reference')
+    if (!reference || verifiedRef.current === reference) return
+    verifiedRef.current = reference
+    verifyPayment(reference).finally(() => {
+      router.replace('/checkout', { scroll: false })
+    })
+  }, [searchParams])
 
   useEffect(() => {
     fetchDeliverySlots()
@@ -695,6 +691,7 @@ export function useCheckout() {
     selectedSlotAtCapacity,
     showSlotFullModal,
     setShowSlotFullModal,
+    deliveryInfoPoints: deliverySettings?.deliveryInfoPoints ?? [],
 
     // Actions
     handleAddNewAddress,

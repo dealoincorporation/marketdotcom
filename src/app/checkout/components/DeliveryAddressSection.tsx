@@ -38,7 +38,7 @@ export function DeliveryAddressSection({
           <MapPin className="h-5 w-5 sm:h-6 sm:w-6 flex-shrink-0" />
           <span className="break-words">Choose Delivery Address</span>
         </h2>
-        <p className="text-orange-100 mt-1 text-sm sm:text-base break-words">Select where you'd like your order delivered</p>
+        <p className="text-orange-100 mt-1 text-sm sm:text-base break-words">Select where you'd like your order delivered. Delivery is only available in Lagos.</p>
       </div>
       <div className="p-4 sm:p-6 min-w-0">
         <RadioGroup value={selectedAddress} onValueChange={onAddressSelect} className="space-y-3 sm:space-y-4">
@@ -154,11 +154,12 @@ export function DeliveryAddressSection({
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                 <div className="space-y-2 min-w-0">
-                  <Label htmlFor="city" className="text-sm font-semibold text-gray-700">City</Label>
+                  <Label htmlFor="city" className="text-sm font-semibold text-gray-700">City / Area (Lagos)</Label>
                   <Input
                     id="city"
                     value={newAddress.city}
                     onChange={(e) => onNewAddressChange({...newAddress, city: e.target.value})}
+                    placeholder="e.g. Ikeja, Lekki, Victoria Island"
                     className="h-12 border-2 focus:border-blue-500"
                   />
                 </div>
@@ -166,10 +167,11 @@ export function DeliveryAddressSection({
                   <Label htmlFor="state" className="text-sm font-semibold text-gray-700">State</Label>
                   <Input
                     id="state"
-                    value={newAddress.state}
-                    onChange={(e) => onNewAddressChange({...newAddress, state: e.target.value})}
-                    className="h-12 border-2 focus:border-blue-500"
+                    value="Lagos"
+                    readOnly
+                    className="h-12 border-2 border-gray-200 bg-gray-50 text-gray-700 cursor-not-allowed"
                   />
+                  <p className="text-xs text-gray-500">Delivery is only available in Lagos.</p>
                 </div>
               </div>
 

@@ -116,6 +116,11 @@ export async function POST(request: NextRequest) {
             }
           }
 
+          const weightKg =
+            v.weightKg !== undefined && v.weightKg !== null && v.weightKg !== ""
+              ? parseFloat(String(v.weightKg))
+              : null
+
           return {
             name: variationName,
             type: v.type || "Quantity",
@@ -123,6 +128,7 @@ export async function POST(request: NextRequest) {
             stock: typeof v.stock === "number" ? v.stock : parseInt(v.stock) || 0,
             unit: v.unit || undefined,
             quantity: parsedQuantity,
+            weightKg: Number.isNaN(weightKg) ? null : weightKg,
             image: normalizeImageUrl(v.image) || undefined,
             productId: product.id,
           }

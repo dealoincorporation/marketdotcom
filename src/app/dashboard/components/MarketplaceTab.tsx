@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { motion } from "framer-motion"
 import { Search, Filter, Package } from "lucide-react"
 import { Input } from "@/components/ui/input"
@@ -39,30 +39,33 @@ export default function MarketplaceTab({
   const [quantities, setQuantities] = useState<{ [key: string]: number }>({})
   const [selectedVariations, setSelectedVariations] = useState<{ [key: string]: string }>({})
   const [searchTerm, setSearchTerm] = useState("")
+  const productIdsKeyRef = useRef<string>("")
   // (moved image carousel logic into MarketplaceProductCard)
 
-  // Auto-select first available option for products
+  // Auto-select first available option for products (only when product list actually changes, to avoid re-renders on focus/click)
   useEffect(() => {
+    const productIdsKey = products.map(p => p.id).sort().join(",")
+    if (productIdsKey === productIdsKeyRef.current) return
+    productIdsKeyRef.current = productIdsKey
+
     const newSelections: { [key: string]: string } = {}
     products.forEach(product => {
-      if (!selectedVariations[product.id]) {
-        // If base product has stock, select it
-        if (product.stock > 0) {
-          newSelections[product.id] = "base"
-        }
-        // Otherwise, find first available variation
-        else if (product.variations.length > 0) {
-          const availableVariation = product.variations.find(v => v.stock > 0)
-          if (availableVariation) {
-            newSelections[product.id] = availableVariation.id
-          }
+      // If base product has stock, select it
+      if (product.stock > 0) {
+        newSelections[product.id] = "base"
+      }
+      // Otherwise, find first available variation
+      else if (product.variations?.length > 0) {
+        const availableVariation = product.variations.find((v: { stock: number }) => v.stock > 0)
+        if (availableVariation) {
+          newSelections[product.id] = availableVariation.id
         }
       }
     })
     if (Object.keys(newSelections).length > 0) {
       setSelectedVariations(prev => ({ ...prev, ...newSelections }))
     }
-  }, [products, selectedVariations])
+  }, [products])
 
   const handleQuantityChange = (productId: string, quantity: number) => {
     setQuantities(prev => ({
@@ -118,7 +121,9 @@ export default function MarketplaceTab({
               placeholder="Search products..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && e.preventDefault()}
               className="pl-10"
+              autoComplete="off"
             />
           </div>
         </div>

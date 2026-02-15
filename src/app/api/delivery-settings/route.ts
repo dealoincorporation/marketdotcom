@@ -11,6 +11,14 @@ const DEFAULTS = {
   minimumOrderAmount: 0,
 }
 
+const DEFAULT_DELIVERY_INFO_POINTS = [
+  "Orders delivered within 4 hours of scheduled time",
+  "Place orders before 10 AM for same-day delivery",
+  "Orders after 3 PM delivered next day",
+  "Delivery fees calculated per product",
+  "SMS & email updates on delivery status",
+]
+
 /** GET - Returns delivery & MOQ settings (creates default row if none). */
 export async function GET() {
   try {
@@ -30,11 +38,24 @@ export async function GET() {
       })
     }
 
+    let deliveryInfoPoints: string[] = DEFAULT_DELIVERY_INFO_POINTS
+    if (settings.deliveryInfoPoints) {
+      try {
+        const parsed = JSON.parse(settings.deliveryInfoPoints) as unknown
+        if (Array.isArray(parsed) && parsed.every((x) => typeof x === "string")) {
+          deliveryInfoPoints = parsed.filter(Boolean)
+        }
+      } catch {
+        // use default
+      }
+    }
+
     return NextResponse.json({
       baseFee: settings.baseFee ?? DEFAULTS.baseFee,
       feePerKg: settings.feePerKg ?? DEFAULTS.feePerKg,
       minimumOrderQuantity: settings.minimumOrderQuantity ?? DEFAULTS.minimumOrderQuantity,
       minimumOrderAmount: settings.minimumOrderAmount ?? DEFAULTS.minimumOrderAmount,
+      deliveryInfoPoints,
     })
   } catch (error) {
     console.error("Error fetching delivery settings:", error)
@@ -59,16 +80,56 @@ export async function PUT(request: NextRequest) {
     const prisma = await getPrismaClient()
     const body = await request.json()
 
-    const baseFee = typeof body.baseFee === "number" ? body.baseFee : parseFloat(body.baseFee)
-    const feePerKg = typeof body.feePerKg === "number" ? body.feePerKg : parseFloat(body.feePerKg)
+    let deliveryInfoPoints: string[] | undefined
+    if (body.deliveryInfoPoints !== undefined) {
+      const raw = body.deliveryInfoPoints
+      if (Array.isArray(raw) && raw.every((x) => typeof x === "string")) {
+        deliveryInfoPoints = raw.map((s) => String(s).trim()).filter(Boolean)
+      } else {
+        return NextResponse.json(
+          { error: "deliveryInfoPoints must be an array of non-empty strings" },
+          { status: 400 }
+        )
+      }
+    }
+
+    let settings = await prisma.deliverySettings.findFirst({
+      orderBy: { updatedAt: "desc" },
+    })
+
+    const existing = settings
+      ? {
+          baseFee: settings.baseFee ?? DEFAULTS.baseFee,
+          feePerKg: settings.feePerKg ?? DEFAULTS.feePerKg,
+          minimumOrderQuantity: settings.minimumOrderQuantity ?? DEFAULTS.minimumOrderQuantity,
+          minimumOrderAmount: settings.minimumOrderAmount ?? DEFAULTS.minimumOrderAmount,
+        }
+      : null
+
+    const baseFee =
+      typeof body.baseFee === "number"
+        ? body.baseFee
+        : body.baseFee !== undefined
+          ? parseFloat(body.baseFee)
+          : existing?.baseFee ?? DEFAULTS.baseFee
+    const feePerKg =
+      typeof body.feePerKg === "number"
+        ? body.feePerKg
+        : body.feePerKg !== undefined
+          ? parseFloat(body.feePerKg)
+          : existing?.feePerKg ?? DEFAULTS.feePerKg
     const minimumOrderQuantity =
       typeof body.minimumOrderQuantity === "number"
         ? body.minimumOrderQuantity
-        : parseInt(String(body.minimumOrderQuantity), 10)
+        : body.minimumOrderQuantity !== undefined
+          ? parseInt(String(body.minimumOrderQuantity), 10)
+          : existing?.minimumOrderQuantity ?? DEFAULTS.minimumOrderQuantity
     const minimumOrderAmount =
       typeof body.minimumOrderAmount === "number"
         ? body.minimumOrderAmount
-        : parseFloat(String(body.minimumOrderAmount ?? 0))
+        : body.minimumOrderAmount !== undefined
+          ? parseFloat(String(body.minimumOrderAmount ?? 0))
+          : existing?.minimumOrderAmount ?? DEFAULTS.minimumOrderAmount
 
     if (Number.isNaN(baseFee) || baseFee < 0) {
       return NextResponse.json({ error: "Invalid baseFee" }, { status: 400 })
@@ -83,28 +144,30 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: "minimumOrderAmount must be 0 or greater" }, { status: 400 })
     }
 
-    let settings = await prisma.deliverySettings.findFirst({
-      orderBy: { updatedAt: "desc" },
-    })
+    const updateData: {
+      baseFee: number
+      feePerKg: number
+      minimumOrderQuantity: number
+      minimumOrderAmount: number
+      deliveryInfoPoints?: string
+    } = {
+      baseFee,
+      feePerKg,
+      minimumOrderQuantity,
+      minimumOrderAmount,
+    }
+    if (deliveryInfoPoints !== undefined) {
+      updateData.deliveryInfoPoints = JSON.stringify(deliveryInfoPoints)
+    }
 
     if (!settings) {
       settings = await prisma.deliverySettings.create({
-        data: {
-          baseFee,
-          feePerKg,
-          minimumOrderQuantity,
-          minimumOrderAmount,
-        },
+        data: updateData,
       })
     } else {
       settings = await prisma.deliverySettings.update({
         where: { id: settings.id },
-        data: {
-          baseFee,
-          feePerKg,
-          minimumOrderQuantity,
-          minimumOrderAmount,
-        },
+        data: updateData,
       })
     }
 
@@ -117,11 +180,24 @@ export async function PUT(request: NextRequest) {
       },
     })
 
+    let responsePoints: string[] = DEFAULT_DELIVERY_INFO_POINTS
+    if (settings.deliveryInfoPoints) {
+      try {
+        const parsed = JSON.parse(settings.deliveryInfoPoints) as unknown
+        if (Array.isArray(parsed) && parsed.every((x) => typeof x === "string")) {
+          responsePoints = parsed.filter(Boolean)
+        }
+      } catch {
+        // use default
+      }
+    }
+
     return NextResponse.json({
       baseFee: settings.baseFee,
       feePerKg: settings.feePerKg,
       minimumOrderQuantity: settings.minimumOrderQuantity,
       minimumOrderAmount: settings.minimumOrderAmount,
+      deliveryInfoPoints: responsePoints,
     })
   } catch (error) {
     console.error("Error updating delivery settings:", error)

@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import toast from 'react-hot-toast'
 import { ProductFormType, Variation } from '../types'
 import { validateProductForm } from "@/lib/helpers/index"
 import { normalizeImageUrls } from '@/lib/image-utils'
@@ -27,6 +28,7 @@ export function useProductForm({ initialData, onSubmit }: UseProductFormProps) {
       price: v.price,
       stock: v.stock,
       quantity: v.quantity,
+      weightKg: v.weightKg != null && !Number.isNaN(Number(v.weightKg)) ? Number(v.weightKg) : null,
       image: v.image,
     })) || [],
   })
@@ -145,9 +147,10 @@ export function useProductForm({ initialData, onSubmit }: UseProductFormProps) {
       ...prev,
       variations: [
         ...prev.variations,
-        { price: 0, stock: 0, quantity: '' }
+        { price: 0, stock: 0, quantity: '', weightKg: null }
       ]
     }))
+    toast.success('Variation added. Fill in quantity, price, and stock.')
   }
 
   const updateVariation = (index: number, field: keyof Variation, value: any) => {
@@ -164,6 +167,7 @@ export function useProductForm({ initialData, onSubmit }: UseProductFormProps) {
       ...prev,
       variations: prev.variations.filter((_, i) => i !== index)
     }))
+    toast.success('Variation removed.')
   }
 
   const handleVariationImageUpload = async (variationIndex: number, e: React.ChangeEvent<HTMLInputElement>) => {

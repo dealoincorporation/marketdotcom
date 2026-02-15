@@ -39,6 +39,18 @@ export default function WalletTab({ walletInfo }: WalletTabProps) {
     return `₦${price.toLocaleString()}`
   }
 
+  /** Format referee reward for share message: numeric values show as ₦500, not "500" */
+  const formatRefereeRewardForShare = (value: string | number | undefined): string => {
+    if (value === undefined || value === null) return "a bonus"
+    const s = String(value).trim()
+    if (!s) return "a bonus"
+    const num = parseFloat(s.replace(/,/g, ""))
+    if (!Number.isNaN(num) && /^[\d,.]+$/.test(s)) {
+      return `₦${num.toLocaleString()}`
+    }
+    return s
+  }
+
   const [showFundModal, setShowFundModal] = useState(false)
   const [fundingAmount, setFundingAmount] = useState("")
   const [isFunding, setIsFunding] = useState(false)
@@ -371,7 +383,7 @@ export default function WalletTab({ walletInfo }: WalletTabProps) {
       return
     }
 
-    const refereeRewardText = referralSettings.refereeReward || "a bonus"
+    const refereeRewardText = formatRefereeRewardForShare(referralSettings.refereeReward)
     const shareText = `Join me on Marketdotcom! Use my referral code ${code} to get ${refereeRewardText} on your first purchase. Sign up now and start shopping!`
     const shareUrl = typeof window !== 'undefined' ? window.location.origin : ''
 
@@ -705,11 +717,11 @@ export default function WalletTab({ walletInfo }: WalletTabProps) {
                   <div className="flex items-center justify-center gap-2 mb-2">
                     <Gift className="h-6 w-6" />
                     <h3 className="text-xl md:text-2xl font-bold">
-                      Refer a friend and earn {formatPrice(referralSettings.referrerReward)}!
+                      Refer a friend and earn {formatRefereeRewardForShare(referralSettings.referrerReward)}!
                     </h3>
                   </div>
                   <p className="text-center text-sm md:text-base text-orange-100">
-                    Your friends get {formatPrice(referralSettings.refereeReward)} bonus on their first purchase
+                    Your friends get {formatRefereeRewardForShare(referralSettings.refereeReward)} bonus on their first purchase
                   </p>
                 </div>
               )}
@@ -756,7 +768,7 @@ export default function WalletTab({ walletInfo }: WalletTabProps) {
                               <p>
                                 <strong className="text-gray-900">You earn rewards</strong> when someone signs up using your referral code
                                 {referralSettings.referrerReward && (
-                                  <span className="text-blue-600 font-semibold"> ({referralSettings.referrerReward})</span>
+                                  <span className="text-blue-600 font-semibold"> ({formatRefereeRewardForShare(referralSettings.referrerReward)})</span>
                                 )}
                               </p>
                             </div>
@@ -765,7 +777,7 @@ export default function WalletTab({ walletInfo }: WalletTabProps) {
                               <p>
                                 <strong className="text-gray-900">They receive a bonus</strong> on their first purchase
                                 {referralSettings.refereeReward && (
-                                  <span className="text-green-600 font-semibold"> ({referralSettings.refereeReward})</span>
+                                  <span className="text-green-600 font-semibold"> ({formatRefereeRewardForShare(referralSettings.refereeReward)})</span>
                                 )}
                               </p>
                             </div>

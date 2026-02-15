@@ -2,6 +2,7 @@ import { NextResponse } from "next/server"
 import { getPrismaClient } from "@/lib/prisma"
 import { PaystackService } from "@/lib/paystack"
 import { calculatePointsFromAmount } from "@/lib/points"
+import { createOrderFromPayload } from "@/lib/orderCreate"
 import { sendAdminWalletDepositNotification } from "@/lib/email"
 import crypto from "crypto"
 
@@ -93,10 +94,46 @@ async function handleSuccessfulPayment(data: any, prisma: any) {
     }
 
     // Find the order by transaction reference
-    const order = await prisma.order.findFirst({
+    let order = await prisma.order.findFirst({
       where: { transactionId: reference },
       include: { user: true }
     })
+
+    // Create order from PendingCheckout when payment succeeded (order-only-after-payment flow)
+    if (!order) {
+      const pending = await prisma.pendingCheckout.findUnique({
+        where: { reference }
+      })
+      if (pending) {
+        const orderData = pending.orderData as Record<string, unknown>
+        const { orderId: newOrderId } = await createOrderFromPayload(prisma, pending.userId, orderData as any, {
+          transactionId: reference,
+          skipEmails: false,
+          setConfirmed: true
+        })
+        await prisma.payment.create({
+          data: {
+            orderId: newOrderId,
+            userId: pending.userId,
+            amount: amount / 100,
+            currency: "NGN",
+            method: "PAYSTACK",
+            status: "COMPLETED",
+            transactionId: reference,
+            gatewayResponse: data
+          }
+        })
+        await prisma.pendingCheckout.delete({ where: { reference } }).catch(() => {})
+        const createdOrder = await prisma.order.findFirst({
+          where: { transactionId: reference },
+          include: { user: true }
+        })
+        if (createdOrder) {
+          order = createdOrder
+          console.log('Order created from PendingCheckout (webhook):', order.id)
+        }
+      }
+    }
 
     if (!order) {
       console.error('Order not found for reference:', reference)

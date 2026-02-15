@@ -120,6 +120,7 @@ model Variation {
   stock     Int      @default(0)
   unit      String?  // e.g., "cup", "kg", "pcs", "pack"
   quantity  Float?   // e.g., 1, 2, 0.5, 5 (for measurements)
+  weightKg  Float?   // Weight in kg for this variation (delivery fee calculation); overrides product weightKg when set
   image     String?  // Image URL for this variation
   productId String
   product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
@@ -369,6 +370,16 @@ model Payment {
   updatedAt DateTime @updatedAt
 }
 
+// Store checkout payload until Paystack payment succeeds; order is created only after payment.
+model PendingCheckout {
+  id         String   @id @default(cuid()) @map("_id")
+  reference  String   @unique
+  userId     String
+  amount     Float
+  orderData  Json     // Same shape as body for POST /api/orders/create
+  createdAt  DateTime @default(now())
+}
+
 model Subscription {
   id        String   @id @default(cuid()) @map("_id")
   email     String   @unique
@@ -402,6 +413,7 @@ model DeliverySettings {
   feePerKg              Float    @default(50)   // Fee per kg of order weight (₦)
   minimumOrderQuantity  Int      @default(1)    // MOQ: minimum items to checkout
   minimumOrderAmount    Float    @default(0)    // MOQ: minimum order subtotal (₦); 0 = no minimum
+  deliveryInfoPoints    String?  // JSON array of strings: bullet points shown in checkout "Delivery Information"
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

@@ -19,7 +19,10 @@ export async function GET(request: NextRequest) {
     }
 
     const addresses = await prisma.address.findMany({
-      where: { userId: user.userId },
+      where: {
+        userId: user.userId,
+        state: { equals: 'Lagos', mode: 'insensitive' }
+      },
       orderBy: [
         { isDefault: 'desc' },
         { createdAt: 'desc' }
@@ -101,6 +104,13 @@ export async function POST(request: NextRequest) {
       coordinates
     } = body
 
+    if (!state || String(state).trim().toLowerCase() !== 'lagos') {
+      return NextResponse.json(
+        { error: 'Delivery is only available in Lagos. Please use a Lagos address.' },
+        { status: 400 }
+      )
+    }
+
     // If this is set as default, unset other defaults
     if (isDefault) {
       await prisma.address.updateMany({
@@ -116,7 +126,7 @@ export async function POST(request: NextRequest) {
         name,
         address,
         city,
-        state,
+        state: 'Lagos',
         postalCode,
         phone,
         isDefault: isDefault || false,

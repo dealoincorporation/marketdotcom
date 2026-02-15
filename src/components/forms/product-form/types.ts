@@ -17,6 +17,7 @@ export interface ProductFormType {
     stock?: number // Optional - removed from form but kept for backward compatibility
     unit?: string
     quantity?: string | number // Can be string (e.g., "2 kg") or number for backward compatibility
+    weightKg?: number | null // Weight in kg for this variation (delivery fee); optional, not shown to customers
     image?: string
   }>
 }
@@ -35,5 +36,6 @@ export interface Variation {
   price: number
   stock?: number
   quantity?: string | number // String format: "2 kg", "1 cup", etc. or just a number
+  weightKg?: number | null // Weight in kg for delivery fee calculation (optional)
   image?: string
 }

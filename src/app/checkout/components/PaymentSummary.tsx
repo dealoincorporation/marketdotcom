@@ -55,12 +55,6 @@ export function PaymentSummary({
               <span className="text-gray-700 font-medium text-sm sm:text-base">Subtotal</span>
               <span className="font-bold text-gray-900 text-sm sm:text-base">₦{subtotal.toLocaleString()}</span>
             </div>
-            <div className="flex flex-col gap-2 sm:gap-0 sm:flex-row sm:justify-between sm:items-center py-3 px-3 sm:px-4 bg-gray-50 rounded-lg">
-              <span className="text-gray-700 font-medium text-sm sm:text-base">Delivery Fee</span>
-              <span className={`font-bold text-sm sm:text-base ${deliveryFee === 0 ? 'text-green-600' : 'text-gray-900'}`}>
-                {deliveryFee === 0 ? 'Free' : `₦${deliveryFee.toLocaleString()}`}
-              </span>
-            </div>
             {deliveryFee === 0 && (
               <div className="bg-green-50 border border-green-200 rounded-lg p-3 mb-3">
                 <p className="text-xs sm:text-sm text-green-800 font-medium">
