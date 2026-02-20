@@ -569,7 +569,8 @@ export function useCheckout() {
     const loadData = async () => {
       await Promise.all([
         fetchAddresses(),
-        fetchWalletBalance()
+        fetchWalletBalance(),
+        fetchDeliverySettings()
       ])
       setAddressesLoaded(true)
 
