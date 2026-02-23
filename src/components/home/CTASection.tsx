@@ -32,7 +32,7 @@ export function CTASection() {
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
-              <Link href="/marketplace">
+              <Link href="/auth/login?redirect=/dashboard?tab=marketplace">
                 <Button size="lg" className="bg-white text-orange-600 hover:bg-orange-50 text-lg px-10 py-4 font-semibold shadow-xl hover:shadow-2xl transition-all duration-300">
                   <ShoppingBag className="mr-3 h-5 w-5" />
                   Start Your Order

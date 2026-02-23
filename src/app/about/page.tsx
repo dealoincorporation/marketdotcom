@@ -168,7 +168,7 @@ export default function AboutPage() {
                 Through our thrift savings plans, personal shopping services, and customized food packages, customers can plan ahead, save gradually, and access fresh food without disruption.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-                <Link href="/marketplace">
+                <Link href="/auth/login?redirect=/dashboard?tab=marketplace">
                   <Button size="lg" className="bg-orange-600 hover:bg-orange-700 text-white px-8 py-6 text-lg">
                     <ShoppingBag className="mr-2 h-5 w-5" />
                     Start Shopping

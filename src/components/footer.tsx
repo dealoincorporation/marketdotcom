@@ -240,7 +240,7 @@ export function Footer() {
                 </h3>
                 <ul className="space-y-3">
                   {[
-                    { name: "Marketplace", href: "/marketplace" },
+                    { name: "Marketplace", href: "/auth/login?redirect=/dashboard?tab=marketplace" },
                     { name: "About Us", href: "/about" },
                     { name: "Services", href: "#services" },
                     { name: "Testimonials", href: "#testimonials" },

@@ -4,11 +4,10 @@ import { verifyToken } from "@/lib/auth"
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl
 
-  // Allow access to public routes
+  // Allow access to public routes (unauthenticated)
   if (
     pathname.startsWith("/api/auth") ||
     pathname === "/" ||
-    pathname.startsWith("/marketplace") ||
     pathname.startsWith("/auth") ||
     pathname.startsWith("/terms") ||
     pathname.startsWith("/privacy") ||
@@ -51,6 +50,7 @@ export async function middleware(req: NextRequest) {
 export const config = {
   matcher: [
     "/dashboard/:path*",
+    "/marketplace/:path*",
     "/auth/:path*",
     "/api/:path*",
   ],

@@ -79,7 +79,7 @@ export function MarketplacePreview(props: { limit?: number }) {
             <h2 className="text-3xl sm:text-4xl font-bold text-gray-900">Marketplace Preview</h2>
             <p className="text-gray-600 mt-2">Popular items available right now.</p>
           </div>
-          <Link href="/marketplace">
+          <Link href="/auth/login?redirect=/dashboard?tab=marketplace">
             <Button className="bg-orange-600 hover:bg-orange-700">View full marketplace</Button>
           </Link>
         </div>
@@ -95,11 +95,11 @@ export function MarketplacePreview(props: { limit?: number }) {
             <CardContent className="p-6 flex items-center justify-between gap-4">
               <div>
                 <p className="font-semibold text-gray-900">No products to preview yet</p>
-                <p className="text-sm text-gray-600 mt-1">Go to marketplace to refresh or check again later.</p>
+                <p className="text-sm text-gray-600 mt-1">Sign in to view the full marketplace and check again later.</p>
               </div>
-              <Link href="/marketplace">
+              <Link href="/auth/login?redirect=/dashboard?tab=marketplace">
                 <Button variant="outline" className="border-orange-200">
-                  Open marketplace
+                  Sign in to view marketplace
                 </Button>
               </Link>
             </CardContent>
@@ -125,7 +125,7 @@ export function MarketplacePreview(props: { limit?: number }) {
                   transition={{ duration: 0.35, delay: idx * 0.03 }}
                   viewport={{ once: true }}
                 >
-                  <Link href="/marketplace" className="block">
+                  <Link href="/auth/login?redirect=/dashboard?tab=marketplace" className="block">
                     <Card className="h-full hover:shadow-lg transition-shadow border-orange-100 bg-white/90">
                       <div className="relative h-24 sm:h-28 md:h-32 bg-gray-100 rounded-t-lg overflow-hidden">
                         <img 

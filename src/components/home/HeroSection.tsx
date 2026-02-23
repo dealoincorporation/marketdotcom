@@ -74,7 +74,7 @@ export function HeroSection() {
               transition={{ duration: 0.8, delay: 0.7 }}
               className="flex flex-col sm:flex-row gap-4 lg:justify-start justify-center mb-6"
             >
-              <Link href="/marketplace">
+              <Link href="/auth/login?redirect=/dashboard?tab=marketplace">
                 <Button size="lg" className="bg-orange-600 hover:bg-orange-700 text-white px-8 py-4 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300 rounded-full">
                   <ShoppingBag className="mr-2 h-5 w-5" />
                   Start Shopping

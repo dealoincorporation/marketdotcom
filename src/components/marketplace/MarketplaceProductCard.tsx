@@ -52,7 +52,7 @@ export function MarketplaceProductCard(props: MarketplaceProductCardProps) {
 
   const handleAddToCart = async (quantity: number) => {
     if (redirectToAuthIfGuest && !user) {
-      router.push("/auth/login?redirect=" + encodeURIComponent("/marketplace"))
+      router.push("/auth/login?redirect=" + encodeURIComponent("/dashboard?tab=marketplace"))
       return
     }
     const variationToUse = selectedVariation || options[0]
@@ -134,7 +134,7 @@ export function MarketplaceProductCard(props: MarketplaceProductCardProps) {
               onVariationSelect={handleVariationSelect}
               onAddToCart={
                 redirectToAuthIfGuest && !user
-                  ? () => router.push("/auth/login?redirect=" + encodeURIComponent("/marketplace"))
+                  ? () => router.push("/auth/login?redirect=" + encodeURIComponent("/dashboard?tab=marketplace"))
                   : handleDirectAddToCart
               }
             />

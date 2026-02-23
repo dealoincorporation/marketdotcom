@@ -47,7 +47,7 @@ export function ModernNavigation() {
   }, [profileDropdownOpen])
 
   const navItems = [
-    { name: "Marketplace", href: "/marketplace", external: true },
+    { name: "Marketplace", href: "/auth/login?redirect=/dashboard?tab=marketplace", external: true },
     { name: "About", href: "/about", external: true },
     { name: "Services", href: "/services", external: true },
     { name: "Testimonials", href: "#testimonials", external: false },

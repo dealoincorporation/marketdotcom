@@ -168,7 +168,7 @@ export function CheckoutConfirmation({
             📊 View Orders
           </Button>
           <Button
-            onClick={() => router.push('/marketplace')}
+            onClick={() => router.push('/auth/login?redirect=' + encodeURIComponent('/dashboard?tab=marketplace'))}
             variant="outline"
             className="flex-1 h-12 border-2 hover:bg-gray-50 font-semibold"
           >

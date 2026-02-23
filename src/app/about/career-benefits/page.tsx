@@ -170,7 +170,7 @@ export default function CareerBenefitsPage() {
               At Marketdotcom, we believe that our success is built on the success of our team. We're committed to providing comprehensive benefits and opportunities that help you thrive both personally and professionally.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link href="/marketplace">
+              <Link href="/auth/login?redirect=/dashboard?tab=marketplace">
                 <Button size="lg" className="bg-orange-600 hover:bg-orange-700 text-white px-8 py-6 text-lg">
                   View Open Positions
                 </Button>

@@ -49,7 +49,7 @@ export function AdvertSection() {
                     <ShoppingBag className="ml-2 h-5 w-5" />
                   </Button>
                 </Link>
-                <Link href="/marketplace">
+                <Link href="/auth/login?redirect=/dashboard?tab=marketplace">
                   <Button variant="outline" className="border-2 border-orange-300 hover:border-orange-500 px-8 py-3 font-semibold hover:bg-orange-50 transition-all duration-300">
                     Explore Marketplace
                   </Button>

@@ -65,7 +65,7 @@ export function TestimonialsSection() {
             <p className="text-gray-700 font-medium mb-6">
               Building a Better Food Future Together
             </p>
-            <Link href="/marketplace">
+            <Link href="/auth/login?redirect=/dashboard?tab=marketplace">
               <Button className="bg-orange-600 hover:bg-orange-700 text-white px-8 py-3">
                 Join Our Community
               </Button>

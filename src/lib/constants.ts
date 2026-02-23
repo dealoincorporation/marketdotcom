@@ -47,7 +47,8 @@ export const ROUTES = {
   forgotPassword: '/auth/forgot-password',
   resetPassword: '/auth/reset-password',
   dashboard: '/dashboard',
-  marketplace: '/marketplace',
+  // Send guests to login, then into dashboard marketplace tab
+  marketplace: '/auth/login?redirect=/dashboard?tab=marketplace',
   cart: '/cart',
   checkout: '/checkout',
   orders: '/orders',

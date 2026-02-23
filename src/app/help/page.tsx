@@ -404,7 +404,7 @@ export default function HelpPage() {
               Browse our marketplace and discover quality products at great prices
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link href="/marketplace">
+              <Link href="/auth/login?redirect=/dashboard?tab=marketplace">
                 <Button size="lg" className="bg-white text-orange-600 hover:bg-orange-50 px-8 py-6 text-lg font-semibold">
                   <ShoppingCart className="mr-2 h-5 w-5" />
                   Visit Marketplace
