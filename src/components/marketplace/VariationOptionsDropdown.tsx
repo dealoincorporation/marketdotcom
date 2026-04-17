@@ -96,20 +96,22 @@ export function VariationOptionsDropdown({
                       disabled={stock <= 0}
                       className="w-full text-left rounded-lg hover:bg-orange-50/80 border border-transparent hover:border-orange-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-400 focus-visible:ring-offset-1 overflow-hidden"
                     >
-                      <div className="flex flex-col gap-2 p-2 min-w-0 w-full">
-                        <span className="shrink-0 mx-auto h-14 w-14 max-w-[3.5rem] rounded-md overflow-hidden bg-gray-100 border border-gray-200">
+                      <div className="flex flex-col lg:flex-row lg:items-center gap-2 lg:gap-3 p-2 min-w-0 w-full">
+                        <span className="shrink-0 mx-auto lg:mx-0 h-14 w-14 max-w-[3.5rem] rounded-md overflow-hidden bg-gray-100 border border-gray-200">
                           <img src={normalizedImage} alt="" className="h-full w-full object-cover object-center" />
                         </span>
-                        <div className="min-w-0 w-full flex flex-col gap-1 text-left">
+                        <div className="min-w-0 w-full lg:flex-1 flex flex-col gap-1 text-left">
                           <span className="block font-semibold text-gray-900 text-xs leading-snug break-words">
                             {option.label}
                           </span>
-                          <span className="block text-[10px] text-gray-500 leading-tight">
-                            Stock: {stock}
-                          </span>
-                          <span className="text-xs font-bold text-orange-600 tabular-nums">
-                            {formatPrice(option.price)}
-                          </span>
+                          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-0.5 lg:gap-2">
+                            <span className="block text-[10px] text-gray-500 leading-tight">
+                              Stock: {stock}
+                            </span>
+                            <span className="text-xs font-bold text-orange-600 tabular-nums">
+                              {formatPrice(option.price)}
+                            </span>
+                          </div>
                         </div>
                       </div>
                     </button>
