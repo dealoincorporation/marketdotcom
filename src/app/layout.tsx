@@ -73,36 +73,38 @@ export default function RootLayout({
           {children}
           <WhatsAppFloat />
           <Toaster
-            position="top-right"
+            position="bottom-right"
             toastOptions={{
               duration: 5000,
               style: {
-                background: 'rgba(255, 255, 255, 0.95)',
-                backdropFilter: 'blur(10px)',
-                border: '1px solid rgba(255, 255, 255, 0.2)',
-                color: '#374151',
-                boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+                background: 'rgba(255, 255, 255, 0.8)',
+                backdropFilter: 'blur(20px) saturate(180%)',
+                border: '1px solid rgba(255, 255, 255, 0.5)',
+                color: '#111827',
+                boxShadow: '0 32px 64px -16px rgba(0, 0, 0, 0.2)',
+                padding: '16px 24px',
+                borderRadius: '1.5rem',
+                fontSize: '11px',
+                fontWeight: '900',
+                textTransform: 'uppercase',
+                letterSpacing: '0.1em',
               },
               success: {
-                style: {
-                  background: 'rgba(34, 197, 94, 0.95)',
-                  color: 'white',
-                  border: '1px solid rgba(34, 197, 94, 0.3)',
-                },
                 iconTheme: {
-                  primary: 'white',
-                  secondary: '#22c55e',
+                  primary: '#ea580c',
+                  secondary: 'white',
+                },
+                style: {
+                  border: '1px solid rgba(234, 88, 12, 0.3)',
                 },
               },
               error: {
-                style: {
-                  background: 'rgba(239, 68, 68, 0.95)',
-                  color: 'white',
-                  border: '1px solid rgba(239, 68, 68, 0.3)',
-                },
                 iconTheme: {
-                  primary: 'white',
-                  secondary: '#ef4444',
+                  primary: '#ef4444',
+                  secondary: 'white',
+                },
+                style: {
+                  border: '1px solid rgba(239, 68, 68, 0.3)',
                 },
               },
             }}

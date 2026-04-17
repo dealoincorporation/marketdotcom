@@ -58,7 +58,7 @@ export function MarketplaceProductCard(props: MarketplaceProductCardProps) {
     const variationToUse = selectedVariation || options[0]
     if (!variationToUse) return
 
-    const variation = variationToUse.kind === "variation" 
+    const variation = variationToUse.kind === "variation"
       ? product.variations.find((v) => v.id === variationToUse.id)
       : undefined
 
@@ -73,14 +73,14 @@ export function MarketplaceProductCard(props: MarketplaceProductCardProps) {
       unit: (variation?.unit || product.unit) as string,
       variation: variation
         ? {
-            id: variation.id,
-            name: getVariationDisplayLabel(variation),
-            type: "Quantity",
-            price: variation.price,
-            stock: variation.stock,
-            quantity: variation.quantity,
-            unit: variation.unit,
-          }
+          id: variation.id,
+          name: getVariationDisplayLabel(variation),
+          type: "Quantity",
+          price: variation.price,
+          stock: variation.stock,
+          quantity: variation.quantity,
+          unit: variation.unit,
+        }
         : undefined,
       maxQuantity: variation ? variation.stock : product.stock,
       categoryId: product.categoryId,
@@ -96,14 +96,15 @@ export function MarketplaceProductCard(props: MarketplaceProductCardProps) {
 
   return (
     <>
-      <motion.div 
-        initial={{ opacity: 0, scale: 0.98 }} 
-        animate={{ opacity: 1, scale: 1 }} 
-        transition={{ duration: 0.2 }}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        whileHover={{ y: -8 }}
+        transition={{ duration: 0.4, ease: [0.23, 1, 0.32, 1] }}
         className="h-full"
       >
-        <Card 
-          className="relative h-full flex flex-col min-h-[340px] sm:min-h-[380px] bg-white border border-gray-200 rounded-lg overflow-visible hover:shadow-lg active:shadow-md transition-all duration-200 touch-manipulation select-none cursor-pointer"
+        <Card
+          className="relative h-full flex flex-col min-h-[340px] sm:min-h-[380px] xxs:min-h-[300px] glass-effect border border-white/60 rounded-[2rem] xxs:rounded-3xl overflow-hidden premium-shadow smooth-transition group select-none cursor-pointer"
           onClick={handleOpenModal}
         >
           {/* Image Section */}
@@ -115,7 +116,7 @@ export function MarketplaceProductCard(props: MarketplaceProductCardProps) {
           />
 
           {/* Content Section */}
-          <CardContent className="p-3 sm:p-4 flex-1 flex flex-col overflow-visible gap-2.5 sm:gap-3 min-h-0">
+          <CardContent className="p-6 sm:p-8 xxs:p-4 flex-1 flex flex-col overflow-visible gap-4 xxs:gap-3 min-h-0 bg-white/20 backdrop-blur-sm">
             <ProductInfoSection
               product={product}
               options={options}
@@ -123,21 +124,23 @@ export function MarketplaceProductCard(props: MarketplaceProductCardProps) {
             />
 
             {/* Add to Cart Button with Options */}
-            <ProductActionsSection
-              product={product}
-              options={options}
-              selectedVariation={selectedVariation}
-              showOptions={showOptions}
-              isActuallyInStock={isActuallyInStock}
-              hasVariationChoices={hasVariationChoices}
-              onShowOptionsChange={setShowOptions}
-              onVariationSelect={handleVariationSelect}
-              onAddToCart={
-                redirectToAuthIfGuest && !user
-                  ? () => router.push("/auth/login?redirect=" + encodeURIComponent("/dashboard?tab=marketplace"))
-                  : handleDirectAddToCart
-              }
-            />
+            <div className="mt-auto">
+              <ProductActionsSection
+                product={product}
+                options={options}
+                selectedVariation={selectedVariation}
+                showOptions={showOptions}
+                isActuallyInStock={isActuallyInStock}
+                hasVariationChoices={hasVariationChoices}
+                onShowOptionsChange={setShowOptions}
+                onVariationSelect={handleVariationSelect}
+                onAddToCart={
+                  redirectToAuthIfGuest && !user
+                    ? () => router.push("/auth/login?redirect=" + encodeURIComponent("/marketplace"))
+                    : handleDirectAddToCart
+                }
+              />
+            </div>
           </CardContent>
         </Card>
       </motion.div>
@@ -157,7 +160,7 @@ export function MarketplaceProductCard(props: MarketplaceProductCardProps) {
             const variation = opt.kind === "variation"
               ? product.variations.find((v) => v.id === opt.id)
               : undefined
-            
+
             return {
               id: opt.id,
               label: opt.label,

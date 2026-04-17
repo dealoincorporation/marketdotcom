@@ -1,30 +1,23 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { motion, AnimatePresence } from "framer-motion"
 import {
     History,
     Search,
-    Filter,
     ArrowUpRight,
     ArrowDownLeft,
     Download,
-    Calendar,
     CreditCard,
     TrendingUp,
     ChevronLeft,
-    ChevronRight
+    ChevronRight,
+    Filter,
+    Activity,
+    Calendar
 } from "lucide-react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select"
 import toast from "react-hot-toast"
 
 interface Transaction {
@@ -115,210 +108,197 @@ export default function TransactionsTab() {
             t.reference || "N/A"
         ])
 
-        const csvContent = [
-            headers.join(","),
-            ...rows.map(row => row.join(","))
-        ].join("\n")
-
-        const blob = new Blob([csvContent], { type: 'text/csv' })
-        const url = window.URL.createObjectURL(blob)
-        const a = document.createElement('a')
-        a.href = url
-        a.download = `transactions-${new Date().toISOString().split('T')[0]}.csv`
-        document.body.appendChild(a)
-        a.click()
-        document.body.removeChild(a)
-        window.URL.revokeObjectURL(url)
+        const csvContent = "data:text/csv;charset=utf-8,"
+            + headers.join(",") + "\n"
+            + rows.map(e => e.join(",")).join("\n")
+        const encodedUri = encodeURI(csvContent)
+        const link = document.createElement("a")
+        link.setAttribute("href", encodedUri)
+        link.setAttribute("download", `transactions-${new Date().toISOString().split('T')[0]}.csv`)
+        document.body.appendChild(link)
+        link.click()
         toast.success("Transactions exported successfully")
     }
 
     return (
-        <div className="space-y-6">
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div className="space-y-10 max-w-7xl mx-auto pb-20">
+            {/* Header Section */}
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
                 <div>
-                    <h1 className="text-2xl font-bold text-gray-900">Transaction History</h1>
-                    <p className="text-gray-600 mt-1">View and manage all your wallet activities</p>
-                </div>
-                <Button
-                    onClick={handleExport}
-                    className="bg-orange-600 hover:bg-orange-700 text-white flex items-center gap-2"
-                    disabled={filteredTransactions.length === 0}
-                >
-                    <Download className="h-4 w-4" />
-                    Export CSV
-                </Button>
-            </div>
-
-            <Card className="shadow-sm border-gray-200">
-                <CardHeader className="border-b border-gray-100 bg-gray-50/50">
-                    <div className="flex flex-col md:flex-row gap-4">
-                        <div className="relative flex-1">
-                            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                            <Input
-                                placeholder="Search by description or reference..."
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                                className="pl-10"
-                            />
+                    <div className="flex items-center gap-4 mb-2">
+                        <div className="w-12 h-12 bg-gray-900 rounded-2xl flex items-center justify-center shadow-lg">
+                            <Activity className="h-6 w-6 text-white" />
                         </div>
-                        <div className="w-full md:w-48">
-                            <Select value={filterType} onValueChange={setFilterType}>
-                                <SelectTrigger>
-                                    <SelectValue placeholder="All types" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="all">All Types</SelectItem>
-                                    <SelectItem value="credit">Credit</SelectItem>
-                                    <SelectItem value="debit">Debit</SelectItem>
-                                </SelectContent>
-                            </Select>
+                        <div>
+                            <h1 className="text-3xl font-black text-gray-900 tracking-tight uppercase">Transactions</h1>
+                            <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Your complete wallet transaction history</p>
                         </div>
                     </div>
-                </CardHeader>
-                <CardContent className="p-0">
-                    {loading ? (
-                        <div className="flex flex-col items-center justify-center py-20 gap-4">
-                            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600"></div>
-                            <p className="text-gray-500 font-medium">Fetching transactions...</p>
+                </div>
+
+                <button
+                    onClick={handleExport}
+                    disabled={filteredTransactions.length === 0}
+                    className="h-12 px-6 bg-gray-900 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-gray-800 transition-all flex items-center justify-center gap-2 group shadow-xl disabled:opacity-50"
+                >
+                    <Download className="h-4 w-4 group-hover:-translate-y-0.5 transition-transform" />
+                    Export CSV
+                </button>
+            </div>
+
+            {/* Filter & Search Bar */}
+            <div className="glass-effect border border-white/60 rounded-[2.5rem] p-4 flex flex-col md:flex-row items-center gap-4 shadow-sm">
+                <div className="relative flex-1 w-full">
+                    <Search className="absolute left-5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                    <Input
+                        placeholder="Search description or reference..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="pl-12 h-14 bg-white/50 border-none rounded-2xl text-xs font-bold placeholder:text-gray-300 focus:ring-0 shadow-inner"
+                    />
+                </div>
+                <div className="flex items-center gap-2 w-full md:w-auto overflow-x-auto pb-2 md:pb-0 scrollbar-hide">
+                    {['all', 'credit', 'debit'].map((type) => (
+                        <button
+                            key={type}
+                            onClick={() => setFilterType(type)}
+                            className={`h-14 px-6 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${filterType === type
+                                    ? 'bg-gray-900 text-white shadow-lg'
+                                    : 'bg-white/40 text-gray-400 hover:text-gray-900 border border-white/60'
+                                }`}
+                        >
+                            {type}
+                        </button>
+                    ))}
+                </div>
+            </div>
+
+            {/* Transactions List */}
+            <div className="space-y-4">
+                {loading ? (
+                    <div className="glass-effect border border-white/60 rounded-[3rem] p-24 flex flex-col items-center justify-center">
+                        <div className="w-16 h-16 border-4 border-gray-900/10 border-t-gray-900 rounded-full animate-spin mb-4" />
+                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Loading transactions...</p>
+                    </div>
+                ) : filteredTransactions.length === 0 ? (
+                    <div className="glass-effect border border-white/60 rounded-[3rem] p-24 text-center">
+                        <div className="w-20 h-20 bg-gray-50 rounded-[2rem] flex items-center justify-center mx-auto mb-6">
+                            <History className="h-10 w-10 text-gray-200" />
                         </div>
-                    ) : filteredTransactions.length === 0 ? (
-                        <div className="text-center py-20 px-4">
-                            <div className="bg-gray-100 h-16 w-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                                <History className="h-8 w-8 text-gray-400" />
-                            </div>
-                            <h3 className="text-lg font-semibold text-gray-900 mb-2">No transactions found</h3>
-                            <p className="text-gray-500 max-w-sm mx-auto">
-                                {searchQuery || filterType !== "all"
-                                    ? "We couldn't find any transactions matching your filters."
-                                    : "Your transaction history will appear here once you make purchases or receive payments."}
-                            </p>
-                            {(searchQuery || filterType !== "all") && (
-                                <Button
-                                    variant="outline"
-                                    className="mt-4"
-                                    onClick={() => { setSearchQuery(""); setFilterType("all"); }}
+                        <h3 className="text-xl font-black text-gray-900 uppercase tracking-tight mb-2">No Transactions</h3>
+                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest max-w-xs mx-auto">No transactions found for this filter.</p>
+                    </div>
+                ) : (
+                    <div className="grid grid-cols-1 gap-4">
+                        <AnimatePresence mode="popLayout">
+                            {currentItems.map((transaction, idx) => (
+                                <motion.div
+                                    key={transaction.id}
+                                    initial={{ opacity: 0, x: -20 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    exit={{ opacity: 0, scale: 0.95 }}
+                                    transition={{ delay: idx * 0.05 }}
                                 >
-                                    Clear Filters
-                                </Button>
-                            )}
-                        </div>
-                    ) : (
-                        <>
-                            <div className="overflow-x-auto">
-                                <table className="w-full">
-                                    <thead className="bg-gray-50 text-gray-600 text-sm font-medium border-b border-gray-100">
-                                        <tr>
-                                            <th className="text-left py-4 px-6">Transaction</th>
-                                            <th className="text-left py-4 px-6 whitespace-nowrap">Date</th>
-                                            <th className="text-left py-4 px-6">Amount</th>
-                                            <th className="text-left py-4 px-6">Status</th>
-                                            <th className="text-right py-4 px-6">Reference</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-gray-100">
-                                        {currentItems.map((transaction) => (
-                                            <tr key={transaction.id} className="hover:bg-gray-50 transition-colors">
-                                                <td className="py-4 px-6">
-                                                    <div className="flex items-center gap-3">
-                                                        <div className={`p-2.5 rounded-full ${transaction.type === 'credit'
-                                                                ? 'bg-green-100 text-green-600'
-                                                                : 'bg-red-100 text-red-600'
+                                    <div className="group relative overflow-hidden glass-effect border border-white/60 rounded-[2rem] hover:bg-white/60 transition-all duration-300 p-6 sm:p-8 premium-shadow-sm hover:premium-shadow">
+                                        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 relative z-10">
+                                            <div className="flex items-center gap-6">
+                                                <div className={`w-16 h-16 rounded-2xl flex items-center justify-center border shadow-inner transition-transform group-hover:scale-110 duration-500 ${transaction.type === 'credit'
+                                                        ? 'bg-green-500/10 text-green-600 border-green-500/20'
+                                                        : 'bg-red-500/10 text-red-600 border-red-500/20'
+                                                    }`}>
+                                                    {transaction.type === 'credit' ? (
+                                                        <TrendingUp className="h-7 w-7" />
+                                                    ) : (
+                                                        <CreditCard className="h-7 w-7" />
+                                                    )}
+                                                </div>
+                                                <div className="min-w-0">
+                                                    <div className="flex items-center gap-3 mb-1">
+                                                        <span className={`text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-md border ${transaction.type === 'credit'
+                                                                ? 'bg-green-500/10 text-green-600 border-green-500/20'
+                                                                : 'bg-red-500/10 text-red-600 border-red-500/20'
                                                             }`}>
-                                                            {transaction.type === 'credit' ? (
-                                                                <TrendingUp className="h-5 w-5" />
-                                                            ) : (
-                                                                <CreditCard className="h-5 w-5" />
-                                                            )}
-                                                        </div>
-                                                        <div className="min-w-0">
-                                                            <p className="font-semibold text-gray-900 truncate max-w-[200px] md:max-w-md">
-                                                                {transaction.description}
-                                                            </p>
-                                                            <Badge variant="outline" className={`text-[10px] uppercase font-bold px-1.5 py-0 mt-1 ${transaction.type === 'credit' ? "text-green-700 border-green-200 bg-green-50" : "text-red-700 border-red-200 bg-red-50"
-                                                                }`}>
-                                                                {transaction.type}
-                                                            </Badge>
-                                                        </div>
+                                                            {transaction.type}
+                                                        </span>
+                                                        <span className="text-[10px] font-bold text-gray-300 uppercase tracking-[0.2em] flex items-center gap-1.5">
+                                                            <Calendar className="h-3 w-3" />
+                                                            {new Date(transaction.date).toLocaleDateString('en-US', { day: 'numeric', month: 'short' })}
+                                                        </span>
                                                     </div>
-                                                </td>
-                                                <td className="py-4 px-6 text-sm text-gray-600 whitespace-nowrap">
-                                                    {new Date(transaction.date).toLocaleDateString(undefined, {
-                                                        year: 'numeric',
-                                                        month: 'short',
-                                                        day: 'numeric'
-                                                    })}
-                                                </td>
-                                                <td className="py-4 px-6">
-                                                    <span className={`font-bold text-lg ${transaction.type === 'credit' ? 'text-green-600' : 'text-red-600'
+                                                    <h4 className="text-base sm:text-lg font-black text-gray-900 tracking-tight truncate max-w-[200px] sm:max-w-md">
+                                                        {transaction.description}
+                                                    </h4>
+                                                    <code className="text-[9px] font-black text-gray-300 uppercase tracking-widest mt-1 block group-hover:text-gray-500 transition-colors">
+                                                        Ref: {transaction.reference || "N/A"}
+                                                    </code>
+                                                </div>
+                                            </div>
+
+                                            <div className="flex items-center justify-between sm:justify-end gap-10 w-full sm:w-auto">
+                                                <div className="flex flex-col items-start sm:items-end">
+                                                    <span className={`text-2xl sm:text-3xl font-black tracking-tighter tabular-nums ${transaction.type === 'credit' ? 'text-green-600' : 'text-gray-900'
                                                         }`}>
                                                         {transaction.type === 'credit' ? '+' : '-'}{formatPrice(transaction.amount)}
                                                     </span>
-                                                </td>
-                                                <td className="py-4 px-6">
-                                                    <Badge className={`px-2 py-0.5 rounded-full text-xs font-semibold ${transaction.status === 'COMPLETED' ? 'bg-green-100 text-green-700 hover:bg-green-100' :
-                                                            transaction.status === 'FAILED' ? 'bg-red-100 text-red-700 hover:bg-red-100' :
-                                                                'bg-amber-100 text-amber-700 hover:bg-amber-100'
-                                                        }`}>
-                                                        {transaction.status === 'COMPLETED' ? 'Completed' :
-                                                            transaction.status === 'FAILED' ? 'Failed' :
-                                                                'Pending'}
-                                                    </Badge>
-                                                </td>
-                                                <td className="py-4 px-6 text-right">
-                                                    <code className="text-xs font-mono text-gray-400 bg-gray-50 px-2 py-1 rounded">
-                                                        {transaction.reference || "N/A"}
-                                                    </code>
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </div>
-
-                            {/* Pagination */}
-                            {totalPages > 1 && (
-                                <div className="flex items-center justify-between px-6 py-4 border-t border-gray-100 bg-gray-50/30">
-                                    <p className="text-sm text-gray-600">
-                                        Showing <span className="font-medium">{(currentPage - 1) * itemsPerPage + 1}</span> to <span className="font-medium">{Math.min(currentPage * itemsPerPage, filteredTransactions.length)}</span> of <span className="font-medium">{filteredTransactions.length}</span> entries
-                                    </p>
-                                    <div className="flex items-center gap-2">
-                                        <Button
-                                            variant="outline"
-                                            size="sm"
-                                            onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                                            disabled={currentPage === 1}
-                                        >
-                                            <ChevronLeft className="h-4 w-4" />
-                                        </Button>
-                                        <div className="flex items-center gap-1 mx-2">
-                                            {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
-                                                <button
-                                                    key={page}
-                                                    onClick={() => setCurrentPage(page)}
-                                                    className={`w-8 h-8 rounded-md text-sm font-medium transition-colors ${currentPage === page
-                                                            ? "bg-orange-600 text-white"
-                                                            : "text-gray-600 hover:bg-gray-100"
-                                                        }`}
-                                                >
-                                                    {page}
-                                                </button>
-                                            ))}
+                                                    <div className="flex items-center gap-2 mt-1">
+                                                        <div className={`w-1.5 h-1.5 rounded-full ${transaction.status === 'COMPLETED' ? 'bg-green-500' :
+                                                                transaction.status === 'FAILED' ? 'bg-red-500' : 'bg-amber-500'
+                                                            }`} />
+                                                        <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest">
+                                                            {transaction.status || 'Pending'}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                                <div className="w-10 h-10 rounded-xl bg-gray-50 flex items-center justify-center border border-gray-100 group-hover:bg-gray-900 group-hover:text-white transition-all duration-500">
+                                                    {transaction.type === 'credit' ? <ArrowDownLeft className="h-5 w-5" /> : <ArrowUpRight className="h-5 w-5" />}
+                                                </div>
+                                            </div>
                                         </div>
-                                        <Button
-                                            variant="outline"
-                                            size="sm"
-                                            onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                                            disabled={currentPage === totalPages}
-                                        >
-                                            <ChevronRight className="h-4 w-4" />
-                                        </Button>
+                                        {/* Decorative Background Icon */}
+                                        <div className="absolute -right-4 -bottom-4 opacity-[0.03] group-hover:opacity-[0.08] transition-opacity duration-700 pointer-events-none">
+                                            {transaction.type === 'credit' ? <TrendingUp className="w-32 h-32" /> : <CreditCard className="w-32 h-32" />}
+                                        </div>
                                     </div>
-                                </div>
-                            )}
-                        </>
-                    )}
-                </CardContent>
-            </Card>
+                                </motion.div>
+                            ))}
+                        </AnimatePresence>
+                    </div>
+                )}
+
+                {/* Pagination */}
+                {totalPages > 1 && (
+                    <div className="flex items-center justify-center gap-4 mt-12">
+                        <button
+                            onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                            disabled={currentPage === 1}
+                            className="w-14 h-14 glass-effect border border-white/60 rounded-2xl flex items-center justify-center text-gray-400 hover:text-gray-900 disabled:opacity-30 transition-all"
+                        >
+                            <ChevronLeft className="h-6 w-6" />
+                        </button>
+                        <div className="flex items-center gap-2">
+                            {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                                <button
+                                    key={page}
+                                    onClick={() => setCurrentPage(page)}
+                                    className={`w-14 h-14 rounded-2xl text-xs font-black transition-all ${currentPage === page
+                                            ? "bg-gray-900 text-white shadow-xl shadow-black/10 scale-110"
+                                            : "glass-effect border border-white/60 text-gray-400 hover:text-gray-900"
+                                        }`}
+                                >
+                                    {page}
+                                </button>
+                            ))}
+                        </div>
+                        <button
+                            onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                            disabled={currentPage === totalPages}
+                            className="w-14 h-14 glass-effect border border-white/60 rounded-2xl flex items-center justify-center text-gray-400 hover:text-gray-900 disabled:opacity-30 transition-all"
+                        >
+                            <ChevronRight className="h-6 w-6" />
+                        </button>
+                    </div>
+                )}
+            </div>
         </div>
     )
 }

@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { motion } from "framer-motion"
 import {
   TrendingUp,
   RefreshCw,
@@ -138,30 +139,31 @@ export default function ManagePointsTab() {
   }
 
   return (
-    <div className="space-y-8">
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900">Points & Conversion</h1>
-        <p className="text-gray-600 mt-1">
-          Control how customers earn points on purchases and how they convert points into wallet balance.
-        </p>
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+      className="space-y-10"
+    >
+      <div className="mb-0">
+        <h1 className="text-3xl sm:text-4xl font-black text-gray-900 mb-2 tracking-tight uppercase tracking-[0.1em]">Loyalty Credits</h1>
+        <p className="text-[11px] font-black text-gray-400 uppercase tracking-[0.3em]">Reward your most dedicated customers and drive repeat patronage</p>
       </div>
 
       {/* Earning rules */}
-      <Card className="border-2 border-amber-200 bg-gradient-to-br from-amber-50/50 to-orange-50/50">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-amber-900">
-            <TrendingUp className="h-5 w-5" />
-            Earning rules
+      <Card className="glass-effect border-white/70 rounded-[2rem] premium-shadow overflow-hidden">
+        <CardHeader className="bg-gradient-to-r from-amber-500/5 to-orange-500/5 border-b border-white/50 p-8">
+          <CardTitle className="flex items-center gap-3 text-gray-900 text-xl font-black uppercase tracking-widest">
+            <TrendingUp className="h-6 w-6 text-amber-600" />
+            <span>Patronage Rewards</span>
           </CardTitle>
-          <p className="text-sm text-gray-600">
-            These settings define how many points customers earn when they make purchases (patronage). Points are awarded based on how much they spend within a time window.
-          </p>
+          <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mt-2">Define how customers accumulate points through their spending</p>
         </CardHeader>
-        <CardContent className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700">
-                Amount threshold (₦)
+        <CardContent className="p-8 space-y-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="space-y-3">
+              <label className="text-[11px] font-black text-gray-500 uppercase tracking-widest ml-1">
+                Spending Milestone (₦)
               </label>
               <Input
                 type="number"
@@ -170,15 +172,15 @@ export default function ManagePointsTab() {
                 onChange={(e) =>
                   setNum("amountThreshold", Math.max(1, parseInt(e.target.value, 10) || 0))
                 }
-                className="w-full"
+                className="h-14 text-lg font-black bg-white/50 border-gray-100 rounded-2xl focus:ring-2 focus:ring-orange-500/20"
               />
-              <p className="text-xs text-gray-500">
-                One &quot;block&quot; of spending equals this amount. Example: if you set 50,000, then every ₦50,000 a customer spends in the period counts as one block. ₦100,000 = 2 blocks, ₦75,000 = 1 block (no partial blocks).
+              <p className="text-[10px] text-gray-400 font-medium leading-relaxed italic">
+                For every ₦{(settings.amountThreshold || 0).toLocaleString()} spent, points are unlocked.
               </p>
             </div>
-            <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700">
-                Period (days)
+            <div className="space-y-3">
+              <label className="text-[11px] font-black text-gray-500 uppercase tracking-widest ml-1">
+                Window of Activity (Days)
               </label>
               <Input
                 type="number"
@@ -187,15 +189,15 @@ export default function ManagePointsTab() {
                 onChange={(e) =>
                   setNum("periodDays", Math.max(1, parseInt(e.target.value, 10) || 0))
                 }
-                className="w-full"
+                className="h-14 text-lg font-black bg-white/50 border-gray-100 rounded-2xl focus:ring-2 focus:ring-orange-500/20"
               />
-              <p className="text-xs text-gray-500">
-                The number of days to look back when calculating how much a customer has spent. Example: 30 means we use the total they spent in the last 30 days to decide how many blocks they get (and thus how many points).
+              <p className="text-[10px] text-gray-400 font-medium leading-relaxed italic">
+                Number of days purchase history stays active for points.
               </p>
             </div>
-            <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700">
-                Points per block
+            <div className="space-y-3">
+              <label className="text-[11px] font-black text-gray-500 uppercase tracking-widest ml-1">
+                Points per Milestone
               </label>
               <Input
                 type="number"
@@ -204,15 +206,15 @@ export default function ManagePointsTab() {
                 onChange={(e) =>
                   setNum("pointsPerThreshold", Math.max(0, parseInt(e.target.value, 10) || 0))
                 }
-                className="w-full"
+                className="h-14 text-lg font-black bg-white/50 border-gray-100 rounded-2xl focus:ring-2 focus:ring-orange-500/20"
               />
-              <p className="text-xs text-gray-500">
-                How many points the customer gets for each block of spending. Example: with threshold ₦50,000 and this set to 1, a customer who spent ₦100,000 in the period gets 2 points. Set to 10 and they get 20 points.
+              <p className="text-[10px] text-gray-400 font-medium leading-relaxed italic">
+                Tokens awarded for each completed spending block.
               </p>
             </div>
-            <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700">
-                Points per ₦1 (optional / legacy)
+            <div className="space-y-3 opacity-60">
+              <label className="text-[11px] font-black text-gray-400 uppercase tracking-widest ml-1">
+                Direct Rate (Points/₦)
               </label>
               <Input
                 type="number"
@@ -222,32 +224,27 @@ export default function ManagePointsTab() {
                 onChange={(e) =>
                   setNum("pointsPerNaira", Math.max(0, parseFloat(e.target.value) || 0))
                 }
-                className="w-full"
+                className="h-14 bg-white/10 border-gray-200 rounded-2xl"
               />
-              <p className="text-xs text-gray-500">
-                An alternative way to award points (e.g. 0.01 = 1 point per ₦100). The main system uses the &quot;threshold + blocks&quot; above; use this only if you need a secondary rule or are migrating from an old setup.
-              </p>
             </div>
           </div>
         </CardContent>
       </Card>
 
       {/* Conversion rules */}
-      <Card className="border-2 border-emerald-200 bg-gradient-to-br from-emerald-50/50 to-teal-50/50">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-emerald-900">
-            <RefreshCw className="h-5 w-5" />
-            Conversion to cash
+      <Card className="glass-effect border-white/70 rounded-[2rem] premium-shadow overflow-hidden">
+        <CardHeader className="bg-gradient-to-r from-emerald-500/5 to-teal-500/5 border-b border-white/50 p-8">
+          <CardTitle className="flex items-center gap-3 text-gray-900 text-xl font-black uppercase tracking-widest">
+            <RefreshCw className="h-6 w-6 text-emerald-600" />
+            <span>Redemption Portal</span>
           </CardTitle>
-          <p className="text-sm text-gray-600">
-            When a customer clicks &quot;Convert to Cash&quot; in their Wallet, their points are turned into naira and added to their wallet balance. These settings control the conversion rate and limits.
-          </p>
+          <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mt-2">Set the exchange rate for points-to-wallet conversion</p>
         </CardHeader>
-        <CardContent className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700">
-                Points needed for ₦1 (conversion rate)
+        <CardContent className="p-8 space-y-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="space-y-3">
+              <label className="text-[11px] font-black text-gray-500 uppercase tracking-widest ml-1">
+                Unit Value (Points = ₦1)
               </label>
               <Input
                 type="number"
@@ -257,15 +254,15 @@ export default function ManagePointsTab() {
                 onChange={(e) =>
                   setNum("nairaPerPoint", Math.max(0.1, parseFloat(e.target.value) || 1))
                 }
-                className="w-full"
+                className="h-14 text-lg font-black bg-white/50 border-gray-100 rounded-2xl focus:ring-2 focus:ring-emerald-500/20"
               />
-              <p className="text-xs text-gray-500">
-                How many points equal ₦1. Example: 10 means 10 points = ₦1, so 100 points = ₦10 and 1,000 points = ₦100. The customer must have at least this many points per naira they want to receive.
+              <p className="text-[10px] text-gray-400 font-medium leading-relaxed italic">
+                Cost of one Naira in loyalty points.
               </p>
             </div>
-            <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700">
-                Minimum points to convert
+            <div className="space-y-3">
+              <label className="text-[11px] font-black text-gray-500 uppercase tracking-widest ml-1">
+                Redemption Floor
               </label>
               <Input
                 type="number"
@@ -274,27 +271,10 @@ export default function ManagePointsTab() {
                 onChange={(e) =>
                   setNum("minimumPointsToConvert", Math.max(1, parseInt(e.target.value, 10) || 0))
                 }
-                className="w-full"
+                className="h-14 text-lg font-black bg-white/50 border-gray-100 rounded-2xl focus:ring-2 focus:ring-emerald-500/20"
               />
-              <p className="text-xs text-gray-500">
-                Customers cannot convert if their total points are below this number. Example: 100 means they need at least 100 points before they can use &quot;Convert to Cash&quot;.
-              </p>
-            </div>
-            <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700">
-                Cooldown between conversions (days)
-              </label>
-              <Input
-                type="number"
-                min={0}
-                value={settings.conversionCooldownDays}
-                onChange={(e) =>
-                  setNum("conversionCooldownDays", Math.max(0, parseInt(e.target.value, 10) || 0))
-                }
-                className="w-full"
-              />
-              <p className="text-xs text-gray-500">
-                Minimum number of days that must pass before the same customer can convert again. Set to 0 to allow conversions as often as they like; set to 30 to limit to once per month per customer.
+              <p className="text-[10px] text-gray-400 font-medium leading-relaxed italic">
+                Minimum tokens required to trigger a payout.
               </p>
             </div>
           </div>
@@ -302,81 +282,53 @@ export default function ManagePointsTab() {
       </Card>
 
       {/* General */}
-      <Card className="border-2 border-slate-200 bg-white">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-gray-900">
-            <Zap className="h-5 w-5" />
-            General
-          </CardTitle>
-          <p className="text-sm text-gray-600 mt-1">
-            Optional text and a master switch for the whole points program.
-          </p>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          <div className="space-y-2">
-            <label className="block text-sm font-medium text-gray-700">
-              Program description (shown to customers)
-            </label>
-            <textarea
-              value={settings.description}
-              onChange={(e) => setStr("description", e.target.value)}
-              rows={3}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
-              placeholder="e.g. Earn points on every purchase and convert them to cash in your wallet."
-            />
-            <p className="text-xs text-gray-500">
-              Short explanation of the points program that customers see (e.g. on the Wallet page). Leave blank if you do not need custom text.
-            </p>
-          </div>
-          <div className="flex items-center gap-2">
+      <Card className="glass-effect border-white/70 rounded-[2rem] premium-shadow p-8">
+        <div className="space-y-6">
+          <div className="flex items-center gap-4 bg-gray-900 p-6 rounded-[1.5rem] border border-white/10">
             <input
               type="checkbox"
               id="pointsActive"
               checked={settings.isActive}
               onChange={(e) => setBool("isActive", e.target.checked)}
-              className="h-4 w-4 text-orange-600 rounded border-gray-300 focus:ring-orange-500"
+              className="h-5 w-5 text-orange-600 rounded-lg border-white/20 bg-white/10"
             />
-            <label htmlFor="pointsActive" className="text-sm font-medium text-gray-700">
-              Points program is on — customers can earn points on purchases and convert points to wallet balance
-            </label>
+            <div>
+              <label htmlFor="pointsActive" className="block text-xs font-black text-white uppercase tracking-widest cursor-pointer">
+                Program Live Status
+              </label>
+              <p className="text-[10px] text-gray-400 font-medium mt-1">
+                When active, customers earn and redeem rewards in real-time.
+              </p>
+            </div>
           </div>
-          <p className="text-xs text-gray-500">
-            If you turn this off, customers will not earn new points and will not be able to convert points to cash until you turn it back on.
-          </p>
-        </CardContent>
-      </Card>
 
-      {/* Summary & actions */}
-      <Card className="border border-gray-200 bg-gray-50">
-        <CardContent className="pt-6">
-          <div className="flex flex-wrap items-center gap-4">
-            <div className="flex items-center gap-2 text-gray-600">
-              <Info className="h-5 w-5 flex-shrink-0" />
-              <span className="text-sm">
-                Summary: Customers earn {settings.pointsPerThreshold} point{settings.pointsPerThreshold !== 1 ? "s" : ""} per ₦{(settings.amountThreshold || 0).toLocaleString()} spent in the last {settings.periodDays} days. When converting, {settings.nairaPerPoint} points = ₦1, and they need at least {settings.minimumPointsToConvert} points to convert.
+          <div className="pt-6 border-t border-gray-100 flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+            <div className="flex items-center gap-3 text-[10px] font-black text-gray-500 uppercase tracking-widest">
+              <Info className="h-5 w-5 text-orange-600" />
+              <span>
+                {settings.pointsPerThreshold} PT per ₦{(settings.amountThreshold || 0).toLocaleString()} • {settings.nairaPerPoint} PT = ₦1
               </span>
             </div>
-            <div className="ml-auto flex items-center gap-3">
+            <div className="flex items-center gap-3">
               <Button
                 variant="outline"
                 onClick={() => setSettings(DEFAULT_SETTINGS)}
-                className="flex items-center gap-2"
+                className="h-14 px-6 rounded-2xl border-gray-200 text-[11px] font-black uppercase tracking-widest"
               >
-                <RefreshCw className="h-4 w-4" />
-                Reset to defaults
+                Reset
               </Button>
               <Button
                 onClick={handleSave}
                 disabled={saving}
-                className="bg-orange-600 hover:bg-orange-700 flex items-center gap-2"
+                className="bg-orange-600 hover:bg-orange-700 text-white font-black text-[12px] uppercase tracking-[0.2em] px-10 py-7 rounded-[1.5rem] shadow-xl hover:shadow-orange-500/20 transition-all flex items-center gap-3"
               >
-                <Save className="h-4 w-4" />
-                {saving ? "Saving..." : "Save settings"}
+                <Save className="h-5 w-5" />
+                {saving ? "Deploying..." : "Push Settings"}
               </Button>
             </div>
           </div>
-        </CardContent>
+        </div>
       </Card>
-    </div>
+    </motion.div>
   )
 }

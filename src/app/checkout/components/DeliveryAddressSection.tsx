@@ -1,13 +1,13 @@
 "use client"
 
 import { MapPin, Plus, Home, Building, Check, Trash2 } from "lucide-react"
+import { motion, AnimatePresence } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
-import { Badge } from "@/components/ui/badge"
 import type { Address, NewAddress } from "../types"
 
 /** (title, message, onConfirm, onCancel?) => void — used for delete confirmation modal */
@@ -39,211 +39,226 @@ export function DeliveryAddressSection({
   onAddAddress,
 }: DeliveryAddressSectionProps) {
   return (
-    <div className="bg-white/70 backdrop-blur-sm rounded-xl sm:rounded-2xl shadow-xl border border-white/20 overflow-hidden w-full max-w-full min-w-0">
-      <div className="bg-gradient-to-r from-orange-500 to-red-500 p-4 sm:p-6">
-        <h2 className="text-lg sm:text-xl font-bold text-white flex items-center gap-2">
-          <MapPin className="h-5 w-5 sm:h-6 sm:w-6 flex-shrink-0" />
-          <span className="break-words">Choose Delivery Address</span>
-        </h2>
-        <p className="text-orange-100 mt-1 text-sm sm:text-base break-words">Select where you'd like your order delivered. Delivery is only available in Lagos.</p>
+    <div className="bg-white/85 backdrop-blur-3xl rounded-[2.5rem] shadow-[0_32px_64px_-16px_rgba(0,0,0,0.1)] border border-white/70 overflow-hidden w-full transition-all duration-500">
+      {/* Section Header */}
+      <div className="bg-gray-900 p-8 sm:p-10 relative overflow-hidden">
+        <div className="absolute top-0 right-0 p-10 opacity-10">
+          <MapPin className="h-40 w-40 text-white" />
+        </div>
+        <div className="relative z-10">
+          <div className="flex items-center gap-4 mb-2">
+            <div className="p-3 bg-white/10 rounded-2xl">
+              <MapPin className="h-6 w-6 text-orange-400" />
+            </div>
+            <h2 className="text-sm font-black text-white uppercase tracking-[0.4em]">Delivery Address</h2>
+          </div>
+          <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-relaxed">
+            Choose where you want your order delivered. <br className="hidden sm:block" />
+            Current delivery area: <span className="text-orange-400">Lagos Region</span>
+          </p>
+        </div>
       </div>
-      <div className="p-4 sm:p-6 min-w-0">
-        <RadioGroup value={selectedAddress} onValueChange={onAddressSelect} className="space-y-3 sm:space-y-4">
+
+      <div className="p-8 sm:p-10">
+        <RadioGroup value={selectedAddress} onValueChange={onAddressSelect} className="space-y-4">
           {addresses.map(address => (
-            <div key={address.id} className={`relative p-3 sm:p-4 md:p-6 rounded-xl border-2 transition-all duration-300 cursor-pointer min-w-0 overflow-hidden ${
-              selectedAddress === address.id
-                ? 'border-orange-500 bg-gradient-to-r from-orange-50 to-red-50 shadow-lg'
-                : 'border-gray-200 hover:border-gray-300 hover:shadow-md'
-            }`}>
-              <div className="flex items-start space-x-2 sm:space-x-3 md:space-x-4">
-                <RadioGroupItem
-                  value={address.id}
-                  id={address.id}
-                  className="mt-1 flex-shrink-0"
-                />
-                <Label htmlFor={address.id} className="flex-1 cursor-pointer min-w-0 pr-10">
-                  <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
-                    <div className="flex-1 min-w-0">
-                      <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-3 mb-2 gap-2">
-                        <span className="font-bold text-base sm:text-lg text-gray-900 break-words">{address.name}</span>
-                        <div className="flex items-center space-x-2">
-                          {address.isDefault && (
-                            <Badge className="bg-gradient-to-r from-green-500 to-emerald-500 text-white border-0 shadow-sm text-xs">
-                              Default
-                            </Badge>
-                          )}
-                          <div className={`p-1.5 sm:p-2 rounded-lg flex-shrink-0 ${
-                            address.type === "home"
-                              ? 'bg-blue-100 text-blue-600'
-                              : 'bg-purple-100 text-purple-600'
-                          }`}>
-                            {address.type === "home" ? <Home className="h-3 w-3 sm:h-4 sm:w-4" /> : <Building className="h-3 w-3 sm:h-4 sm:w-4" />}
-                          </div>
+            <motion.div
+              key={address.id}
+              layout
+              className={`relative group rounded-[2rem] border transition-all duration-300 cursor-pointer overflow-hidden ${selectedAddress === address.id
+                  ? 'border-gray-900 bg-white shadow-xl scale-[1.02]'
+                  : 'border-gray-100 bg-gray-50/50 hover:border-gray-300 hover:bg-white'
+                }`}
+            >
+              <div className="p-6 sm:p-8 flex items-start gap-6">
+                <div className="pt-1">
+                  <RadioGroupItem
+                    value={address.id}
+                    id={address.id}
+                    className="h-6 w-6 border-2 border-gray-200 text-orange-600 focus:ring-orange-600"
+                  />
+                </div>
+
+                <Label htmlFor={address.id} className="flex-1 cursor-pointer">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+                    <div className="flex items-center gap-4">
+                      <div className={`p-3 rounded-2xl ${address.type === "home" ? 'bg-blue-50 text-blue-600' : 'bg-purple-50 text-purple-600'
+                        }`}>
+                        {address.type === "home" ? <Home className="h-5 w-5" /> : <Building className="h-5 w-5" />}
+                      </div>
+                      <div>
+                        <h3 className="text-[11px] font-black text-gray-900 uppercase tracking-widest">{address.name}</h3>
+                        {address.isDefault && (
+                          <span className="text-[8px] font-black text-emerald-600 uppercase tracking-tighter">Default Address</span>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      {selectedAddress === address.id && (
+                        <div className="px-3 py-1 bg-gray-900 rounded-lg">
+                          <span className="text-[9px] font-black text-white uppercase tracking-widest">Selected</span>
                         </div>
-                      </div>
-                      <p className="text-gray-700 font-medium mb-1 text-sm sm:text-base leading-tight break-words">{address.address}</p>
-                      <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4">
-                        <p className="text-gray-600 text-xs sm:text-sm break-words">{address.city}, {address.state}</p>
-                        <p className="text-gray-600 text-xs sm:text-sm font-medium break-all">{address.phone}</p>
-                      </div>
+                      )}
+                      {onDeleteAddress && (
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            if (showConfirm) {
+                              showConfirm(
+                                'Delete this address?',
+                                `"${address.name}" will be removed from your saved addresses.`,
+                                () => { onDeleteAddress(address.id) }
+                              )
+                            } else {
+                              onDeleteAddress(address.id)
+                            }
+                          }}
+                          className="p-3 hover:bg-red-50 text-gray-300 hover:text-red-500 rounded-xl transition-all"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="space-y-1">
+                    <p className="text-sm font-black text-gray-900 leading-snug">{address.address}</p>
+                    <div className="flex items-center gap-4">
+                      <p className="text-[10px] font-bold text-gray-400 uppercase tracking-tight">{address.city}, {address.state}</p>
+                      <div className="w-1 h-1 bg-gray-200 rounded-full" />
+                      <p className="text-[10px] font-black text-gray-900 tracking-widest">{address.phone}</p>
                     </div>
                   </div>
                 </Label>
               </div>
-              <div className="absolute top-2 right-2 sm:top-4 sm:right-4 flex items-center gap-1">
-                {selectedAddress === address.id && (
-                  <div className="w-5 h-5 bg-orange-500 rounded-full flex items-center justify-center">
-                    <Check className="h-3 w-3 text-white" />
-                  </div>
-                )}
-                {onDeleteAddress && (
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      if (showConfirm) {
-                        showConfirm(
-                          'Remove address?',
-                          `"${address.name}" will be removed from your saved addresses.`,
-                          () => { onDeleteAddress(address.id) }
-                        )
-                      } else if (typeof window !== 'undefined' && window.confirm('Remove this address?')) {
-                        onDeleteAddress(address.id)
-                      }
-                    }}
-                    className="p-1.5 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors"
-                    aria-label={`Delete ${address.name}`}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </button>
-                )}
-              </div>
-            </div>
+            </motion.div>
           ))}
         </RadioGroup>
 
-        <div className="mt-6 pt-6 border-t border-gray-200">
+        <div className="mt-10">
           <Button
             variant="outline"
             onClick={() => onShowNewAddressForm(true)}
-            className="w-full h-12 bg-gradient-to-r from-gray-50 to-gray-100 hover:from-gray-100 hover:to-gray-200 border-2 border-dashed border-gray-300 hover:border-orange-400 transition-all duration-300 group"
+            className="w-full h-20 bg-gray-50 border-2 border-dashed border-gray-200 hover:border-gray-900 hover:bg-white rounded-[1.5rem] transition-all duration-500 group"
           >
-            <Plus className="h-5 w-5 mr-3 text-gray-500 group-hover:text-orange-600 transition-colors" />
-            <span className="font-medium text-gray-700 group-hover:text-orange-600 transition-colors">Add New Address</span>
+            <div className="flex flex-col items-center gap-1">
+              <div className="flex items-center gap-3">
+                <Plus className="h-4 w-4 text-gray-400 group-hover:text-gray-900 transition-colors" />
+                <span className="text-[11px] font-black text-gray-400 group-hover:text-gray-900 uppercase tracking-widest transition-colors">Add New Delivery Address</span>
+              </div>
+            </div>
           </Button>
         </div>
 
-        {showNewAddressForm && (
-          <div className="mt-6 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-200 overflow-hidden">
-            <div className="bg-gradient-to-r from-blue-500 to-indigo-500 p-4">
-              <h3 className="text-lg font-bold text-white flex items-center">
-                <Plus className="h-5 w-5 mr-2" />
-                Add New Address
-              </h3>
-            </div>
-            <div className="p-6 space-y-6">
-              <div className="grid grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <Label htmlFor="addressType" className="text-sm font-semibold text-gray-700">Address Type</Label>
-                  <Select value={newAddress.type} onValueChange={(value: any) => onNewAddressChange({...newAddress, type: value})}>
-                    <SelectTrigger className="h-12 border-2 focus:border-blue-500">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent className="bg-white border border-gray-200 shadow-lg z-50">
-                      <SelectItem value="home">🏠 Home</SelectItem>
-                      <SelectItem value="work">🏢 Work</SelectItem>
-                      <SelectItem value="other">📍 Other</SelectItem>
-                    </SelectContent>
-                  </Select>
+        <AnimatePresence>
+          {showNewAddressForm && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 20 }}
+              className="mt-8 p-8 sm:p-10 bg-white rounded-[2.5rem] border border-gray-100 shadow-2xl"
+            >
+              <div className="flex items-center gap-4 mb-10">
+                <div className="p-3 bg-blue-50 rounded-2xl text-blue-600">
+                  <Plus className="h-6 w-6" />
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="addressName" className="text-sm font-semibold text-gray-700">Address Name</Label>
-                  <Input
-                    id="addressName"
-                    value={newAddress.name}
-                    onChange={(e) => onNewAddressChange({...newAddress, name: e.target.value})}
-                    placeholder="e.g., Home, Office"
-                    className="h-12 border-2 focus:border-blue-500"
-                  />
-                </div>
+                <h3 className="text-sm font-black text-gray-900 uppercase tracking-[0.3em]">Add New Address</h3>
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="streetAddress" className="text-sm font-semibold text-gray-700">Street Address</Label>
-                <Textarea
-                  id="streetAddress"
-                  value={newAddress.address}
-                  onChange={(e) => onNewAddressChange({...newAddress, address: e.target.value})}
-                  placeholder="Enter your full address"
-                  rows={3}
-                  className="border-2 focus:border-blue-500 resize-none"
-                />
-              </div>
+              <div className="space-y-8">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
+                  <div className="space-y-3">
+                    <Label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Address Type</Label>
+                    <Select value={newAddress.type} onValueChange={(value: any) => onNewAddressChange({ ...newAddress, type: value })}>
+                      <SelectTrigger className="h-14 rounded-2xl border-gray-100 bg-gray-50/50 focus:ring-4 focus:ring-blue-100 font-bold">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent className="bg-white border-gray-100 rounded-2xl shadow-2xl z-[150]">
+                        <SelectItem value="home">🏠 Home</SelectItem>
+                        <SelectItem value="work">🏢 Work</SelectItem>
+                        <SelectItem value="other">📍 Other</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-3">
+                    <Label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Address Name</Label>
+                    <Input
+                      value={newAddress.name}
+                      onChange={(e) => onNewAddressChange({ ...newAddress, name: e.target.value })}
+                      placeholder="e.g. Home"
+                      className="h-14 rounded-2xl border-gray-100 bg-gray-50/50 focus:ring-4 focus:ring-blue-100 font-bold"
+                    />
+                  </div>
+                </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
-                <div className="space-y-2 min-w-0">
-                  <Label htmlFor="city" className="text-sm font-semibold text-gray-700">City / Area (Lagos)</Label>
-                  <Input
-                    id="city"
-                    value={newAddress.city}
-                    onChange={(e) => onNewAddressChange({...newAddress, city: e.target.value})}
-                    placeholder="e.g. Ikeja, Lekki, Victoria Island"
-                    className="h-12 border-2 focus:border-blue-500"
+                <div className="space-y-3">
+                  <Label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Street Address</Label>
+                  <Textarea
+                    value={newAddress.address}
+                    onChange={(e) => onNewAddressChange({ ...newAddress, address: e.target.value })}
+                    placeholder="Enter full address details"
+                    rows={3}
+                    className="rounded-2xl border-gray-100 bg-gray-50/50 focus:ring-4 focus:ring-blue-100 font-bold resize-none p-4"
                   />
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="state" className="text-sm font-semibold text-gray-700">State</Label>
-                  <Input
-                    id="state"
-                    value="Lagos"
-                    readOnly
-                    className="h-12 border-2 border-gray-200 bg-gray-50 text-gray-700 cursor-not-allowed"
-                  />
-                  <p className="text-xs text-gray-500">Delivery is only available in Lagos.</p>
-                </div>
-              </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
-                <div className="space-y-2 min-w-0">
-                  <Label htmlFor="postalCode" className="text-sm font-semibold text-gray-700">Postal Code <span className="text-gray-500">(Optional)</span></Label>
-                  <Input
-                    id="postalCode"
-                    value={newAddress.postalCode}
-                    onChange={(e) => onNewAddressChange({...newAddress, postalCode: e.target.value})}
-                    className="h-12 border-2 focus:border-blue-500"
-                  />
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
+                  <div className="space-y-3">
+                    <Label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">City</Label>
+                    <Input
+                      value={newAddress.city}
+                      onChange={(e) => onNewAddressChange({ ...newAddress, city: e.target.value })}
+                      placeholder="e.g. Lekki Phase 01"
+                      className="h-14 rounded-2xl border-gray-100 bg-gray-50/50 focus:ring-4 focus:ring-blue-100 font-bold"
+                    />
+                  </div>
+                  <div className="space-y-3">
+                    <Label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">State</Label>
+                    <Input value="Lagos State" readOnly className="h-14 rounded-2xl border-gray-100 bg-gray-50 text-gray-400 font-bold cursor-not-allowed" />
+                  </div>
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="phone" className="text-sm font-semibold text-gray-700">Phone Number</Label>
-                  <Input
-                    id="phone"
-                    value={newAddress.phone}
-                    onChange={(e) => onNewAddressChange({...newAddress, phone: e.target.value})}
-                    placeholder="+234xxxxxxxxxx"
-                    className="h-12 border-2 focus:border-blue-500"
-                  />
-                </div>
-              </div>
 
-              <div className="flex space-x-4 pt-4">
-                <Button
-                  onClick={onAddAddress}
-                  className="flex-1 h-12 bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white font-semibold"
-                >
-                  <Plus className="h-5 w-5 mr-2" />
-                  Add Address
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={() => onShowNewAddressForm(false)}
-                  className="flex-1 h-12 border-2 hover:bg-gray-50 font-semibold"
-                >
-                  Cancel
-                </Button>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
+                  <div className="space-y-3">
+                    <Label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Postal Code</Label>
+                    <Input
+                      value={newAddress.postalCode}
+                      onChange={(e) => onNewAddressChange({ ...newAddress, postalCode: e.target.value })}
+                      className="h-14 rounded-2xl border-gray-100 bg-gray-50/50 focus:ring-4 focus:ring-blue-100 font-bold"
+                    />
+                  </div>
+                  <div className="space-y-3">
+                    <Label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Phone Number</Label>
+                    <Input
+                      value={newAddress.phone}
+                      onChange={(e) => onNewAddressChange({ ...newAddress, phone: e.target.value })}
+                      placeholder="+234..."
+                      className="h-14 rounded-2xl border-gray-100 bg-gray-50/50 focus:ring-4 focus:ring-blue-100 font-bold"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex flex-col sm:flex-row gap-4 pt-6">
+                  <Button
+                    onClick={onAddAddress}
+                    className="flex-1 h-16 bg-gray-900 hover:bg-gray-800 text-white font-black text-[11px] uppercase tracking-[0.2em] rounded-[1.25rem] shadow-xl transition-all active:scale-95"
+                  >
+                    Save Address
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => onShowNewAddressForm(false)}
+                    className="flex-1 h-16 border-gray-100 text-[11px] font-black uppercase tracking-[0.2em] rounded-[1.25rem] hover:bg-gray-50 transition-all font-sans"
+                  >
+                    Cancel
+                  </Button>
+                </div>
               </div>
-            </div>
-          </div>
-        )}
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </div>
   )

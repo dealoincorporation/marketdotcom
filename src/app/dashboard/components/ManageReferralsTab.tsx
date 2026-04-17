@@ -231,43 +231,42 @@ export default function ManageReferralsTab() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6 mb-2">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">Manage Referrals</h2>
-          <p className="text-gray-600 mt-1">View all users who signed up through referral codes</p>
+          <h2 className="text-3xl sm:text-4xl font-black text-gray-900 tracking-tight uppercase tracking-[0.1em]">Invite & Earn</h2>
+          <p className="text-[11px] font-black text-gray-400 uppercase tracking-[0.3em] mt-1">Grow your community and reward your most active members</p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
           <Button
             onClick={exportToCSV}
-            variant="outline"
-            className="flex items-center gap-2"
+            className="bg-gray-900 border border-white/20 text-white font-black text-[12px] uppercase tracking-[0.2em] px-6 py-6 rounded-2xl shadow-2xl hover:bg-black hover:scale-[1.05] active:scale-[0.95] transition-all group"
           >
-            <Download className="h-4 w-4" />
+            <Download className="h-4 w-4 mr-2 group-hover:-translate-y-1 transition-transform" />
             Export CSV
           </Button>
         </div>
       </div>
 
       {/* Referral Settings Card */}
-      <Card className="border-2 border-orange-200 bg-gradient-to-br from-orange-50 to-red-50">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-orange-900">
-            <Settings className="h-5 w-5" />
-            <span>Referral Program Settings</span>
+      <Card className="glass-effect border-white/70 rounded-[2rem] premium-shadow overflow-hidden">
+        <CardHeader className="bg-gradient-to-r from-orange-500/5 to-red-500/5 border-b border-white/50 p-8">
+          <CardTitle className="flex items-center gap-3 text-gray-900 text-xl font-black uppercase tracking-widest">
+            <Settings className="h-6 w-6 text-orange-600" />
+            <span>Community Incentives</span>
           </CardTitle>
-          <p className="text-sm text-gray-600 mt-1">Configure reward amounts for the referral program</p>
+          <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mt-2">Fine-tune the rewards for your growing network</p>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-8">
           {settingsLoading ? (
-            <div className="flex items-center justify-center py-8">
-              <div className="text-gray-500">Loading settings...</div>
+            <div className="flex items-center justify-center py-12">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600"></div>
             </div>
           ) : (
-            <div className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-700">
-                    Referrer Reward
+            <div className="space-y-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div className="space-y-3">
+                  <label className="text-[11px] font-black text-gray-500 uppercase tracking-widest ml-1">
+                    Inviter Credit
                   </label>
                   <Input
                     type="text"
@@ -276,16 +275,16 @@ export default function ManageReferralsTab() {
                       ...referralSettings,
                       referrerReward: e.target.value
                     })}
-                    placeholder="100 or 'Refer a friend and earn rewards!'"
-                    className="w-full"
+                    placeholder="e.g. 100"
+                    className="h-14 text-lg font-black bg-white/50 border-gray-100 rounded-2xl focus:ring-2 focus:ring-orange-500/20"
                   />
-                  <p className="text-xs text-gray-500">
-                    Amount or description the referrer earns when someone signs up using their code. Can be a number (e.g., "₦100") or a sentence (e.g., "Refer a friend and earn rewards!")
+                  <p className="text-[10px] text-gray-400 font-medium leading-relaxed italic">
+                    What the inviter earns when a friend signs up.
                   </p>
                 </div>
-                <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-700">
-                    Referee Reward
+                <div className="space-y-3">
+                  <label className="text-[11px] font-black text-gray-500 uppercase tracking-widest ml-1">
+                    New Member Bonus
                   </label>
                   <Input
                     type="text"
@@ -294,18 +293,19 @@ export default function ManageReferralsTab() {
                       ...referralSettings,
                       refereeReward: e.target.value
                     })}
-                    placeholder="50 or 'Get a bonus on your first purchase!'"
-                    className="w-full"
+                    placeholder="e.g. 50"
+                    className="h-14 text-lg font-black bg-white/50 border-gray-100 rounded-2xl focus:ring-2 focus:ring-orange-500/20"
                   />
-                  <p className="text-xs text-gray-500">
-                    Bonus amount or description the new user receives on their first purchase. Can be a number (e.g., "₦50") or a sentence (e.g., "Get a bonus on your first purchase!")
+                  <p className="text-[10px] text-gray-400 font-medium leading-relaxed italic">
+                    Welcome gift for the newly joined member.
                   </p>
                 </div>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-700">
-                    Points referrer gets when someone signs up
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-4 border-t border-gray-50">
+                <div className="space-y-3">
+                  <label className="text-[11px] font-black text-gray-500 uppercase tracking-widest ml-1">
+                    Signup Points
                   </label>
                   <Input
                     type="number"
@@ -315,16 +315,12 @@ export default function ManageReferralsTab() {
                       ...referralSettings,
                       referrerPointsOnSignup: Math.max(0, parseInt(e.target.value, 10) || 0)
                     })}
-                    placeholder="0"
-                    className="w-full"
+                    className="h-12 bg-white/50 border-gray-100 rounded-xl"
                   />
-                  <p className="text-xs text-gray-500">
-                    Reward points the referrer earns when a new user signs up with their code. Points can be converted to wallet cash in Dashboard → Wallet.
-                  </p>
                 </div>
-                <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-700">
-                    Points referrer gets per referred customer purchase
+                <div className="space-y-3">
+                  <label className="text-[11px] font-black text-gray-500 uppercase tracking-widest ml-1">
+                    Purchase Points
                   </label>
                   <Input
                     type="number"
@@ -334,33 +330,12 @@ export default function ManageReferralsTab() {
                       ...referralSettings,
                       referrerPointsPerPurchase: Math.max(0, parseInt(e.target.value, 10) || 0)
                     })}
-                    placeholder="0"
-                    className="w-full"
+                    className="h-12 bg-white/50 border-gray-100 rounded-xl"
                   />
-                  <p className="text-xs text-gray-500">
-                    Points the referrer earns each time someone they referred completes a purchase. Users can convert points to cash in Wallet.
-                  </p>
                 </div>
               </div>
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">
-                  Description
-                </label>
-                <Input
-                  type="text"
-                  value={referralSettings.description}
-                  onChange={(e) => setReferralSettings({
-                    ...referralSettings,
-                    description: e.target.value
-                  })}
-                  placeholder="Refer a friend and earn rewards!"
-                  className="w-full"
-                />
-                <p className="text-xs text-gray-500">
-                  Optional description that will be shown to users
-                </p>
-              </div>
-              <div className="flex items-center gap-2">
+
+              <div className="flex items-center gap-3 bg-gray-50/50 p-4 rounded-2xl border border-gray-100">
                 <input
                   type="checkbox"
                   id="isActive"
@@ -369,23 +344,24 @@ export default function ManageReferralsTab() {
                     ...referralSettings,
                     isActive: e.target.checked
                   })}
-                  className="h-4 w-4 text-orange-600 focus:ring-orange-500 border-gray-300 rounded"
+                  className="h-5 w-5 text-orange-600 focus:ring-orange-500 border-gray-300 rounded-lg cursor-pointer"
                 />
-                <label htmlFor="isActive" className="text-sm font-medium text-gray-700">
-                  Enable referral program
+                <label htmlFor="isActive" className="text-xs font-black text-gray-700 uppercase tracking-widest cursor-pointer">
+                  Activate Community Program
                 </label>
               </div>
-              <div className="pt-4 border-t">
+
+              <div className="pt-6 border-t border-gray-50 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <Button
                   onClick={handleSaveSettings}
                   disabled={savingSettings}
-                  className="bg-orange-600 hover:bg-orange-700 text-white flex items-center gap-2"
+                  className="bg-orange-600 hover:bg-orange-700 text-white font-black text-[12px] uppercase tracking-[0.2em] px-10 py-7 rounded-[1.5rem] shadow-xl hover:shadow-orange-500/20 transition-all flex items-center gap-3"
                 >
-                  <Save className="h-4 w-4" />
-                  {savingSettings ? 'Saving...' : 'Save Settings'}
+                  <Save className="h-5 w-5" />
+                  {savingSettings ? 'Securing Changes...' : 'Push Settings Live'}
                 </Button>
-                <p className="text-xs text-gray-500 mt-2">
-                  Changes will reflect immediately in the user dashboard
+                <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest italic">
+                  * Changes are deployed to all dashboards instantly
                 </p>
               </div>
             </div>
@@ -394,65 +370,92 @@ export default function ManageReferralsTab() {
       </Card>
 
       {/* Statistics Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600">Total Referred Users</p>
-                <p className="text-2xl font-bold text-gray-900 mt-1">{referredUsers.length}</p>
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.3, delay: 0.1 }}
+        >
+          <Card className="glass-effect border-white/70 rounded-[1.5rem] premium-shadow h-28 flex flex-col justify-center">
+            <CardContent className="p-5">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-[9px] font-black text-gray-500 uppercase tracking-widest mb-1">Network Size</p>
+                  <p className="text-2xl font-black text-gray-900 tabular-nums">{referredUsers.length}</p>
+                </div>
+                <Users className="h-6 w-6 text-gray-900 opacity-20" />
               </div>
-              <Users className="h-8 w-8 text-orange-500" />
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600">Verified Users</p>
-                <p className="text-2xl font-bold text-gray-900 mt-1">
-                  {referredUsers.filter(u => u.emailVerified).length}
-                </p>
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.3, delay: 0.2 }}
+        >
+          <Card className="glass-effect border-white/70 rounded-[1.5rem] premium-shadow h-28 flex flex-col justify-center">
+            <CardContent className="p-5">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-[9px] font-black text-green-600 uppercase tracking-widest mb-1">Verified Growth</p>
+                  <p className="text-2xl font-black text-green-600 tabular-nums">
+                    {referredUsers.filter(u => u.emailVerified).length}
+                  </p>
+                </div>
+                <CheckCircle className="h-6 w-6 text-green-600 opacity-20" />
               </div>
-              <CheckCircle className="h-8 w-8 text-green-500" />
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600">Total Rewards Paid</p>
-                <p className="text-2xl font-bold text-gray-900 mt-1">
-                  {formatCurrency(
-                    referredUsers.reduce((sum, u) =>
-                      sum + (u.referralRecord?.rewardAmount || 0), 0
-                    )
-                  )}
-                </p>
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.3, delay: 0.3 }}
+        >
+          <Card className="glass-effect border-white/70 rounded-[1.5rem] premium-shadow h-28 flex flex-col justify-center">
+            <CardContent className="p-5">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-[9px] font-black text-blue-600 uppercase tracking-widest mb-1">Total Rewards</p>
+                  <p className="text-xl font-black text-blue-900 tabular-nums">
+                    {formatCurrency(
+                      referredUsers.reduce((sum, u) =>
+                        sum + (u.referralRecord?.rewardAmount || 0), 0
+                      )
+                    )}
+                  </p>
+                </div>
+                <DollarSign className="h-6 w-6 text-blue-600 opacity-20" />
               </div>
-              <DollarSign className="h-8 w-8 text-blue-500" />
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600">This Month</p>
-                <p className="text-2xl font-bold text-gray-900 mt-1">
-                  {referredUsers.filter(u => {
-                    const date = new Date(u.createdAt)
-                    const now = new Date()
-                    return date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear()
-                  }).length}
-                </p>
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.3, delay: 0.4 }}
+        >
+          <Card className="glass-effect border-white/70 rounded-[1.5rem] premium-shadow h-28 flex flex-col justify-center bg-gray-900">
+            <CardContent className="p-5">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-[9px] font-black text-gray-500 uppercase tracking-widest mb-1">Fresh Faces</p>
+                  <p className="text-2xl font-black text-white tabular-nums">
+                    {referredUsers.filter(u => {
+                      const date = new Date(u.createdAt)
+                      const now = new Date()
+                      return date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear()
+                    }).length}
+                  </p>
+                </div>
+                <Calendar className="h-6 w-6 text-white opacity-20" />
               </div>
-              <Calendar className="h-8 w-8 text-purple-500" />
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        </motion.div>
       </div>
 
       {/* Search */}
@@ -532,7 +535,7 @@ export default function ManageReferralsTab() {
                         {user.referrer ? (
                           <div className="space-y-1">
                             <p className="font-medium text-gray-900">{user.referrer.name || 'No name'}</p>
-                            <p className="text-sm text-gray-500">{user.referrer.email}</p>
+                            <p className="text-xs text-gray-500">Invited by: {user.referrer.email}</p>
                             <Badge variant="outline" className="text-xs">
                               {user.referrer.referralCode}
                             </Badge>

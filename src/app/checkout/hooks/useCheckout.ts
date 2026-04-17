@@ -474,6 +474,12 @@ export function useCheckout() {
 
   // Handle place order (forcePlaceOrder: true when user confirms after slot-full modal)
   const handlePlaceOrder = async (forcePlaceOrder?: boolean) => {
+    if (!(user as any)?.phone?.trim()) {
+      toast.error("Please complete your profile (phone number required) before checkout.")
+      router.push('/auth/complete-profile?redirect=/checkout&reason=checkout')
+      return
+    }
+
     if (moqNotMet) {
       toast.error(
         moqQuantityNotMet && moqAmountNotMet
@@ -558,6 +564,11 @@ export function useCheckout() {
   useEffect(() => {
     if (!user) {
       router.push('/auth/login?redirect=/checkout')
+      return
+    }
+
+    if (!(user as any)?.phone?.trim()) {
+      router.push('/auth/complete-profile?redirect=/checkout&reason=checkout')
       return
     }
 

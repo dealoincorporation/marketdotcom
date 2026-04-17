@@ -151,59 +151,65 @@ export default function ManageCategoriesTab({ categories, onRefresh }: ManageCat
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 mb-4">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">Category Management</h2>
-          <p className="text-gray-600 mt-1">Create, edit, and manage product categories</p>
+          <h2 className="text-3xl sm:text-4xl font-black text-gray-900 tracking-tight uppercase tracking-[0.1em]">Store Catalog</h2>
+          <p className="text-[11px] font-black text-gray-400 uppercase tracking-[0.3em] mt-1">Organize your marketplace into intuitive browsing groups</p>
         </div>
         <Button
           onClick={() => setShowCreateModal(true)}
-          className="bg-orange-600 hover:bg-orange-700"
+          className="bg-gray-900 border border-white/20 text-white font-black text-[12px] uppercase tracking-[0.2em] px-8 py-6 rounded-2xl shadow-2xl hover:bg-black hover:scale-[1.05] active:scale-[0.95] transition-all group"
         >
-          <Plus className="h-4 w-4 mr-2" />
-          Add Category
+          <Plus className="h-5 w-5 mr-2 group-hover:rotate-90 transition-transform duration-500" />
+          Add New Group
         </Button>
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card className="bg-gradient-to-r from-orange-50 to-orange-100 border-orange-200">
-          <CardContent className="p-4">
-            <div className="flex items-center space-x-2">
-              <Package className="h-5 w-5 text-orange-600" />
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <Card className="glass-effect border-white/70 rounded-[2rem] premium-shadow h-32 flex flex-col justify-center">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Total Categories</p>
-                <p className="text-2xl font-bold text-orange-600">{categories.length}</p>
+                <p className="text-[9px] font-black text-gray-500 uppercase tracking-widest mb-1">Browsing Groups</p>
+                <p className="text-3xl font-black text-gray-900 tabular-nums">{categories.length}</p>
+              </div>
+              <div className="w-12 h-12 bg-orange-100 rounded-2xl flex items-center justify-center">
+                <Package className="h-6 w-6 text-orange-600" />
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-r from-green-50 to-green-100 border-green-200">
-          <CardContent className="p-4">
-            <div className="flex items-center space-x-2">
-              <CheckCircle className="h-5 w-5 text-green-600" />
+        <Card className="glass-effect border-white/70 rounded-[2rem] premium-shadow h-32 flex flex-col justify-center">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Active Categories</p>
-                <p className="text-2xl font-bold text-green-600">
+                <p className="text-[9px] font-black text-green-600 uppercase tracking-widest mb-1">Stocked Groups</p>
+                <p className="text-3xl font-black text-green-600 tabular-nums">
                   {categories.filter(cat => cat._count?.products && cat._count.products > 0).length}
                 </p>
               </div>
+              <div className="w-12 h-12 bg-green-100 rounded-2xl flex items-center justify-center">
+                <CheckCircle className="h-6 w-6 text-green-600" />
+              </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-r from-blue-50 to-blue-100 border-blue-200">
-          <CardContent className="p-4">
-            <div className="flex items-center space-x-2">
-              <Package className="h-5 w-5 text-blue-600" />
+        <Card className="glass-effect border-white/70 rounded-[2rem] premium-shadow h-32 flex flex-col justify-center bg-gray-900">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Total Products</p>
-                <p className="text-2xl font-bold text-blue-600">
+                <p className="text-[9px] font-black text-gray-500 uppercase tracking-widest mb-1">Total Listings</p>
+                <p className="text-3xl font-black text-white tabular-nums">
                   {categories.reduce((sum, cat) => sum + (cat._count?.products || 0), 0)}
                 </p>
+              </div>
+              <div className="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center">
+                <Package className="h-6 w-6 text-white/40" />
               </div>
             </div>
           </CardContent>

@@ -38,7 +38,7 @@ export function NotificationBell() {
           ...(token ? { 'Authorization': `Bearer ${token}` } : {})
         }
       })
-      
+
       if (response.ok) {
         const data = await response.json()
         setNotifications(data)
@@ -160,16 +160,16 @@ export function NotificationBell() {
   // Fetch notifications on mount and set up polling
   useEffect(() => {
     fetchNotifications()
-    
+
     // Poll for new notifications every 30 seconds
     const interval = setInterval(fetchNotifications, 30000)
-    
+
     // Listen for custom refresh event (e.g., after wallet funding)
     const handleRefresh = () => {
       fetchNotifications()
     }
     window.addEventListener('refreshNotifications', handleRefresh)
-    
+
     return () => {
       clearInterval(interval)
       window.removeEventListener('refreshNotifications', handleRefresh)
@@ -181,9 +181,9 @@ export function NotificationBell() {
     if (!notification.isRead) {
       markAsRead(notification.id)
     }
-    
+
     setIsOpen(false)
-    
+
     // Navigate based on notification type and orderId
     if (notification.orderId) {
       router.push(`/dashboard?tab=orders`)
@@ -219,15 +219,15 @@ export function NotificationBell() {
     <div className="relative" ref={dropdownRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="relative p-2 rounded-lg hover:bg-gray-100 transition-colors"
+        className="relative p-2.5 rounded-2xl hover:bg-orange-50 transition-all active:scale-95 group"
         aria-label="Notifications"
       >
-        <Bell className="h-5 w-5 text-gray-600" />
+        <Bell className="h-6 w-6 text-gray-500 group-hover:text-orange-600 transition-colors" strokeWidth={1.5} />
         {unreadCount > 0 && (
           <motion.span
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            className="absolute top-0 right-0 bg-orange-600 text-white text-xs rounded-full h-5 min-w-5 px-1.5 flex items-center justify-center font-bold"
+            initial={{ scale: 0, y: 10 }}
+            animate={{ scale: 1, y: 0 }}
+            className="absolute top-1 right-1 bg-orange-600 text-white text-[10px] rounded-full h-5 min-w-5 px-1.5 flex items-center justify-center font-black shadow-lg shadow-orange-200 border-2 border-white"
           >
             {unreadCount > 9 ? '9+' : unreadCount}
           </motion.span>
@@ -242,24 +242,30 @@ export function NotificationBell() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 z-[105]"
+              className="fixed inset-0 z-[90] bg-black/35"
               onClick={() => setIsOpen(false)}
             />
 
-            {/* Dropdown */}
+            {/* Notifications dropdown */}
             <motion.div
-              initial={{ opacity: 0, y: -10, scale: 0.95 }}
+              initial={{ opacity: 0, y: 20, scale: 0.95 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: -10, scale: 0.95 }}
-              className="fixed md:absolute right-4 md:right-0 left-4 md:left-auto top-20 md:top-full mt-0 md:mt-2 w-[calc(100vw-2rem)] sm:w-80 md:w-96 mx-auto md:mx-0 bg-white rounded-lg shadow-xl border border-gray-200 z-[110] max-h-[calc(100vh-6rem)] md:max-h-[500px] flex flex-col"
+              exit={{ opacity: 0, y: 15, scale: 0.95 }}
+              transition={{ type: "spring", stiffness: 300, damping: 25 }}
+              className="fixed md:absolute right-4 md:right-0 left-4 md:left-auto top-20 md:top-full mt-4 xxs:left-2 xxs:right-2 xxs:top-[4.25rem] xxs:mt-2 xxs:mx-0 w-[calc(100vw-2rem)] sm:w-80 md:w-96 mx-auto md:mx-0 glass-effect bg-white backdrop-blur-3xl rounded-[2.5rem] xxs:rounded-2xl shadow-2xl border border-white/80 z-[100] max-h-[calc(100vh-8rem)] xxs:max-h-[calc(100vh-5.5rem)] md:max-h-[550px] flex flex-col overflow-hidden premium-shadow"
             >
               {/* Header */}
-              <div className="flex items-center justify-between p-4 border-b border-gray-200">
-                <h3 className="text-lg font-semibold text-gray-900">Notifications</h3>
+              <div className="flex items-center justify-between p-6 xxs:p-4 border-b border-gray-50 bg-gray-50/50 gap-2">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-orange-100 rounded-xl">
+                    <Bell className="h-4 w-4 text-orange-600" />
+                  </div>
+                  <h3 className="text-sm font-black text-gray-900 uppercase tracking-widest">Notifications</h3>
+                </div>
                 {unreadCount > 0 && (
                   <button
                     onClick={markAllAsRead}
-                    className="text-sm text-orange-600 hover:text-orange-700 font-medium"
+                    className="text-[10px] font-black text-orange-600 hover:text-orange-700 uppercase tracking-widest transition-all"
                   >
                     Mark all as read
                   </button>
@@ -267,53 +273,57 @@ export function NotificationBell() {
               </div>
 
               {/* Notifications List */}
-              <div className="overflow-y-auto flex-1">
+              <div className="overflow-y-auto flex-1 custom-scrollbar">
                 {isLoading ? (
-                  <div className="p-8 text-center text-gray-500">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600 mx-auto"></div>
-                    <p className="mt-2 text-sm">Loading notifications...</p>
+                  <div className="p-12 text-center">
+                    <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-orange-600 mx-auto opacity-50"></div>
+                    <p className="mt-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Loading notifications...</p>
                   </div>
                 ) : notifications.length === 0 ? (
-                  <div className="p-8 text-center text-gray-500">
-                    <Bell className="h-12 w-12 mx-auto mb-2 opacity-50" />
-                    <p className="text-sm">No notifications yet</p>
+                  <div className="p-16 text-center">
+                    <div className="w-16 h-16 bg-gray-50 rounded-[1.5rem] flex items-center justify-center mx-auto mb-4 border border-gray-100">
+                      <Bell className="h-6 w-6 text-gray-300" />
+                    </div>
+                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">No notifications yet</p>
                   </div>
                 ) : (
-                  <div className="divide-y divide-gray-100">
+                  <div className="divide-y divide-gray-50 px-2 py-2">
                     {notifications.map((notification) => (
                       <div
                         key={notification.id}
-                        className={`relative group w-full text-left p-4 hover:bg-gray-50 transition-colors ${
-                          !notification.isRead ? 'bg-orange-50/50' : ''
-                        }`}
+                        className={`relative group w-full text-left p-4 rounded-2xl transition-all duration-300 ${!notification.isRead ? 'bg-orange-50/40 hover:bg-orange-50/70' : 'hover:bg-gray-50/80'
+                          }`}
                       >
                         <button
                           onClick={() => handleNotificationClick(notification)}
                           className="w-full text-left"
                         >
-                          <div className="flex items-start gap-3">
-                            <div className={`flex-shrink-0 mt-0.5 ${getNotificationColor(notification.type)}`}>
-                              <div className={`w-2 h-2 rounded-full ${!notification.isRead ? 'bg-orange-600' : 'bg-transparent'}`} />
-                            </div>
+                          <div className="flex items-start gap-4">
+                            <div className={`mt-1 flex-shrink-0 w-2 h-2 rounded-full ${!notification.isRead ? 'bg-orange-500 animate-pulse' : 'bg-transparent'}`} />
                             <div className="flex-1 min-w-0">
-                              <p className={`text-sm font-medium ${!notification.isRead ? 'text-gray-900' : 'text-gray-700'}`}>
+                              <p className={`text-[11px] font-black uppercase tracking-wider mb-1 ${!notification.isRead ? 'text-gray-900' : 'text-gray-500'}`}>
                                 {notification.title}
                               </p>
-                              <p className="text-xs text-gray-600 mt-1 line-clamp-2">
+                              <p className="text-xs text-gray-600 line-clamp-2 leading-relaxed font-medium">
                                 {notification.message}
                               </p>
-                              <p className="text-xs text-gray-400 mt-1">
-                                {formatDistanceToNow(new Date(notification.createdAt), { addSuffix: true })}
-                              </p>
+                              <div className="flex items-center gap-3 mt-2">
+                                <span className={`text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-md bg-white border border-gray-100 ${getNotificationColor(notification.type)}`}>
+                                  {notification.type}
+                                </span>
+                                <span className="text-[9px] font-bold text-gray-400">
+                                  {formatDistanceToNow(new Date(notification.createdAt), { addSuffix: true })}
+                                </span>
+                              </div>
                             </div>
                           </div>
                         </button>
                         <button
                           onClick={(e) => openDeleteModal(notification.id, e)}
-                          className="absolute top-2 right-2 p-1 rounded-full hover:bg-gray-200 opacity-0 group-hover:opacity-100 transition-opacity"
+                          className="absolute top-4 right-4 p-1.5 rounded-lg text-gray-300 hover:text-red-500 hover:bg-red-50 opacity-0 group-hover:opacity-100 transition-all active:scale-90"
                           aria-label="Delete notification"
                         >
-                          <X className="h-4 w-4 text-gray-400" />
+                          <X className="h-4 w-4" />
                         </button>
                       </div>
                     ))}
@@ -322,17 +332,15 @@ export function NotificationBell() {
               </div>
 
               {/* Footer */}
-              {notifications.length > 0 && (
-                <div className="p-3 border-t border-gray-200">
-                  <a
-                    href="/dashboard?tab=notifications"
-                    onClick={() => setIsOpen(false)}
-                    className="block text-center text-sm text-orange-600 hover:text-orange-700 font-medium"
-                  >
-                    View all notifications
-                  </a>
-                </div>
-              )}
+              <div className="p-4 border-t border-gray-50 bg-gray-50/30">
+                <a
+                  href="/dashboard?tab=notifications"
+                  onClick={() => setIsOpen(false)}
+                  className="block w-full py-3 text-center text-[10px] font-black text-gray-500 uppercase tracking-[0.3em] hover:text-orange-600 transition-all hover:tracking-[0.4em]"
+                >
+                  View all notifications
+                </a>
+              </div>
             </motion.div>
           </>
         )}

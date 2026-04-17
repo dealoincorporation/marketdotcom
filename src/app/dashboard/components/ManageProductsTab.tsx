@@ -348,26 +348,26 @@ export default function ManageProductsTab({
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
     >
-      <div className="mb-6 sm:mb-8">
-        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">Product Management</h1>
-        <p className="text-sm sm:text-base text-gray-600">Comprehensive product inventory and management system</p>
+      <div className="mb-8 sm:mb-12">
+        <h1 className="text-3xl sm:text-4xl font-black text-gray-900 mb-2 tracking-tight uppercase tracking-[0.1em]">Store Inventory</h1>
+        <p className="text-[11px] font-black text-gray-400 uppercase tracking-[0.3em]">Control your stock levels and supply chain logistics</p>
       </div>
 
       {/* Statistics Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4 mb-6 sm:mb-8">
+      <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-10">
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.3, delay: 0.1 }}
         >
-          <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200">
-            <CardContent className="p-3 sm:p-4">
+          <Card className="glass-effect border-white/70 rounded-[1.5rem] premium-shadow h-28 flex flex-col justify-center">
+            <CardContent className="p-5">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-blue-600 text-xs sm:text-sm font-medium">Total Products</p>
-                  <p className="text-lg sm:text-xl font-bold text-blue-900">{totalProducts}</p>
+                  <p className="text-[9px] font-black text-gray-500 uppercase tracking-widest mb-1">Total Items</p>
+                  <p className="text-2xl font-black text-gray-900 tabular-nums">{totalProducts}</p>
                 </div>
-                <Package className="h-5 w-5 sm:h-6 sm:w-6 text-blue-600" />
+                <Package className="h-6 w-6 text-gray-900 opacity-20" />
               </div>
             </CardContent>
           </Card>
@@ -378,14 +378,14 @@ export default function ManageProductsTab({
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.3, delay: 0.2 }}
         >
-          <Card className="bg-gradient-to-br from-green-50 to-green-100 border-green-200">
-            <CardContent className="p-3 sm:p-4">
+          <Card className="glass-effect border-white/70 rounded-[1.5rem] premium-shadow h-28 flex flex-col justify-center">
+            <CardContent className="p-5">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-green-600 text-xs sm:text-sm font-medium">In Stock</p>
-                  <p className="text-lg sm:text-xl font-bold text-green-900">{inStockProducts}</p>
+                  <p className="text-[9px] font-black text-green-600 uppercase tracking-widest mb-1">Ready to Ship</p>
+                  <p className="text-2xl font-black text-green-600 tabular-nums">{inStockProducts}</p>
                 </div>
-                <CheckCircle className="h-5 w-5 sm:h-6 sm:w-6 text-green-600" />
+                <CheckCircle className="h-6 w-6 text-green-600 opacity-20" />
               </div>
             </CardContent>
           </Card>
@@ -396,14 +396,14 @@ export default function ManageProductsTab({
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.3, delay: 0.3 }}
         >
-          <Card className="bg-gradient-to-br from-red-50 to-red-100 border-red-200">
-            <CardContent className="p-3 sm:p-4">
+          <Card className="glass-effect border-white/70 rounded-[1.5rem] premium-shadow h-28 flex flex-col justify-center bg-gray-50 font-black">
+            <CardContent className="p-5">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-red-600 text-xs sm:text-sm font-medium">Out of Stock</p>
-                  <p className="text-lg sm:text-xl font-bold text-red-900">{outOfStockProducts}</p>
+                  <p className="text-[9px] font-black text-red-500 uppercase tracking-widest mb-1">Out of Stock</p>
+                  <p className="text-2xl font-black text-red-900 tabular-nums">{outOfStockProducts}</p>
                 </div>
-                <XCircle className="h-5 w-5 sm:h-6 sm:w-6 text-red-600" />
+                <XCircle className="h-6 w-6 text-red-600 opacity-20" />
               </div>
             </CardContent>
           </Card>
@@ -414,14 +414,14 @@ export default function ManageProductsTab({
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.3, delay: 0.4 }}
         >
-          <Card className="bg-gradient-to-br from-orange-50 to-orange-100 border-orange-200">
-            <CardContent className="p-3 sm:p-4">
+          <Card className="glass-effect border-white/70 rounded-[1.5rem] premium-shadow h-28 flex flex-col justify-center border-orange-200 bg-orange-50/10">
+            <CardContent className="p-5">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-orange-600 text-xs sm:text-sm font-medium">Low Stock</p>
-                  <p className="text-lg sm:text-xl font-bold text-orange-900">{lowStockProducts}</p>
+                  <p className="text-[9px] font-black text-orange-600 uppercase tracking-widest mb-1">Refill Soon</p>
+                  <p className="text-2xl font-black text-orange-950 tabular-nums">{lowStockProducts}</p>
                 </div>
-                <AlertTriangle className="h-5 w-5 sm:h-6 sm:w-6 text-orange-600" />
+                <AlertTriangle className="h-6 w-6 text-orange-600 opacity-20" />
               </div>
             </CardContent>
           </Card>
@@ -432,14 +432,14 @@ export default function ManageProductsTab({
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.3, delay: 0.5 }}
         >
-          <Card className="bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200">
-            <CardContent className="p-3 sm:p-4">
+          <Card className="glass-effect border-white/70 rounded-[1.5rem] premium-shadow h-28 flex flex-col justify-center bg-gray-900">
+            <CardContent className="p-5">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-purple-600 text-xs sm:text-sm font-medium">Total Value</p>
-                  <p className="text-base sm:text-lg font-bold text-purple-900">{formatPrice(totalValue)}</p>
+                  <p className="text-[9px] font-black text-gray-500 uppercase tracking-widest mb-1">Warehouse Value</p>
+                  <p className="text-lg font-black text-white tabular-nums">{formatPrice(totalValue)}</p>
                 </div>
-                <BarChart3 className="h-5 w-5 sm:h-6 sm:w-6 text-purple-600" />
+                <BarChart3 className="h-6 w-6 text-white opacity-20" />
               </div>
             </CardContent>
           </Card>
@@ -586,20 +586,20 @@ export default function ManageProductsTab({
         </Button>
       </div>
 
-      {/* Breadcrumb: Category → Product → Variants */}
+      {/* Shelf Location: Category → Product → Units */}
       {(selectedCategory !== "all" || effectiveProductGroup !== "all") && (
-        <div className="mb-4 px-3 py-2 bg-gray-50 rounded-lg border border-gray-200 text-sm text-gray-700">
-          <span className="font-medium">Browse:</span>{" "}
-          <span>
-            Category: <strong>{selectedCategory === "all" ? "All" : categories.find((c) => c.id === selectedCategory)?.name ?? "—"}</strong>
+        <div className="mb-6 px-6 py-4 glass-effect border-white/70 rounded-2xl flex items-center flex-wrap gap-2 text-[10px] font-black uppercase tracking-[0.1em]">
+          <span className="text-gray-400">Shelf Layout:</span>{" "}
+          <span className="text-gray-900">
+            Catalog: <strong className="text-orange-600">{selectedCategory === "all" ? "Whole Store" : categories.find((c) => c.id === selectedCategory)?.name ?? "—"}</strong>
           </span>
-          <span className="mx-2">→</span>
-          <span>
-            Product: <strong>{effectiveProductGroup === "all" ? "All" : effectiveProductGroup}</strong>
+          <span className="mx-1 text-gray-300">/</span>
+          <span className="text-gray-900">
+            Stack: <strong className="text-orange-600">{effectiveProductGroup === "all" ? "All Items" : effectiveProductGroup}</strong>
           </span>
-          <span className="mx-2">→</span>
-          <span>
-            Variants: <strong>{filteredProducts.length} item(s)</strong>
+          <span className="mx-1 text-gray-300">/</span>
+          <span className="text-gray-900">
+            Units: <strong className="text-orange-600">{filteredProducts.length} Ready</strong>
           </span>
         </div>
       )}

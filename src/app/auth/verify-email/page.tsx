@@ -5,7 +5,8 @@ import { useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Loader2, Mail, CheckCircle, RefreshCw, Shield, Clock } from "lucide-react"
+import { Loader2, Mail, CheckCircle, RefreshCw, Shield, Clock, AlertCircle, ArrowRight } from "lucide-react"
+import { motion } from "framer-motion"
 import { AuthLayout } from "@/components/auth-layout"
 import { useAuth } from "@/contexts/AuthContext"
 import toast from "react-hot-toast"
@@ -169,22 +170,23 @@ function VerifyEmailForm() {
       title="Verify your email"
       subtitle="We've sent a 6-digit verification code to your email"
     >
-      <div className="space-y-8">
+      <div className="space-y-10">
         {status === "error" && (
-          <Alert variant="destructive" className="border-red-200 bg-red-50">
-            <AlertDescription className="text-red-800">{message}</AlertDescription>
+          <Alert variant="destructive" className="border-red-200/50 bg-red-50/50 backdrop-blur-md rounded-2xl">
+            <AlertCircle className="h-4 w-4 text-red-600" />
+            <AlertDescription className="text-red-800 font-bold text-xs uppercase tracking-wider">{message}</AlertDescription>
           </Alert>
         )}
 
         {status === "success" && (
-          <Alert className="border-green-200 bg-green-50">
+          <Alert className="border-green-200/50 bg-green-50/50 backdrop-blur-md rounded-2xl">
             <CheckCircle className="h-4 w-4 text-green-600" />
             <AlertDescription className="text-green-800">
-              <div className="space-y-3">
-                <p>{message}</p>
+              <div className="space-y-4">
+                <p className="font-bold text-sm">{message}</p>
                 <Button
                   onClick={handleContinueToLogin}
-                  className="w-full bg-green-600 hover:bg-green-700"
+                  className="w-full h-14 bg-green-600 hover:bg-green-700 text-white font-black text-[11px] uppercase tracking-widest rounded-xl"
                 >
                   Continue to Sign In
                 </Button>
@@ -195,46 +197,54 @@ function VerifyEmailForm() {
 
         {/* Hero Section */}
         <div className="text-center">
-          <div className="flex justify-center mb-8">
-            <div className="relative">
-              <div className="w-20 h-20 bg-gradient-to-br from-orange-400 to-orange-600 rounded-2xl flex items-center justify-center shadow-lg">
-                <Shield className="h-10 w-10 text-white" />
+          <div className="flex justify-center mb-10">
+            <motion.div
+              initial={{ rotate: -10, scale: 0.9 }}
+              animate={{ rotate: 0, scale: 1 }}
+              className="relative"
+            >
+              <div className="w-24 h-24 bg-gradient-to-br from-orange-400 to-orange-600 rounded-[2rem] flex items-center justify-center shadow-2xl relative z-10">
+                <Shield className="h-12 w-12 text-white" strokeWidth={1.5} />
               </div>
-              <div className="absolute -top-2 -right-2 w-8 h-8 bg-orange-300 rounded-full flex items-center justify-center">
-                <span className="text-xs font-bold text-gray-800">🔐</span>
+              <div className="absolute -inset-4 bg-orange-400/20 blur-2xl rounded-full -z-10 animate-pulse" />
+              <div className="absolute -top-3 -right-3 w-10 h-10 bg-white rounded-2xl flex items-center justify-center shadow-lg border border-orange-100 z-20">
+                <span className="text-lg">🔐</span>
               </div>
-            </div>
+            </motion.div>
           </div>
 
-          <h3 className="text-2xl font-bold text-gray-900 mb-3">
-            Enter Verification Code
+          <h3 className="text-2xl sm:text-3xl font-black text-gray-900 mb-4 tracking-tight uppercase">
+            Email Verification
           </h3>
 
           {email ? (
-            <p className="text-gray-600 mb-6">
-              We've sent a 6-digit code to <strong className="text-orange-600">{email}</strong>
+            <p className="text-sm font-bold text-gray-500 tracking-tight mb-8">
+              A 6-digit verification code has been sent to <span className="text-orange-600 block sm:inline mt-1 sm:mt-0">{email}</span>
             </p>
           ) : (
-            <div className="mb-6">
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-                Enter your email address
+            <div className="mb-8">
+              <label htmlFor="email" className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 text-left ml-1">
+                Email Address
               </label>
-              <input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="your@email.com"
-                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-colors"
-                required
-              />
+              <div className="relative">
+                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" strokeWidth={1.5} />
+                <input
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="your@email.com"
+                  className="w-full h-14 pl-12 pr-4 bg-white/50 backdrop-blur-sm border border-white/60 rounded-2xl focus:outline-none focus:ring-4 focus:ring-orange-100 focus:border-orange-400 transition-all text-base text-gray-900 font-medium shadow-sm"
+                  required
+                />
+              </div>
             </div>
           )}
         </div>
 
         {/* Code Input */}
-        <div className="space-y-6">
-          <div className="flex justify-center space-x-3">
+        <div className="space-y-8">
+          <div className="flex justify-center gap-2 sm:gap-4">
             {[0, 1, 2, 3, 4, 5].map((index) => (
               <input
                 key={index}
@@ -246,7 +256,7 @@ function VerifyEmailForm() {
                 value={verificationCode[index] || ''}
                 onChange={(e) => handleCodeChange(index, e.target.value.replace(/\D/g, ''))}
                 onKeyDown={(e) => handleKeyDown(index, e)}
-                className="w-12 h-12 text-center text-xl font-bold border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all hover:border-orange-400"
+                className="w-11 h-16 sm:w-14 sm:h-20 text-center text-2xl font-black bg-white/60 backdrop-blur-md border-2 border-white rounded-[1.25rem] focus:outline-none focus:ring-4 focus:ring-orange-100 focus:border-orange-500 transition-all text-gray-900 shadow-xl hover:translate-y-[-2px]"
                 disabled={verifying}
               />
             ))}
@@ -256,64 +266,57 @@ function VerifyEmailForm() {
           <Button
             onClick={handleVerifyCode}
             disabled={verifying || verificationCode.length !== 6}
-            className="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white py-4 rounded-xl font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full h-16 rounded-2xl bg-gray-900 border border-white/20 text-white font-black text-[12px] uppercase tracking-[0.2em] shadow-2xl hover:bg-black hover:scale-[1.02] active:scale-[0.98] transition-all relative overflow-hidden group"
           >
-            {verifying ? (
-              <>
-                <Loader2 className="inline h-5 w-5 animate-spin mr-2" />
-                Verifying...
-              </>
-            ) : (
-              <>
-                <Shield className="inline h-5 w-5 mr-2" />
-                Verify Code
-              </>
-            )}
+            <div className="absolute inset-0 bg-gradient-to-r from-orange-600/20 via-transparent to-orange-600/20 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
+            <div className="relative z-10 flex items-center justify-center gap-3">
+              {verifying ? (
+                <>
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                  Verifying...
+                </>
+              ) : (
+                <>
+                  <Shield className="h-5 w-5 text-orange-500" strokeWidth={2} />
+                  Verify Code
+                  <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
+                </>
+              )}
+            </div>
           </Button>
         </div>
 
-        {/* Status Messages */}
-        {resent && (
-          <Alert className="border-green-200 bg-green-50">
-            <CheckCircle className="h-4 w-4 text-green-600" />
-            <AlertDescription className="text-green-800">
-              Verification code sent successfully!
-            </AlertDescription>
-          </Alert>
-        )}
-
         {/* Help Section */}
-        <div className="space-y-4">
-          <div className="flex items-center justify-center space-x-2 text-sm text-gray-500">
-            <Clock className="h-4 w-4" />
-            <span>Code expires in 10 minutes</span>
+        <div className="space-y-8">
+          <div className="flex items-center justify-center space-x-2">
+            <div className="flex items-center gap-2 px-4 py-2 bg-orange-50 rounded-full border border-orange-100">
+              <Clock className="h-3 w-3 text-orange-500" />
+              <span className="text-[10px] font-black text-orange-600 uppercase tracking-widest">Valid for 10:00m</span>
+            </div>
           </div>
 
-          <p className="text-center text-sm text-gray-500">
-            Didn't receive the code? Check your spam folder or{" "}
-            <button
-              onClick={handleResendEmail}
-              disabled={resending}
-              className="text-orange-600 hover:text-orange-500 font-medium disabled:opacity-50 transition-colors"
-            >
-              {resending ? (
-                <>
-                  <Loader2 className="inline h-3 w-3 animate-spin mr-1" />
-                  Sending...
-                </>
-              ) : (
-                "resend it"
-              )}
-            </button>
-          </p>
+          <div className="text-center">
+            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-loose">
+              Didn't receive the code? <br className="sm:hidden" />
+              <button
+                onClick={handleResendEmail}
+                disabled={resending}
+                className="text-orange-600 hover:text-orange-700 hover:underline underline-offset-4 decoration-2 disabled:opacity-50 transition-all ml-1"
+              >
+                {resending ? "Resending..." : "Resend Code"}
+              </button>
+            </p>
+          </div>
 
-          <Button
-            variant="outline"
-            onClick={() => router.push("/auth/login")}
-            className="w-full border-2 border-gray-300 hover:border-gray-400 rounded-xl py-3"
-          >
-            Back to Sign In
-          </Button>
+          <div className="flex flex-col gap-3">
+            <Button
+              variant="outline"
+              onClick={() => router.push("/auth/login")}
+              className="w-full h-14 border border-white/60 bg-white/40 backdrop-blur-sm hover:bg-white/80 rounded-xl text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] transition-all"
+            >
+              Back to Login
+            </Button>
+          </div>
         </div>
 
         {/* Support */}

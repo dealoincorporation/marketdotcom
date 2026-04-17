@@ -60,63 +60,75 @@ export function AuthLayout({ children, title, subtitle }: AuthLayoutProps) {
       </div>
 
       {/* Inner Scrollable Auth Form Panel Only */}
-      <div className="flex-1 lg:flex-none lg:w-1/2 h-screen overflow-hidden bg-gray-50">
-        <div className="h-full overflow-y-auto">
-          <div className="min-h-screen flex items-center justify-center p-8">
+      <div className="flex-1 lg:flex-none lg:w-1/2 h-screen overflow-hidden bg-[#F8F9FA] relative">
+        {/* Dynamic Mesh Gradients for the form side */}
+        <div className="absolute inset-0 pointer-events-none overflow-hidden -z-10">
+          <div className="absolute top-[-20%] right-[-10%] w-[60%] h-[60%] bg-orange-400/10 blur-[120px] rounded-full" />
+          <div className="absolute bottom-[-20%] left-[-10%] w-[60%] h-[60%] bg-blue-400/5 blur-[120px] rounded-full" />
+        </div>
+
+        <div className="h-full overflow-y-auto custom-scrollbar">
+          <div className="min-h-screen flex items-center justify-center p-6 sm:p-12">
             <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
-              className="w-full max-w-md"
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.6, ease: "easeOut" }}
+              className="w-full max-w-lg"
             >
               {/* Back to Home Link */}
-              <div className="mb-6 relative z-20">
+              <div className="mb-10 flex justify-between items-center">
                 <Link
                   href="/"
-                  className="inline-flex items-center space-x-2 text-gray-600 hover:text-green-600 transition-colors group pointer-events-auto"
+                  className="inline-flex items-center space-x-2 text-gray-500 hover:text-orange-600 transition-all duration-300 group px-4 py-2 bg-white/85 backdrop-blur-md rounded-xl border border-white/70 shadow-sm"
                 >
                   <ArrowLeft className="h-4 w-4 group-hover:-translate-x-1 transition-transform" />
-                  <span className="text-sm font-medium">Back to Home</span>
+                  <span className="text-[11px] font-black uppercase tracking-widest">Home</span>
                 </Link>
+
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 rounded-full bg-orange-500 animate-pulse" />
+                  <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Secure connection</span>
+                </div>
               </div>
 
-              {/* Centered Logo */}
-              <motion.div
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.5, delay: 0.2 }}
-                className="flex justify-center mb-8"
-              >
-                <img
-                  src="/mrktdotcom-logo.png"
-                  alt="Marketdotcom Logo"
-                  className="h-48 w-48 sm:h-56 sm:w-56 object-contain"
-                />
-              </motion.div>
+              <div className="glass-effect rounded-[2.5rem] border border-white/80 p-8 sm:p-12 premium-shadow relative overflow-hidden">
+                {/* Subtle highlight */}
+                <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-orange-500/30 to-transparent" />
 
-              <div className="bg-white rounded-2xl p-8 mb-8">
-                <div className="text-center mb-8">
-                  <h2 className="text-3xl font-bold text-gray-900 mb-2">{title}</h2>
-                  <p className="text-gray-600">{subtitle}</p>
+                <div className="relative z-10">
+                  <div className="flex justify-center mb-10">
+                    <motion.div
+                      whileHover={{ scale: 1.05 }}
+                      transition={{ type: "spring", stiffness: 300 }}
+                    >
+                      <img
+                        src="/mrktdotcom-logo.png"
+                        alt="Marketdotcom Logo"
+                        className="h-32 w-32 sm:h-40 sm:w-40 object-contain drop-shadow-xl"
+                      />
+                    </motion.div>
+                  </div>
+
+                  <div className="text-center mb-10">
+                    <h2 className="text-3xl sm:text-4xl font-black text-gray-900 mb-3 tracking-tighter uppercase">{title}</h2>
+                    <p className="text-sm font-bold text-gray-500 tracking-tight">{subtitle}</p>
+                  </div>
+
+                  {children}
                 </div>
-
-                {children}
               </div>
 
               {/* Footer Links */}
-              <div className="text-center space-y-4 pb-8">
-                <div className="flex flex-wrap justify-center gap-4 text-sm text-gray-600">
-                  <Link href="/" className="hover:text-orange-600 transition-colors inline-flex items-center space-x-1">
-                    <Home className="h-3 w-3" />
-                    <span>Home</span>
-                  </Link>
-                  <span>•</span>
-                  <Link href="/help" className="hover:text-orange-600 transition-colors">
-                    Help Center
-                  </Link>
+              <div className="mt-12 text-center space-y-6">
+                <div className="flex justify-center items-center gap-6">
+                  <Link href="/help" className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] hover:text-orange-600 transition-colors">Support</Link>
+                  <div className="w-1 h-1 rounded-full bg-gray-300" />
+                  <Link href="/privacy" className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] hover:text-orange-600 transition-colors">Privacy</Link>
+                  <div className="w-1 h-1 rounded-full bg-gray-300" />
+                  <Link href="/terms" className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] hover:text-orange-600 transition-colors">Terms</Link>
                 </div>
-                <p className="text-xs text-gray-500">
-                  © 2025 Marketdotcom. All rights reserved.
+                <p className="text-[10px] font-black text-gray-300 uppercase tracking-[0.3em]">
+                  © 2026 Marketdotcom
                 </p>
               </div>
             </motion.div>

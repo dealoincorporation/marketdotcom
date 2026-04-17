@@ -5,9 +5,12 @@ import React, { createContext, useContext, useEffect, useState } from 'react'
 interface User {
   id: string
   email: string
-  name: string
+  name?: string | null
+  phone?: string | null
+  image?: string | null
   role: string
-  emailVerified?: boolean
+  emailVerified?: string | Date | null
+  hasPassword?: boolean
 }
 
 interface AuthContextType {
@@ -51,6 +54,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     initializeAuth()
   }, [])
 
+  useEffect(() => {
+    if (typeof window === "undefined") return
+    if (!user) return
+    localStorage.setItem("user", JSON.stringify(user))
+  }, [user])
+
   // Check token expiration every 5 minutes
   useEffect(() => {
     if (typeof window === 'undefined' || !token) return
@@ -92,7 +101,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => clearInterval(interval)
   }, [token])
 
-  const fetchUserData = async (accessToken: string) => {
+  async function fetchUserData(accessToken: string) {
     try {
       const controller = new AbortController()
       const timeoutId = setTimeout(() => controller.abort(), 10000)

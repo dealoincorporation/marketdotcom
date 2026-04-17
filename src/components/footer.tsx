@@ -494,6 +494,10 @@ export function Footer() {
                 </p>
                 <motion.div className="flex items-center space-x-4 text-xs text-gray-500">
                   <Link href="/help" className="hover:text-orange-400 transition-colors">Help Center</Link>
+                  <span>•</span>
+                  <Link href="/privacy" className="hover:text-orange-400 transition-colors">Privacy Policy</Link>
+                  <span>•</span>
+                  <Link href="/terms" className="hover:text-orange-400 transition-colors">Terms & Conditions</Link>
                 </motion.div>
               </motion.div>
 

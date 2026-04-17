@@ -5,8 +5,10 @@ import { useRouter, useSearchParams } from "next/navigation"
 import {
   Wallet,
   Star,
-  Plus
+  Plus,
+  Tag
 } from "lucide-react"
+import { motion, AnimatePresence } from "framer-motion"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import toast from "react-hot-toast"
@@ -596,111 +598,138 @@ export default function WalletTab({ walletInfo, onTabChange }: WalletTabProps) {
   const { tier, tierName, pointsToNextTier } = rewardsData
 
   return (
-    <div>
-      <div className="mb-6">
-        <h1 className="text-xl font-semibold text-gray-700 mb-1">Wallet & Points</h1>
-        <p className="text-sm text-gray-500">Manage your balance, earn points, and track your rewards</p>
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+      className="space-y-12 pb-12"
+    >
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-4">
+        <div>
+          <h1 className="text-3xl font-black text-gray-900 tracking-tight uppercase">Wallet & Rewards</h1>
+          <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mt-1">Manage your wallet and reward points</p>
+        </div>
+        <div className="flex items-center gap-3 bg-white/85 backdrop-blur-md px-5 py-3 rounded-2xl border border-white/70 premium-shadow">
+          <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+          <span className="text-xs font-black text-gray-900 uppercase tracking-tight">Live updates</span>
+        </div>
       </div>
 
       {/* Wallet Balance & Points Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-        <div className="h-full">
-          <Card className="bg-gradient-to-br from-green-50 to-emerald-100 border-green-200 shadow-lg h-full">
-            <CardHeader className="pb-2">
-              <CardTitle className="flex items-center space-x-2 text-green-800 text-base font-medium">
-                <Wallet className="h-5 w-5" />
-                <span>Wallet Balance</span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="flex flex-col h-full">
-              <div className="text-3xl sm:text-4xl font-bold text-green-900 mb-2">
-                {formatPrice(walletInfo.walletBalance)}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div className="relative group perspective h-full">
+          <div className="absolute -inset-1 bg-gradient-to-r from-green-400 to-emerald-600 rounded-[2.5rem] blur opacity-25 group-hover:opacity-40 transition duration-1000" />
+          <Card className="relative glass-effect border border-white/70 rounded-[2.5rem] premium-shadow h-full overflow-hidden bg-white/75 backdrop-blur-3xl p-8 sm:p-10 flex flex-col min-h-[300px]">
+            <div className="absolute top-0 right-0 -translate-y-12 translate-x-12 w-64 h-64 bg-green-500/10 blur-[80px] rounded-full" />
+
+            <div className="flex items-center justify-between mb-8 relative z-10">
+              <div className="flex items-center gap-4">
+                <div className="w-14 h-14 bg-gradient-to-br from-green-500 to-emerald-600 rounded-[1.25rem] flex items-center justify-center shadow-xl shadow-green-600/20">
+                  <Wallet className="h-7 w-7 text-white" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-black text-gray-900 tracking-tight leading-none mb-1">Main Balance</h3>
+                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Available Balance</p>
+                </div>
               </div>
-              <div className="flex items-center space-x-2 mb-3">
-                <Badge className="bg-green-100 text-green-800 border-green-300">
-                  Active Wallet
+              <div className="bg-green-100/50 px-4 py-2 rounded-xl border border-green-200">
+                <span className="text-xs font-black text-green-700 uppercase tracking-wider">NGN</span>
+              </div>
+            </div>
+
+            <div className="mb-8 relative z-10">
+              <span className="text-4xl sm:text-5xl font-black text-gray-900 tracking-tighter">
+                {formatPrice(walletInfo.walletBalance)}
+              </span>
+              <div className="flex items-center gap-2 mt-4">
+                <Badge className="bg-green-500/10 text-green-600 border-none px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest">
+                  Verified Wallet
                 </Badge>
-                <span className="text-green-700 text-sm">
-                  Available for purchases
+                <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest border-l border-gray-200 pl-3">
+                  Instant Access
                 </span>
               </div>
+            </div>
 
-              {/* Usage visualization - similar to rewards progress bar */}
-              <div className="w-full bg-green-200 rounded-full h-2 mb-6">
-                <div
-                  className="bg-green-600 h-2 rounded-full transition-all duration-500"
-                  style={{ width: `${Math.min((walletInfo.walletBalance / 50000) * 100, 100)}%` }}
-                ></div>
-              </div>
+            <div className="w-full bg-gray-100 rounded-full h-1.5 mb-8 relative z-10">
+              <motion.div
+                initial={{ width: 0 }}
+                animate={{ width: `${Math.min((walletInfo.walletBalance / 50000) * 100, 100)}%` }}
+                className="bg-green-500 h-1.5 rounded-full"
+              />
+            </div>
 
-              <div className="space-y-2">
-                <button
-                  onClick={() => setShowFundModal(true)}
-                  className="w-full px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors text-sm font-medium flex items-center justify-center space-x-1 cursor-pointer"
-                >
-                  <Plus className="h-4 w-4" />
-                  <span>Add Money</span>
-                </button>
-                <p className="text-xs text-green-600 text-center">
-                  Secure • Fast • Reliable
-                </p>
-              </div>
-            </CardContent>
+            <div className="mt-auto pt-6 border-t border-gray-100 flex items-center gap-4 relative z-10">
+              <button
+                onClick={() => setShowFundModal(true)}
+                className="flex-1 h-14 bg-gray-900 hover:bg-green-600 text-white rounded-[1.25rem] font-black uppercase text-[10px] tracking-[0.2em] transition-all duration-300 shadow-xl shadow-black/10 hover:shadow-green-600/30 active:scale-95 flex items-center justify-center gap-2"
+              >
+                <Plus className="h-4 w-4" />
+                <span>Add Funds</span>
+              </button>
+            </div>
           </Card>
         </div>
 
-        <div className="h-full">
-          <Card className="bg-gradient-to-br from-orange-50 to-red-100 border-orange-200 shadow-lg h-full">
-            <CardHeader className="pb-4">
-              <CardTitle className="flex items-center space-x-2 text-orange-800">
-                <Star className="h-6 w-6" />
-                <span>Reward Points</span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="flex flex-col h-full">
-              <div className="text-3xl font-bold text-orange-900 mb-2">
-                {rewardsLoading ? "..." : rewardsData.totalPoints.toLocaleString() + " pts"}
+        <div className="relative group perspective h-full">
+          <div className="absolute -inset-1 bg-gradient-to-r from-orange-400 to-red-600 rounded-[2.5rem] blur opacity-25 group-hover:opacity-40 transition duration-1000" />
+          <Card className="relative glass-effect border border-white/70 rounded-[2.5rem] premium-shadow h-full overflow-hidden bg-white/75 backdrop-blur-3xl p-8 sm:p-10 flex flex-col min-h-[300px]">
+            <div className="absolute top-0 right-0 -translate-y-12 translate-x-12 w-64 h-64 bg-orange-500/10 blur-[80px] rounded-full" />
+
+            <div className="flex items-center justify-between mb-8 relative z-10">
+              <div className="flex items-center gap-4">
+                <div className="w-14 h-14 bg-gradient-to-br from-orange-500 to-red-600 rounded-[1.25rem] flex items-center justify-center shadow-xl shadow-orange-600/20">
+                  <Star className="h-7 w-7 text-white" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-black text-gray-900 tracking-tight leading-none mb-1">Rewards Points</h3>
+                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Your Rewards Status</p>
+                </div>
               </div>
-              <div className="flex items-center space-x-2 mb-3">
-                <Badge className="bg-orange-100 text-orange-800 border-orange-300">
+              <div className="bg-orange-100/50 px-4 py-2 rounded-xl border border-orange-200">
+                <span className="text-xs font-black text-orange-700 uppercase tracking-wider">PTS</span>
+              </div>
+            </div>
+
+            <div className="mb-8 relative z-10">
+              <span className="text-4xl sm:text-5xl font-black text-gray-900 tracking-tighter">
+                {rewardsLoading ? "..." : rewardsData.totalPoints.toLocaleString()}
+              </span>
+              <div className="flex items-center gap-2 mt-4">
+                <Badge className="bg-orange-500/10 text-orange-600 border-none px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest">
                   {tierName} Tier
                 </Badge>
-                <span className="text-orange-700 text-sm">
-                  {pointsToNextTier} pts to next tier
+                <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest border-l border-gray-200 pl-3">
+                  {pointsToNextTier} PTS to {tier === 3 ? 'Max' : 'Higher'} Tier
                 </span>
               </div>
-              <div className="w-full bg-orange-200 rounded-full h-2 mb-6">
-                <div
-                  className="bg-orange-600 h-2 rounded-full transition-all duration-500"
-                  style={{ width: `${((rewardsData.totalPoints % 1000) / 1000) * 100}%` }}
-                ></div>
-              </div>
+            </div>
 
-              <div className="space-y-2">
-                <button
-                  onClick={() => setShowConvertModal(true)}
-                  disabled={rewardsData.totalPoints < pointsSettings.minimumPointsToConvert}
-                  className="w-full px-4 py-2 bg-orange-600 text-white rounded-md hover:bg-orange-700 disabled:bg-gray-400 cursor-pointer disabled:cursor-not-allowed transition-colors text-sm font-medium"
-                >
-                  Convert to Cash
-                </button>
-                <p className="text-xs text-orange-600 text-center">
-                  Min: {pointsSettings.minimumPointsToConvert} pts • Rate: {pointsSettings.nairaPerPoint} pts = ₦1
-                </p>
-              </div>
-              {/* Patronage rule (admin-editable; user sees live settings) */}
-              {!rewardsLoading && (
-                <p className="text-xs text-orange-700/90 mt-3 pt-3 border-t border-orange-200">
-                  <strong>How you earn:</strong> {pointsSettings.pointsPerThreshold} pt{pointsSettings.pointsPerThreshold !== 1 ? "s" : ""} for every ₦{(pointsSettings.amountThreshold ?? 50000).toLocaleString()} spent within {pointsSettings.periodDays ?? 30} days.
-                </p>
-              )}
-            </CardContent>
+            <div className="w-full bg-gray-100 rounded-full h-1.5 mb-8 relative z-10">
+              <motion.div
+                initial={{ width: 0 }}
+                animate={{ width: `${((rewardsData.totalPoints % 1000) / 1000) * 100}%` }}
+                className="bg-orange-500 h-1.5 rounded-full"
+              />
+            </div>
+
+            <div className="mt-auto pt-6 border-t border-gray-100 flex items-center gap-4 relative z-10">
+              <button
+                onClick={() => setShowConvertModal(true)}
+                disabled={rewardsLoading || rewardsData.totalPoints < pointsSettings.minimumPointsToConvert}
+                className="flex-1 h-14 bg-orange-600 hover:bg-orange-700 text-white rounded-[1.25rem] font-black uppercase text-[10px] tracking-[0.2em] transition-all duration-300 shadow-xl shadow-orange-600/30 active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2"
+              >
+                <Tag className="h-4 w-4" />
+                <span>Convert Points</span>
+              </button>
+            </div>
           </Card>
         </div>
       </div>
 
       {/* Referral Program */}
-      <div>
+      <div className="relative group">
+        <div className="absolute -inset-1 bg-gradient-to-r from-gray-900 to-gray-800 rounded-[3rem] blur opacity-5" />
         <WalletReferralSection
           referralSettings={referralSettings}
           referralSettingsLoading={referralSettingsLoading}
@@ -715,7 +744,7 @@ export default function WalletTab({ walletInfo, onTabChange }: WalletTabProps) {
       </div>
 
       {/* Recent Transactions */}
-      <div>
+      <div className="relative">
         <WalletTransactionHistory
           transactions={recentTransactions}
           loading={transactionsLoading}
@@ -750,6 +779,6 @@ export default function WalletTab({ walletInfo, onTabChange }: WalletTabProps) {
           onClose={() => { setShowConvertModal(false); setPointsToConvert("") }}
         />
       )}
-    </div>
+    </motion.div>
   )
 }

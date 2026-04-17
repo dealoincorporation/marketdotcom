@@ -23,99 +23,101 @@ export function ProductBasicInfo({
   onInputChange,
 }: ProductBasicInfoProps) {
   return (
-    <Card className="border-2 border-gray-200 shadow-lg">
-      <CardHeader className="bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-            <Info className="h-5 w-5 text-blue-600" />
-          </div>
-          <div>
-            <CardTitle className="text-lg font-bold text-gray-900">Basic Information</CardTitle>
-            <p className="text-sm text-gray-600 mt-0.5">Product details and pricing</p>
-          </div>
+    <div className="space-y-12">
+      {/* Module Header */}
+      <div className="flex items-center gap-4 border-b border-gray-100 pb-6">
+        <div className="p-3 bg-orange-100 rounded-2xl shadow-sm">
+          <Info className="h-5 w-5 text-orange-600" strokeWidth={2} />
         </div>
-      </CardHeader>
-      <CardContent className="p-6">
-        <div className="space-y-6">
-          {/* Product (for Category → Product → Variant) */}
-          <div className="space-y-2">
-            <Label htmlFor="groupName" className="text-sm font-semibold text-gray-700 flex items-center gap-2">
-              Product
-              <span className="text-xs font-normal text-gray-400">(e.g. Rice, Beans — optional)</span>
-            </Label>
+        <div>
+          <h2 className="text-sm font-black text-gray-900 uppercase tracking-[0.2em]">Product basics</h2>
+          <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mt-1">Name, category, price, stock, and delivery details</p>
+        </div>
+      </div>
+
+      <div className="space-y-10">
+        {/* Optional product group for related listings */}
+        <div className="space-y-3">
+          <Label htmlFor="groupName" className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] ml-1 flex items-center gap-2">
+            Product group <span className="opacity-50 text-[9px]">(Optional)</span>
+          </Label>
+          <div className="relative group">
+            <div className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 group-focus-within:text-orange-500 transition-colors pointer-events-none">
+              <Package className="h-full w-full" strokeWidth={1.5} />
+            </div>
             <Input
               id="groupName"
               value={formData.groupName || ''}
               onChange={(e) => onInputChange('groupName', e.target.value)}
-              placeholder='e.g. Rice, Beans, Oloyin'
-              className="h-12 text-base border-2 border-gray-300 focus:border-orange-500 focus:ring-2 focus:ring-orange-200 rounded-lg"
+              placeholder="e.g. Rice, Grains, Cereals"
+              className="h-14 pl-12 pr-4 rounded-2xl border-white bg-white shadow-sm outline-none transition-all duration-300 focus:border-orange-400 focus:ring-4 focus:ring-orange-100"
             />
-            <div className="flex items-start gap-2 bg-blue-50 border border-blue-200 rounded-lg p-3">
-              <Info className="h-4 w-4 text-blue-600 mt-0.5 flex-shrink-0" />
-              <p className="text-xs text-blue-700">
-                Set this so you can browse by Category → Product → Variant in the dashboard. Example: Category: Grains and Cereals → Product: Rice → Variant: this product (e.g. Mama&apos;s Pride Basmati 5kg).
-              </p>
-            </div>
+          </div>
+          <div className="flex items-start gap-3 p-4 bg-orange-50/50 backdrop-blur-sm border border-orange-100/50 rounded-2xl">
+            <Info className="h-4 w-4 text-orange-600 mt-0.5" />
+            <p className="text-[10px] font-bold text-orange-800/70 leading-relaxed uppercase tracking-tight">
+              Use a group name to link related products (for example: Rice, Grains, Cereals). Shoppers can browse by group in the marketplace.
+            </p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          {/* Product Name */}
+          <div className="space-y-3">
+            <Label htmlFor="name" className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] ml-1">
+              Product name <span className="text-orange-500">*</span>
+            </Label>
+            <Input
+              id="name"
+              value={formData.name}
+              onChange={(e) => onInputChange('name', e.target.value)}
+              placeholder="Standard product name"
+              className={`h-14 px-5 rounded-2xl border-white bg-white shadow-sm outline-none transition-all duration-300 focus:border-orange-400 focus:ring-4 focus:ring-orange-100 ${errors.name ? 'border-red-500 ring-red-50' : ''}`}
+            />
+            {errors.name && (
+              <p className="text-[9px] font-black text-red-500 uppercase tracking-widest ml-1">{errors.name}</p>
+            )}
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Product Name */}
-            <div className="space-y-2">
-              <Label htmlFor="name" className="text-sm font-semibold text-gray-700">
-                Product Name <span className="text-red-500">*</span>
-              </Label>
-              <Input
-                id="name"
-                value={formData.name}
-                onChange={(e) => onInputChange('name', e.target.value)}
-                placeholder="Enter product name"
-                className={`h-12 text-base border-2 ${errors.name ? 'border-red-500 focus:border-red-500 focus:ring-red-200' : 'border-gray-300 focus:border-orange-500 focus:ring-orange-200'} rounded-lg`}
-              />
-              {errors.name && (
-                <p className="text-xs text-red-600 flex items-center gap-1">
-                  <span>✗</span> {errors.name}
-                </p>
-              )}
-            </div>
+          {/* Category */}
+          <div className="space-y-3 relative z-[100]">
+            <Label htmlFor="category" className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] ml-1">
+              Category <span className="text-orange-500">*</span>
+            </Label>
+            <Select
+              value={formData.categoryId}
+              onValueChange={(value) => onInputChange('categoryId', value)}
+            >
+              <SelectTrigger className={`h-14 px-5 rounded-2xl border-white bg-white shadow-sm outline-none transition-all duration-300 focus:border-orange-400 focus:ring-4 focus:ring-orange-100 ${errors.categoryId ? 'border-red-500' : ''}`}>
+                <SelectValue placeholder="Select a category" />
+              </SelectTrigger>
+              <SelectContent className="glass-effect bg-white/95 backdrop-blur-3xl border border-white rounded-[1.5rem] shadow-2xl z-[9999]" position="popper">
+                {categories.map((category) => (
+                  <SelectItem key={category.id} value={category.id} className="hover:bg-orange-50 focus:bg-orange-50 rounded-xl m-1 transition-all">
+                    <div className="flex flex-col py-1">
+                      <span className="text-[11px] font-black uppercase tracking-wider text-gray-900">{category.name}</span>
+                      {category.description && (
+                        <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">{category.description}</span>
+                      )}
+                    </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {errors.categoryId && (
+              <p className="text-[9px] font-black text-red-500 uppercase tracking-widest ml-1">{errors.categoryId}</p>
+            )}
+          </div>
 
-            {/* Category */}
-            <div className="space-y-2 relative z-[100]">
-              <Label htmlFor="category" className="text-sm font-semibold text-gray-700">
-                Category <span className="text-red-500">*</span>
-              </Label>
-              <Select
-                value={formData.categoryId}
-                onValueChange={(value) => onInputChange('categoryId', value)}
-              >
-                <SelectTrigger className={`h-12 text-base border-2 relative z-[100] ${errors.categoryId ? 'border-red-500 focus:border-red-500 focus:ring-red-200' : 'border-gray-300 focus:border-orange-500 focus:ring-orange-200'} rounded-lg`}>
-                  <SelectValue placeholder="Select category" />
-                </SelectTrigger>
-                <SelectContent className="bg-white border-2 border-gray-200 shadow-xl max-h-[300px] overflow-y-auto z-[9999]" position="popper">
-                  {categories.map((category) => (
-                    <SelectItem key={category.id} value={category.id} className="hover:bg-orange-50 focus:bg-orange-50">
-                      <div className="flex items-center gap-2">
-                        <span className="font-medium">{category.name}</span>
-                        {category.description && (
-                          <span className="text-xs text-gray-500">- {category.description}</span>
-                        )}
-                      </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {errors.categoryId && (
-                <p className="text-xs text-red-600 flex items-center gap-1">
-                  <span>✗</span> {errors.categoryId}
-                </p>
-              )}
-            </div>
-
-            {/* Base Price */}
-            <div className="space-y-2">
-              <Label htmlFor="basePrice" className="text-sm font-semibold text-gray-700 flex items-center gap-2">
-                <DollarSign className="h-4 w-4 text-orange-600" />
-                Base Price (₦) <span className="text-red-500">*</span>
-              </Label>
+          {/* Base Price */}
+          <div className="space-y-3">
+            <Label htmlFor="basePrice" className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] ml-1 flex items-center gap-2">
+              Base price (₦) <span className="text-orange-500">*</span>
+            </Label>
+            <div className="relative group">
+              <div className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-orange-500 group-focus-within:scale-120 transition-transform pointer-events-none font-black text-lg">
+                ₦
+              </div>
               <Input
                 id="basePrice"
                 type="number"
@@ -129,76 +131,73 @@ export function ProductBasicInfo({
                   if (val !== charm) onInputChange('basePrice', charm)
                 }}
                 placeholder="0.00"
-                className={`h-12 text-base border-2 ${errors.basePrice ? 'border-red-500 focus:border-red-500 focus:ring-red-200' : 'border-gray-300 focus:border-orange-500 focus:ring-orange-200'} rounded-lg`}
+                className={`h-14 pl-12 rounded-2xl border-white bg-white shadow-sm outline-none transition-all duration-300 focus:border-orange-400 focus:ring-4 focus:ring-orange-100 ${errors.basePrice ? 'border-red-500 ring-red-50' : ''}`}
               />
-              {errors.basePrice && (
-                <p className="text-xs text-red-600 flex items-center gap-1">
-                  <span>✗</span> {errors.basePrice}
-                </p>
-              )}
             </div>
+            {errors.basePrice && (
+              <p className="text-[9px] font-black text-red-500 uppercase tracking-widest ml-1">{errors.basePrice}</p>
+            )}
+          </div>
 
-            {/* Unit */}
-            <div className="space-y-2">
-              <Label htmlFor="unit" className="text-sm font-semibold text-gray-700">
-                Unit <span className="text-red-500">*</span>
-              </Label>
-              <Input
-                id="unit"
-                value={formData.unit}
-                onChange={(e) => onInputChange('unit', e.target.value)}
-                placeholder="kg, liter, piece, etc."
-                className={`h-12 text-base border-2 ${errors.unit ? 'border-red-500 focus:border-red-500 focus:ring-red-200' : 'border-gray-300 focus:border-orange-500 focus:ring-orange-200'} rounded-lg`}
-              />
-              {errors.unit && (
-                <p className="text-xs text-red-600 flex items-center gap-1">
-                  <span>✗</span> {errors.unit}
-                </p>
-              )}
-            </div>
+          {/* Unit */}
+          <div className="space-y-3">
+            <Label htmlFor="unit" className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] ml-1">
+              Unit <span className="text-orange-500">*</span>
+            </Label>
+            <Input
+              id="unit"
+              value={formData.unit}
+              onChange={(e) => onInputChange('unit', e.target.value)}
+              placeholder="e.g. piece, kg, box"
+              className={`h-14 px-5 rounded-2xl border-white bg-white shadow-sm outline-none transition-all duration-300 focus:border-orange-400 focus:ring-4 focus:ring-orange-100 ${errors.unit ? 'border-red-500 ring-red-50' : ''}`}
+            />
+            {errors.unit && (
+              <p className="text-[9px] font-black text-red-500 uppercase tracking-widest ml-1">{errors.unit}</p>
+            )}
+          </div>
 
-            {/* Stock Quantity */}
-            <div className="space-y-2">
-              <Label htmlFor="stock" className="text-sm font-semibold text-gray-700">
-                Stock Quantity <span className="text-red-500">*</span>
-              </Label>
-              <Input
-                id="stock"
-                type="number"
-                min="0"
-                value={formData.stock}
-                onChange={(e) => onInputChange('stock', parseInt(e.target.value) || 0)}
-                placeholder="0"
-                className={`h-12 text-base border-2 ${errors.stock ? 'border-red-500 focus:border-red-500 focus:ring-red-200' : 'border-gray-300 focus:border-orange-500 focus:ring-orange-200'} rounded-lg`}
-              />
-              {errors.stock && (
-                <p className="text-xs text-red-600 flex items-center gap-1">
-                  <span>✗</span> {errors.stock}
-                </p>
-              )}
-            </div>
+          {/* Stock Quantity */}
+          <div className="space-y-3">
+            <Label htmlFor="stock" className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] ml-1">
+              Inventory Level <span className="text-orange-500">*</span>
+            </Label>
+            <Input
+              id="stock"
+              type="number"
+              min="0"
+              value={formData.stock}
+              onChange={(e) => onInputChange('stock', parseInt(e.target.value) || 0)}
+              placeholder="0"
+              className={`h-14 px-5 rounded-2xl border-white bg-white shadow-sm outline-none transition-all duration-300 focus:border-orange-400 focus:ring-4 focus:ring-orange-100 ${errors.stock ? 'border-red-500 ring-red-50' : ''}`}
+            />
+            {errors.stock && (
+              <p className="text-[9px] font-black text-red-500 uppercase tracking-widest ml-1">{errors.stock}</p>
+            )}
+          </div>
 
-            {/* In Stock Checkbox */}
-            <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-lg border-2 border-gray-200">
-              <input
-                type="checkbox"
-                id="inStock"
-                checked={formData.inStock}
-                onChange={(e) => onInputChange('inStock', e.target.checked)}
-                className="w-5 h-5 text-orange-600 bg-white border-2 border-gray-300 rounded focus:ring-orange-500 focus:ring-2"
-              />
-              <Label htmlFor="inStock" className="text-sm font-medium text-gray-700 cursor-pointer">
-                Product is in stock
-              </Label>
-            </div>
+          {/* In Stock Checkbox */}
+          <div className="flex items-center gap-4 px-6 h-14 bg-gray-50/50 rounded-2xl border border-gray-100 group/cb transition-all hover:bg-orange-50/30">
+            <input
+              type="checkbox"
+              id="inStock"
+              checked={formData.inStock}
+              onChange={(e) => onInputChange('inStock', e.target.checked)}
+              className="w-6 h-6 text-orange-600 bg-white border-white rounded-lg focus:ring-orange-500 focus:ring-offset-0 transition-all cursor-pointer accent-orange-500"
+            />
+            <Label htmlFor="inStock" className="text-[10px] font-black text-gray-500 uppercase tracking-[0.1em] cursor-pointer selection:bg-none group-hover/cb:text-orange-600 transition-colors">
+              Product is available for sale
+            </Label>
+          </div>
 
-            {/* Weight (kg) - for delivery fee calculation */}
-            <div className="space-y-2">
-              <Label htmlFor="weightKg" className="text-sm font-semibold text-gray-700 flex items-center gap-2">
-                <Package className="h-4 w-4 text-orange-600" />
-                Weight (kg)
-                <span className="text-xs font-normal text-gray-400">(optional)</span>
-              </Label>
+          {/* Weight (kg) */}
+          <div className="space-y-3">
+            <Label htmlFor="weightKg" className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] ml-1 flex items-center gap-2">
+              Weight (kg) <span className="opacity-50 text-[9px]">(Optional)</span>
+            </Label>
+            <div className="relative group">
+              <div className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 group-focus-within:text-orange-500 transition-colors pointer-events-none">
+                <Package className="h-full w-full" strokeWidth={1.5} />
+              </div>
               <Input
                 id="weightKg"
                 type="number"
@@ -214,19 +213,21 @@ export function ProductBasicInfo({
                     onInputChange('weightKg', isNaN(numValue) ? null : numValue)
                   }
                 }}
-                placeholder="e.g. 5"
-                className="h-12 text-base border-2 border-gray-300 focus:border-orange-500 focus:ring-orange-200 rounded-lg"
+                placeholder="0.0"
+                className="h-14 pl-12 rounded-2xl border-white bg-white shadow-sm outline-none transition-all duration-300 focus:border-orange-400 focus:ring-4 focus:ring-orange-100"
               />
-              <p className="text-xs text-gray-500">Used for weight-based delivery fee. Leave empty to treat as 0.</p>
             </div>
+          </div>
 
-            {/* Delivery Fee override */}
-            <div className="space-y-2">
-              <Label htmlFor="deliveryFee" className="text-sm font-semibold text-gray-700 flex items-center gap-2">
-                <DollarSign className="h-4 w-4 text-orange-600" />
-                Delivery override (₦)
-                <span className="text-xs font-normal text-gray-400">(optional)</span>
-              </Label>
+          {/* Delivery Fee override */}
+          <div className="space-y-3">
+            <Label htmlFor="deliveryFee" className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] ml-1 flex items-center gap-2">
+              Custom delivery fee (₦) <span className="opacity-50 text-[9px]">(Optional)</span>
+            </Label>
+            <div className="relative group">
+              <div className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-orange-500 group-focus-within:scale-120 transition-transform pointer-events-none font-black text-lg">
+                ₦
+              </div>
               <Input
                 id="deliveryFee"
                 type="number"
@@ -242,34 +243,28 @@ export function ProductBasicInfo({
                     onInputChange('deliveryFee', isNaN(numValue) ? null : numValue)
                   }
                 }}
-                placeholder="Default (weight-based) | 0 = free | Number = custom"
-                className="h-12 text-base border-2 border-gray-300 focus:border-orange-500 focus:ring-orange-200 rounded-lg"
+                placeholder="Use default fee"
+                className="h-14 pl-12 rounded-2xl border-white bg-white shadow-sm outline-none transition-all duration-300 focus:border-orange-400 focus:ring-4 focus:ring-orange-100"
               />
-              <div className="flex items-start gap-2 bg-blue-50 border border-blue-200 rounded-lg p-3">
-                <Info className="h-4 w-4 text-blue-600 mt-0.5 flex-shrink-0" />
-                <p className="text-xs text-blue-700">
-                  Leave empty for weight-based calculation, set to 0 for free delivery, or enter a custom fee per item.
-                </p>
-              </div>
             </div>
           </div>
-
-          {/* Description */}
-          <div className="space-y-2">
-            <Label htmlFor="description" className="text-sm font-semibold text-gray-700">
-              Description
-            </Label>
-            <Textarea
-              id="description"
-              value={formData.description}
-              onChange={(e) => onInputChange('description', e.target.value)}
-              placeholder="Enter product description..."
-              rows={4}
-              className="min-h-[120px] text-base resize-none border-2 border-gray-300 focus:border-orange-500 focus:ring-2 focus:ring-orange-200 rounded-lg"
-            />
-          </div>
         </div>
-      </CardContent>
-    </Card>
+
+        {/* Description */}
+        <div className="space-y-3">
+          <Label htmlFor="description" className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] ml-1">
+            Description
+          </Label>
+          <Textarea
+            id="description"
+            value={formData.description}
+            onChange={(e) => onInputChange('description', e.target.value)}
+            placeholder="Describe the product, ingredients, pack size, storage tips, or anything buyers should know..."
+            rows={5}
+            className="min-h-[160px] p-6 rounded-[2rem] border-white bg-white shadow-sm outline-none transition-all duration-300 focus:border-orange-400 focus:ring-4 focus:ring-orange-100 resize-none text-base"
+          />
+        </div>
+      </div>
+    </div>
   )
 }

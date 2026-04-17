@@ -18,40 +18,52 @@ export function ProductInfoSection({
   const priceLabel = getPriceLabel(options, product.basePrice)
 
   return (
-    <div 
+    <div
       className="block flex-1 flex flex-col"
       onClick={(e) => {
         e.stopPropagation()
       }}
     >
-      <div className="flex items-start justify-between gap-2 sm:gap-3 mb-2 sm:mb-2">
-        <div className="min-w-0 flex-1">
-          <h3 className="font-semibold text-gray-900 text-sm sm:text-base md:text-lg leading-tight line-clamp-2 mb-1">
-            {product.name}
-          </h3>
-          {product.description && product.description.trim() && (
-            <p className="text-gray-600 text-xs sm:text-sm mt-0.5 sm:mt-1 line-clamp-2 hidden sm:block">{product.description}</p>
-          )}
+      <div className="flex flex-col gap-2 mb-4">
+        {/* Category Label - Always on its own line */}
+        <div className="flex items-center gap-2">
+          <div className="w-1 h-3 bg-orange-500 rounded-full" />
+          <span className="text-[9px] sm:text-[10px] font-black text-orange-600/80 uppercase tracking-[0.2em] truncate">
+            {product.category?.name || "Uncategorized"}
+          </span>
         </div>
-        <Badge variant={isActuallyInStock ? "default" : "secondary"} className="shrink-0 text-[10px] sm:text-xs px-1.5 py-0">
-          {isActuallyInStock ? "In Stock" : "Out"}
-        </Badge>
+
+        {/* Product Name - Full Width */}
+        <h3 className="font-black text-gray-900 text-sm sm:text-xl leading-tight tracking-tight line-clamp-2 transition-colors group-hover:text-orange-600">
+          {product.name}
+        </h3>
+
+        {/* Stock Badge - Moved below name to free up horizontal space */}
+        <div className="flex items-center mt-0.5">
+          <Badge className={`text-[8px] sm:text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded-md border-none shadow-sm ${isActuallyInStock
+            ? "bg-green-500/10 text-green-600"
+            : "bg-red-500/10 text-red-600"
+            }`}>
+            {isActuallyInStock ? "In Stock" : "Unavailable"}
+          </Badge>
+        </div>
       </div>
 
-      <div className="mt-auto pt-1.5 sm:pt-2 space-y-1.5 sm:space-y-2">
-        {/* Category */}
-        <div className="text-[10px] sm:text-xs md:text-sm text-gray-600 truncate">
-          <span className="font-medium">{product.category?.name}</span>
-        </div>
-        
-        {/* Price - same full range on mobile and desktop (e.g. ₦7,000 - ₦800,000) */}
-        <div className="min-w-0 w-full">
-          <span className="text-base sm:text-lg md:text-xl font-bold text-orange-600 leading-tight break-words tabular-nums">
-            {priceLabel}
-          </span>
-          {priceLabel.includes(' - ') && (
-            <span className="text-[10px] sm:text-xs text-gray-500 mt-0.5 block">Price range</span>
-          )}
+      <div className="mt-auto space-y-4">
+        {product.description && product.description.trim() && (
+          <p className="text-gray-500 text-xs font-bold leading-relaxed line-clamp-2 opacity-80">
+            {product.description}
+          </p>
+        )}
+
+        <div className="flex flex-col">
+          <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1">From</span>
+          <div className="flex items-baseline gap-1.5">
+            <span className="text-2xl font-black text-orange-600 tracking-tighter tabular-nums">
+              {priceLabel}
+            </span>
+            <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">NGN</span>
+          </div>
         </div>
       </div>
     </div>

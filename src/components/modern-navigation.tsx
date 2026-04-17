@@ -76,61 +76,34 @@ export function ModernNavigation() {
         initial={{ y: -100 }}
         animate={{ y: 0 }}
         transition={{ duration: 0.6 }}
-        className={`fixed top-0 w-full z-[100] transition-all duration-500 ${isScrolled
-          ? "bg-white/90 backdrop-blur-xl shadow-2xl border-b border-white/30"
-          : "bg-transparent backdrop-blur-sm"
+        className={`fixed top-0 w-full z-[100] smooth-transition ${isScrolled
+          ? "glass-effect premium-shadow border-b border-white/20 py-2"
+          : "bg-transparent py-4"
           }`}
-        style={{
-          background: isScrolled
-            ? 'rgba(255, 255, 255, 0.9)'
-            : 'transparent',
-          backdropFilter: isScrolled ? 'blur(20px)' : 'blur(4px)',
-          WebkitBackdropFilter: isScrolled ? 'blur(20px)' : 'blur(4px)',
-        }}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16 lg:h-20">
             {/* Logo */}
             <motion.div
-              className="flex items-center space-x-3"
+              className="flex items-center"
               whileHover={{ scale: 1.02 }}
               transition={{ duration: 0.2 }}
             >
               {user ? (
-                <Link href="/dashboard" className="flex items-center space-x-3 group">
+                <Link href="/dashboard" className="flex items-center group">
                   <img
                     src="/mrktdotcom-logo.png"
                     alt="Marketdotcom Logo"
-                    className="h-28 w-28 sm:h-32 sm:w-32 md:h-36 md:w-36 lg:h-40 lg:w-40 object-contain"
+                    className="h-28 w-28 sm:h-32 sm:w-32 md:h-36 md:w-36 lg:h-40 lg:w-40 object-contain drop-shadow-xl"
                   />
-                  <div className="hidden md:block">
-                    <span className={`text-xl lg:text-2xl font-bold transition-colors ${isScrolled ? 'text-gray-900 group-hover:text-orange-600' : 'text-gray-900 group-hover:text-orange-600'
-                      }`}>
-                      Marketdotcom
-                    </span>
-                    <div className={`text-xs -mt-1 hidden sm:block ${isScrolled ? 'text-gray-500' : 'text-gray-600'
-                      }`}>
-                      Smart Shopping Solutions
-                    </div>
-                  </div>
                 </Link>
               ) : (
-                <Link href="/" className="flex items-center space-x-3 group">
+                <Link href="/" className="flex items-center group">
                   <img
                     src="/mrktdotcom-logo.png"
                     alt="Marketdotcom Logo"
-                    className="h-28 w-28 sm:h-32 sm:w-32 md:h-36 md:w-36 lg:h-40 lg:w-40 object-contain"
+                    className="h-28 w-28 sm:h-32 sm:w-32 md:h-36 md:w-36 lg:h-40 lg:w-40 object-contain drop-shadow-xl"
                   />
-                  <div className="hidden md:block">
-                    <span className={`text-xl lg:text-2xl font-bold transition-colors ${isScrolled ? 'text-gray-900 group-hover:text-orange-600' : 'text-gray-900 group-hover:text-orange-600'
-                      }`}>
-                      Marketdotcom
-                    </span>
-                    <div className={`text-xs -mt-1 hidden sm:block ${isScrolled ? 'text-gray-500' : 'text-gray-600'
-                      }`}>
-                      Smart Shopping Solutions
-                    </div>
-                  </div>
                 </Link>
               )}
             </motion.div>
@@ -308,12 +281,7 @@ export function ModernNavigation() {
               animate={{ opacity: 1, height: "auto" }}
               exit={{ opacity: 0, height: 0 }}
               transition={{ duration: 0.3 }}
-              className="lg:hidden bg-white/90 backdrop-blur-xl border-t border-white/30 shadow-2xl"
-              style={{
-                background: 'rgba(255, 255, 255, 0.9)',
-                backdropFilter: 'blur(20px)',
-                WebkitBackdropFilter: 'blur(20px)',
-              }}
+              className="lg:hidden glass-effect border-t border-white/20 shadow-2xl overflow-hidden rounded-b-3xl"
             >
               <div className="px-4 py-6 space-y-4">
                 {/* Mobile Navigation Links */}

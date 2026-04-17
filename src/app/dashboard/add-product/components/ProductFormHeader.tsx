@@ -18,50 +18,48 @@ export function ProductFormHeader({
   onCancel,
 }: ProductFormHeaderProps) {
   return (
-    <header className="sticky top-0 z-50 bg-white shadow-lg border-b border-gray-200">
-      <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-14 sm:h-16">
-          <div className="flex items-center space-x-2 sm:space-x-3 min-w-0 flex-1">
+    <header className="sticky top-0 z-50 glass-effect bg-white/80 backdrop-blur-xl border-b border-white shadow-xl">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between h-16 sm:h-20">
+          <div className="flex items-center gap-4 min-w-0 flex-1">
             <Link
               href={backHref}
-              className="p-1.5 sm:p-2 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-colors flex-shrink-0 touch-manipulation"
+              className="p-2.5 rounded-2xl text-gray-500 hover:text-orange-600 hover:bg-orange-50 transition-all active:scale-95 group flex-shrink-0"
               style={{ WebkitTapHighlightColor: 'transparent' }}
             >
-              <ArrowLeft className="h-5 w-5 sm:h-6 sm:w-6" />
+              <ArrowLeft className="h-6 w-6 group-hover:-translate-x-1 transition-transform" strokeWidth={1.5} />
             </Link>
             <div className="min-w-0 flex-1">
-              <h1 className="text-base sm:text-xl md:text-2xl font-bold text-gray-900 truncate">
+              <h1 className="text-lg sm:text-2xl font-black text-gray-900 tracking-tight uppercase truncate">
                 {title}
               </h1>
               {subtitle && (
-                <p className="hidden sm:block text-xs sm:text-sm text-gray-600 truncate">
+                <p className="hidden sm:block text-[11px] font-black text-gray-400 uppercase tracking-widest truncate">
                   {subtitle}
                 </p>
               )}
             </div>
           </div>
-          <div className="flex items-center space-x-2 sm:space-x-4 flex-shrink-0">
+          <div className="flex items-center gap-3 flex-shrink-0">
             {onCancel ? (
               <Button
                 variant="outline"
-                size="sm"
                 onClick={onCancel}
-                className="flex items-center space-x-1 sm:space-x-2 px-2 sm:px-4 py-1.5 sm:py-2 touch-manipulation"
+                className="flex items-center gap-2 h-12 px-4 sm:px-6 border border-white/70 bg-white/85 backdrop-blur-sm rounded-xl text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] transition-all hover:bg-red-50 hover:text-red-500 hover:border-red-100 group"
                 style={{ WebkitTapHighlightColor: 'transparent' }}
               >
-                <X className="h-4 w-4" />
-                <span className="hidden xs:inline text-xs sm:text-sm">Cancel</span>
+                <X className="h-4 w-4 group-hover:rotate-90 transition-transform" />
+                <span className="hidden xs:inline">Cancel</span>
               </Button>
             ) : (
               <Link href={backHref}>
                 <Button
                   variant="outline"
-                  size="sm"
-                  className="flex items-center space-x-1 sm:space-x-2 px-2 sm:px-4 py-1.5 sm:py-2 touch-manipulation"
+                  className="flex items-center gap-2 h-12 px-4 sm:px-6 border border-white/70 bg-white/85 backdrop-blur-sm rounded-xl text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] transition-all hover:bg-red-50 hover:text-red-500 hover:border-red-100 group"
                   style={{ WebkitTapHighlightColor: 'transparent' }}
                 >
-                  <X className="h-4 w-4" />
-                  <span className="hidden xs:inline text-xs sm:text-sm">Cancel</span>
+                  <X className="h-4 w-4 group-hover:rotate-90 transition-transform" />
+                  <span className="hidden xs:inline">Cancel</span>
                 </Button>
               </Link>
             )}

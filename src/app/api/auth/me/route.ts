@@ -47,12 +47,13 @@ export async function GET(request: NextRequest) {
         phone: true,
         role: true,
         emailVerified: true,
+        image: true,
+        password: true,
         createdAt: true,
         updatedAt: true,
         walletBalance: true,
         referralCode: true,
         // Exclude sensitive fields
-        password: false,
         emailVerificationToken: false,
         resetTokenExpiry: false
       }
@@ -68,7 +69,11 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(
       {
         message: "User data retrieved successfully",
-        user: user
+        user: {
+          ...user,
+          hasPassword: Boolean(user.password),
+          password: undefined
+        }
       },
       { status: 200 }
     )

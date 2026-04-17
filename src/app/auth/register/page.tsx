@@ -1,31 +1,34 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { Suspense, useState, useEffect } from "react"
 import Link from "next/link"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { useAuth } from "@/contexts/AuthContext"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Loader2, UserPlus, Mail, Lock, User, Phone, Gift, Eye, EyeOff } from "lucide-react"
+import { Loader2, UserPlus, Mail, Lock, User, Phone, Gift, Eye, EyeOff, ArrowRight } from "lucide-react"
 import { AuthLayout } from "@/components/auth-layout"
+import { GoogleAuthButton } from "@/components/auth/GoogleAuthButton"
 import { registerSchema, type RegisterFormData } from "@/lib/validations/auth"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import toast from "react-hot-toast"
 
-export default function RegisterPage() {
+function RegisterPageInner() {
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const router = useRouter()
+  const searchParams = useSearchParams()
   const { user, register } = useAuth()
 
   const {
     register: registerField,
     handleSubmit: handleFormSubmit,
+    watch,
     formState: { errors },
   } = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
@@ -38,6 +41,7 @@ export default function RegisterPage() {
       referralCode: undefined,
     },
   })
+  const referralCode = watch("referralCode")
 
   // Redirect authenticated users away from register page
   useEffect(() => {
@@ -46,6 +50,14 @@ export default function RegisterPage() {
     }
   }, [user, router])
 
+  useEffect(() => {
+    const oauthError = searchParams.get("error")
+    if (oauthError) {
+      setError(oauthError)
+      toast.error(oauthError)
+    }
+  }, [searchParams])
+
   const onSubmit = async (data: RegisterFormData) => {
     setLoading(true)
     setError("")
@@ -53,7 +65,7 @@ export default function RegisterPage() {
     try {
       // Trim and handle referral code - send undefined if empty
       const referralCode = data.referralCode?.trim() || undefined
-      
+
       await register({
         name: data.name.trim(),
         email: data.email.trim().toLowerCase(),
@@ -84,161 +96,202 @@ export default function RegisterPage() {
           </Alert>
         )}
 
-        <div className="space-y-2">
-          <Label htmlFor="name" className="text-gray-700 font-medium">
+        <GoogleAuthButton mode="register" referralCode={referralCode} disabled={loading} />
+
+        <div className="flex items-center gap-4">
+          <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent via-gray-200 to-gray-200" />
+          <span className="text-[10px] font-black text-gray-400 uppercase tracking-[0.3em] flex items-center gap-2">
+            <span className="w-1 h-1 rounded-full bg-orange-400" />
+            Or
+            <span className="w-1 h-1 rounded-full bg-orange-400" />
+          </span>
+          <div className="h-[1px] flex-1 bg-gradient-to-l from-transparent via-gray-200 to-gray-200" />
+        </div>
+
+        <div className="space-y-3">
+          <Label htmlFor="name" className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] ml-1">
             Full Name
           </Label>
-          <div className="relative">
-            <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+          <div className="relative group">
+            <div className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-500 group-focus-within:text-orange-500 transition-colors pointer-events-none z-10">
+              <User className="h-full w-full" strokeWidth={1.5} />
+            </div>
             <Input
               id="name"
               type="text"
               placeholder="Enter your full name"
               {...registerField("name")}
-              className={`h-12 text-base pl-10 ${errors.name ? "border-red-500" : ""}`}
+              className={`h-14 pl-12 pr-4 rounded-2xl border-white/60 bg-white/50 backdrop-blur-sm text-base text-gray-900 placeholder:text-gray-400 shadow-sm outline-none transition-all duration-300 focus:border-orange-400 focus:ring-4 focus:ring-orange-100 ${errors.name ? "border-red-500 ring-red-50" : ""}`}
             />
           </div>
           {errors.name && (
-            <p className="text-sm text-red-500 mt-1">{errors.name.message}</p>
+            <p className="text-[10px] font-bold text-red-500 mt-1 ml-1 uppercase tracking-wider">{errors.name.message}</p>
           )}
         </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="email" className="text-gray-700 font-medium">
+        <div className="space-y-3">
+          <Label htmlFor="email" className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] ml-1">
             Email Address
           </Label>
-          <div className="relative">
-            <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+          <div className="relative group">
+            <div className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-500 group-focus-within:text-orange-500 transition-colors pointer-events-none z-10">
+              <Mail className="h-full w-full" strokeWidth={1.5} />
+            </div>
             <Input
               id="email"
               type="text"
               placeholder="Enter your email address"
               {...registerField("email")}
-              className={`h-12 text-base pl-10 ${errors.email ? "border-red-500" : ""}`}
+              className={`h-14 pl-12 pr-4 rounded-2xl border-white/60 bg-white/50 backdrop-blur-sm text-base text-gray-900 placeholder:text-gray-400 shadow-sm outline-none transition-all duration-300 focus:border-orange-400 focus:ring-4 focus:ring-orange-100 ${errors.email ? "border-red-500 ring-red-50" : ""}`}
             />
           </div>
           {errors.email && (
-            <p className="text-sm text-red-500 mt-1">{errors.email.message}</p>
+            <p className="text-[10px] font-bold text-red-500 mt-1 ml-1 uppercase tracking-wider">{errors.email.message}</p>
           )}
         </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="phone" className="text-gray-700 font-medium">
+        <div className="space-y-3">
+          <Label htmlFor="phone" className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] ml-1">
             Phone Number
           </Label>
-          <div className="relative">
-            <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+          <div className="relative group">
+            <div className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-500 group-focus-within:text-orange-500 transition-colors pointer-events-none z-10">
+              <Phone className="h-full w-full" strokeWidth={1.5} />
+            </div>
             <Input
               id="phone"
               type="text"
               placeholder="Enter your phone number"
               {...registerField("phone")}
-              className={`h-12 text-base pl-10 ${errors.phone ? "border-red-500" : ""}`}
+              className={`h-14 pl-12 pr-4 rounded-2xl border-white/60 bg-white/50 backdrop-blur-sm text-base text-gray-900 placeholder:text-gray-400 shadow-sm outline-none transition-all duration-300 focus:border-orange-400 focus:ring-4 focus:ring-orange-100 ${errors.phone ? "border-red-500 ring-red-50" : ""}`}
             />
           </div>
           {errors.phone && (
-            <p className="text-sm text-red-500 mt-1">{errors.phone.message}</p>
+            <p className="text-[10px] font-bold text-red-500 mt-1 ml-1 uppercase tracking-wider">{errors.phone.message}</p>
           )}
         </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="password" className="text-gray-700 font-medium">
+        <div className="space-y-3">
+          <Label htmlFor="password" className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] ml-1">
             Password
           </Label>
-          <div className="relative">
-            <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+          <div className="relative group">
+            <div className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-500 group-focus-within:text-orange-500 transition-colors pointer-events-none z-10">
+              <Lock className="h-full w-full" strokeWidth={1.5} />
+            </div>
             <Input
               id="password"
               type={showPassword ? "text" : "password"}
-              placeholder="Create a password (min. 6 characters)"
+              placeholder="Create a strong password"
               {...registerField("password")}
-              className={`h-12 text-base pl-10 pr-10 ${errors.password ? "border-red-500" : ""}`}
+              className={`h-14 pl-12 pr-12 rounded-2xl border-white/60 bg-white/50 backdrop-blur-sm text-base text-gray-900 placeholder:text-gray-400 shadow-sm outline-none transition-all duration-300 focus:border-orange-400 focus:ring-4 focus:ring-orange-100 ${errors.password ? "border-red-500 ring-red-50" : ""}`}
             />
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 focus:outline-none"
+              className="absolute right-4 top-1/2 -translate-y-1/2 p-2 rounded-xl text-gray-400 hover:text-orange-600 hover:bg-orange-50 transition-all active:scale-90"
             >
               {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
             </button>
           </div>
           {errors.password && (
-            <p className="text-sm text-red-500 mt-1">{errors.password.message}</p>
+            <p className="text-[10px] font-bold text-red-500 mt-1 ml-1 uppercase tracking-wider">{errors.password.message}</p>
           )}
         </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="confirmPassword" className="text-gray-700 font-medium">
+        <div className="space-y-3">
+          <Label htmlFor="confirmPassword" className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] ml-1">
             Confirm Password
           </Label>
-          <div className="relative">
-            <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+          <div className="relative group">
+            <div className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-500 group-focus-within:text-orange-500 transition-colors pointer-events-none z-10">
+              <Lock className="h-full w-full" strokeWidth={1.5} />
+            </div>
             <Input
               id="confirmPassword"
               type={showConfirmPassword ? "text" : "password"}
               placeholder="Confirm your password"
               {...registerField("confirmPassword")}
-              className={`h-12 text-base pl-10 pr-10 ${errors.confirmPassword ? "border-red-500" : ""}`}
+              className={`h-14 pl-12 pr-12 rounded-2xl border-white/60 bg-white/50 backdrop-blur-sm text-base text-gray-900 placeholder:text-gray-400 shadow-sm outline-none transition-all duration-300 focus:border-orange-400 focus:ring-4 focus:ring-orange-100 ${errors.confirmPassword ? "border-red-500 ring-red-50" : ""}`}
             />
             <button
               type="button"
               onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 focus:outline-none"
+              className="absolute right-4 top-1/2 -translate-y-1/2 p-2 rounded-xl text-gray-400 hover:text-orange-600 hover:bg-orange-50 transition-all active:scale-90"
             >
               {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
             </button>
           </div>
           {errors.confirmPassword && (
-            <p className="text-sm text-red-500 mt-1">{errors.confirmPassword.message}</p>
+            <p className="text-[10px] font-bold text-red-500 mt-1 ml-1 uppercase tracking-wider">{errors.confirmPassword.message}</p>
           )}
         </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="referralCode" className="text-gray-700 font-medium">
-            Referral Code <span className="text-gray-500 text-sm font-normal">(Optional)</span>
+        <div className="space-y-3">
+          <Label htmlFor="referralCode" className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] ml-1">
+            Referral Code <span className="opacity-50 text-[9px]">(Optional)</span>
           </Label>
-          <div className="relative">
-            <Gift className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+          <div className="relative group">
+            <div className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-500 group-focus-within:text-orange-500 transition-colors pointer-events-none z-10">
+              <Gift className="h-full w-full" strokeWidth={1.5} />
+            </div>
             <Input
               id="referralCode"
               type="text"
-              placeholder="Enter referral code if you have one"
+              placeholder="Enter unique referral code"
               {...registerField("referralCode")}
-              className={`h-12 text-base pl-10 ${errors.referralCode ? "border-red-500" : ""}`}
+              className="h-14 pl-12 pr-4 rounded-2xl border-white/60 bg-white/50 backdrop-blur-sm text-base text-gray-900 placeholder:text-gray-400 shadow-sm outline-none transition-all duration-300 focus:border-orange-400 focus:ring-4 focus:ring-orange-100"
             />
           </div>
-          {errors.referralCode && (
-            <p className="text-sm text-red-500 mt-1">{errors.referralCode.message}</p>
-          )}
         </div>
 
         <Button
           type="submit"
-          className="w-full h-12 text-base font-semibold bg-orange-600 hover:bg-orange-700"
           disabled={loading}
+          className="w-full h-16 rounded-2xl bg-gray-900 border border-white/20 text-white font-black text-[12px] uppercase tracking-[0.2em] shadow-2xl hover:bg-black hover:scale-[1.02] active:scale-[0.98] transition-all relative overflow-hidden group"
         >
-          {loading ? (
-            <>
-              <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-              Creating account...
-            </>
-          ) : (
-            <>
-              <UserPlus className="mr-2 h-5 w-5" />
-              Create Account
-            </>
-          )}
+          <div className="absolute inset-0 bg-gradient-to-r from-orange-600/20 via-transparent to-orange-600/20 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
+          <div className="relative z-10 flex items-center justify-center gap-3">
+            {loading ? (
+              <>
+                <Loader2 className="h-5 w-5 animate-spin" />
+                Creating account...
+              </>
+            ) : (
+              <>
+                <UserPlus className="h-5 w-5 text-orange-500" />
+                Create Account
+                <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
+              </>
+            )}
+          </div>
         </Button>
       </form>
 
-      <div className="mt-8 text-center">
-        <p className="text-gray-600">
+      <div className="mt-10 text-center">
+        <p className="text-[11px] font-black text-gray-400 uppercase tracking-[0.1em]">
           Already have an account?{" "}
-          <Link href="/auth/login" className="text-orange-600 hover:text-orange-500 font-semibold">
-            Sign in here
+          <Link href="/auth/login" className="text-orange-600 hover:text-orange-700 hover:underline underline-offset-4 decoration-2 transition-all">
+            Sign In
           </Link>
         </p>
       </div>
     </AuthLayout>
+  )
+}
+
+export default function RegisterPage() {
+  return (
+    <Suspense
+      fallback={
+        <AuthLayout title="Create your account" subtitle="Sign up to start shopping">
+          <div className="flex h-40 items-center justify-center">
+            <Loader2 className="h-8 w-8 animate-spin text-orange-500" />
+          </div>
+        </AuthLayout>
+      }
+    >
+      <RegisterPageInner />
+    </Suspense>
   )
 }

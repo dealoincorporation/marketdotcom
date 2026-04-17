@@ -80,58 +80,53 @@ export function NotificationModal({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100] bg-black/50 backdrop-blur-sm"
+            className="fixed inset-0 z-[90] bg-black/65 backdrop-blur-sm"
             onClick={onCancel}
           />
 
           {/* Modal */}
-          <div className="fixed inset-0 z-[101] flex items-center justify-center p-4 pointer-events-none">
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 pointer-events-none">
             <motion.div
-              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              initial={{ opacity: 0, scale: 0.9, y: 30 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              transition={{ type: "spring", duration: 0.3 }}
-              className={`relative w-full max-w-md bg-gradient-to-br ${colorScheme.bg} backdrop-blur-xl rounded-2xl border-2 ${colorScheme.border} shadow-2xl pointer-events-auto overflow-hidden`}
+              exit={{ opacity: 0, scale: 0.9, y: 30 }}
+              transition={{ type: "spring", stiffness: 400, damping: 30 }}
+              className={`relative w-full max-w-md bg-white rounded-[2.5rem] border border-gray-100 shadow-[0_40px_80px_-16px_rgba(0,0,0,0.2)] pointer-events-auto overflow-hidden p-8`}
             >
-              {/* Glassmorphism effect */}
-              <div className="absolute inset-0 bg-white/10 backdrop-blur-md"></div>
-              
               {/* Content */}
-              <div className="relative z-10 p-6">
+              <div className="relative z-10">
                 {/* Close button */}
                 <button
                   onClick={onCancel}
-                  className="absolute top-4 right-4 p-1.5 rounded-lg hover:bg-white/20 transition-colors"
+                  className="absolute -top-2 -right-2 p-2.5 rounded-2xl text-gray-400 hover:text-orange-600 hover:bg-orange-50 transition-all active:scale-90"
                   aria-label="Close"
                 >
-                  <X className="h-5 w-5 text-gray-600" />
+                  <X className="h-5 w-5" />
                 </button>
 
-                {/* Icon and Title */}
-                <div className="flex items-start gap-4 mb-4">
-                  <div className={`flex-shrink-0 p-3 rounded-xl bg-white/20 backdrop-blur-sm ${colorScheme.icon}`}>
-                    <Icon className="h-6 w-6" />
+                {/* Header Icon Section */}
+                <div className="flex flex-col items-center text-center mb-8">
+                  <div className={`p-5 rounded-[2rem] bg-gradient-to-br ${colorScheme.bg} backdrop-blur-md mb-6 shadow-xl border border-white/50`}>
+                    <Icon className={`h-8 w-8 ${colorScheme.icon}`} strokeWidth={1.5} />
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <h3 className="text-xl font-bold text-gray-900 mb-2">{title}</h3>
-                    <p className="text-gray-700 leading-relaxed">{message}</p>
-                  </div>
+                  <h3 className="text-2xl font-black text-gray-900 mb-3 tracking-tight uppercase">{title}</h3>
+                  <p className="text-sm font-bold text-gray-500 tracking-tight leading-relaxed">{message}</p>
                 </div>
 
                 {/* Actions */}
-                <div className="flex gap-3 mt-6">
+                <div className="flex gap-4">
                   {type === "confirm" ? (
                     <>
                       <Button
                         onClick={onCancel}
                         variant="outline"
-                        className="flex-1 border-2 border-gray-300 hover:bg-gray-50"
+                        className="flex-1 h-14 border border-white/60 bg-white/40 backdrop-blur-sm hover:bg-white/80 rounded-xl text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] transition-all"
                       >
                         {cancelText}
                       </Button>
                       <Button
                         onClick={onConfirm}
-                        className={`flex-1 ${colorScheme.button} text-white`}
+                        className={`flex-1 h-14 ${colorScheme.button} text-white font-black text-[10px] uppercase tracking-[0.2em] rounded-xl shadow-lg transition-all hover:scale-[1.02] active:scale-[0.98] border border-white/20`}
                       >
                         {confirmText}
                       </Button>
@@ -139,7 +134,7 @@ export function NotificationModal({
                   ) : (
                     <Button
                       onClick={onConfirm || onCancel}
-                      className={`w-full ${colorScheme.button} text-white`}
+                      className={`w-full h-14 ${colorScheme.button} text-white font-black text-[10px] uppercase tracking-[0.2em] rounded-xl shadow-lg transition-all hover:scale-[1.02] active:scale-[0.98] border border-white/20`}
                     >
                       {confirmText}
                     </Button>

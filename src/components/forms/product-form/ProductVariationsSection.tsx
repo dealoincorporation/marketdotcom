@@ -33,274 +33,208 @@ export function ProductVariationsSection({
   errors = {},
 }: ProductVariationsSectionProps) {
   return (
-    <Card className="border-2 border-gray-200 shadow-lg">
-      <CardHeader className="bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
-              <Layers className="h-5 w-5 text-purple-600" />
-            </div>
-            <div>
-              <CardTitle className="text-lg font-bold text-gray-900">Product Variations</CardTitle>
-              <p className="text-sm text-gray-600 mt-0.5">Add different sizes, quantities, or options</p>
-            </div>
+    <div className="space-y-12">
+      {/* Section Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 border-b border-gray-100 pb-8">
+        <div className="flex items-center gap-4">
+          <div className="p-3 bg-indigo-100 rounded-2xl shadow-sm">
+            <Layers className="h-5 w-5 text-indigo-600" strokeWidth={2} />
           </div>
-          <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
-            <input
-              type="file"
-              accept=".csv"
-              onChange={onBulkImport}
-              className="hidden"
-              id="variation-csv-import"
-            />
-            <Button
-              type="button"
-              onClick={() => document.getElementById('variation-csv-import')?.click()}
-              variant="outline"
-              size="sm"
-              className="text-blue-600 border-blue-600 hover:bg-blue-50 active:bg-blue-100 w-full sm:w-auto h-10 sm:h-9 text-sm"
-            >
-              <FileText className="h-4 w-4 mr-2" />
-              <span className="hidden sm:inline">Import CSV</span>
-              <span className="sm:hidden">Import</span>
-            </Button>
-            <Button
-              type="button"
-              onClick={onAddVariation}
-              variant="outline"
-              size="sm"
-              className="text-orange-600 border-orange-600 hover:bg-orange-50 active:bg-orange-100 w-full sm:w-auto h-10 sm:h-9 text-sm"
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              <span className="hidden sm:inline">Add Variation</span>
-              <span className="sm:hidden">Add</span>
-            </Button>
-          </div>
-        </div>
-      </CardHeader>
-      <CardContent className="p-6">
-        {/* CSV Format Info */}
-        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-xl p-5 shadow-sm mb-6">
-          <div className="flex items-start gap-4">
-            <div className="flex-shrink-0 w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-              <FileText className="h-5 w-5 text-blue-600" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-bold text-blue-900 mb-2">
-                CSV Bulk Import Format
-              </p>
-              <p className="text-xs text-blue-700 mb-3 break-words">
-                Columns: <code className="bg-white px-2 py-1 rounded font-mono text-xs break-all border border-blue-200">Name, Quantity, Unit, Price, Stock, ImageURL</code>
-              </p>
-              <div className="bg-white/80 rounded-lg p-3 border border-blue-200">
-                <p className="text-xs font-semibold text-blue-800 mb-1">Example:</p>
-                <code className="font-mono text-xs text-blue-700 break-all block">
-                  "Mama Gold, 2, kg, 4500, 25, https://example.com/image.jpg"
-                </code>
-              </div>
-            </div>
+          <div>
+            <h2 className="text-sm font-black text-gray-900 uppercase tracking-[0.2em]">Variations</h2>
+            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mt-1">Different pack sizes, prices, and stock for the same product</p>
           </div>
         </div>
 
-        {variations.length > 0 && (
-          <div className="space-y-4">
-            {variations.map((variation, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="p-5 border-2 border-gray-200 rounded-xl bg-gradient-to-br from-white to-gray-50 shadow-md hover:shadow-lg transition-all duration-200 overflow-visible"
-              >
-                <div className="space-y-4">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
-                    <div className="col-span-1">
-                      <Label className="text-xs sm:text-sm font-medium text-gray-700 mb-1.5 sm:mb-2 block">Quantity</Label>
+        <div className="flex items-center gap-3">
+          <input
+            type="file"
+            accept=".csv"
+            onChange={onBulkImport}
+            className="hidden"
+            id="variation-csv-import"
+          />
+          <Button
+            type="button"
+            onClick={() => document.getElementById('variation-csv-import')?.click()}
+            variant="outline"
+            className="h-12 px-5 border border-white/70 bg-white/80 backdrop-blur-sm rounded-xl text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] transition-all hover:bg-gray-900 hover:text-white hover:border-gray-900 group"
+          >
+            <FileText className="h-4 w-4 mr-2 group-hover:scale-110 transition-transform" />
+            Import CSV
+          </Button>
+          <Button
+            type="button"
+            onClick={onAddVariation}
+            variant="outline"
+            className="h-12 px-6 border border-white/70 bg-white/80 backdrop-blur-sm rounded-xl text-[10px] font-black text-orange-600 uppercase tracking-[0.2em] transition-all hover:bg-orange-600 hover:text-white hover:border-orange-600 group"
+          >
+            <Plus className="h-4 w-4 mr-2 group-hover:rotate-90 transition-transform" />
+            Add variation
+          </Button>
+        </div>
+      </div>
+
+      {/* CSV import format */}
+      <div className="glass-effect rounded-[2rem] border border-white/70 bg-indigo-50/50 backdrop-blur-sm p-6 shadow-sm">
+        <div className="flex items-start gap-4">
+          <div className="mt-1 p-2 bg-indigo-500/10 rounded-xl">
+            <FileText className="h-4 w-4 text-indigo-600" strokeWidth={2.5} />
+          </div>
+          <div>
+            <p className="text-[10px] font-black text-indigo-900 uppercase tracking-[0.2em] mb-2">CSV column order</p>
+            <div className="flex flex-wrap gap-2 mb-4">
+              {['Name', 'Quantity', 'Unit', 'Price', 'Stock', 'ImageURL'].map((col) => (
+                <span key={col} className="px-2.5 py-1 bg-white/80 rounded-lg text-[9px] font-black text-indigo-800 uppercase tracking-widest border border-indigo-100/50">{col}</span>
+              ))}
+            </div>
+            <p className="text-[9px] font-bold text-indigo-700/60 uppercase tracking-widest">
+              Example row: <span className="font-mono text-indigo-800">"Gold Blend, 2, kg, 4500, 25, https://example.com/image.webp"</span>
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Variations List */}
+      <div className="space-y-6">
+        {variations.map((variation, index) => (
+          <motion.div
+            key={index}
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            className="group relative"
+          >
+            <div className="glass-effect rounded-[2.5rem] border border-white bg-white/85 backdrop-blur-3xl p-8 shadow-xl premium-shadow transition-all duration-500 hover:bg-white/95">
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
+                {/* Media Control */}
+                <div className="lg:col-span-3">
+                  <div className="space-y-4">
+                    <Label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] ml-1 block">Variation image</Label>
+                    <div className="relative aspect-square rounded-[1.8rem] overflow-hidden bg-gray-100 border border-white shadow-inner group/media">
+                      {variation.image ? (
+                        <>
+                          <img
+                            src={variation.image}
+                            alt={`Variant ${index + 1}`}
+                            className="h-full w-full object-cover"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => onRemoveVariationImage(index)}
+                            className="absolute top-3 right-3 p-2 bg-red-500 text-white rounded-xl opacity-0 group-hover/media:opacity-100 transition-opacity hover:scale-110"
+                          >
+                            <X className="h-4 w-4" />
+                          </button>
+                        </>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => document.getElementById(`variation-image-${index}`)?.click()}
+                          className="absolute inset-0 flex flex-col items-center justify-center gap-2 hover:bg-gray-50 transition-colors"
+                        >
+                          <div className="w-12 h-12 rounded-2xl bg-white border border-gray-100 flex items-center justify-center shadow-sm">
+                            <Upload className="h-5 w-5 text-gray-400 group-hover/media:text-orange-500 transition-colors" />
+                          </div>
+                          <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Upload image</span>
+                        </button>
+                      )}
+
+                      {uploadingVariationImages[index] && (
+                        <div className="absolute inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center">
+                          <div className="animate-spin rounded-full h-6 w-6 border-2 border-white/30 border-t-white"></div>
+                        </div>
+                      )}
+                    </div>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => onVariationImageUpload(index, e)}
+                      className="hidden"
+                      id={`variation-image-${index}`}
+                    />
+                  </div>
+                </div>
+
+                {/* Parameters Matrix */}
+                <div className="lg:col-span-9 flex flex-col justify-between space-y-8">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-8">
+                    <div className="space-y-3">
+                      <Label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] ml-1">Pack or size</Label>
                       <Input
-                        type="text"
                         value={variation.quantity || ""}
                         onChange={(e) => onUpdateVariation(index, 'quantity', e.target.value)}
-                        placeholder="e.g., 2 kg, Premium Pack, or 1"
-                        className="w-full h-10 sm:h-11 text-sm sm:text-base bg-white border-2 border-gray-300 focus:border-orange-500 focus:ring-2 focus:ring-orange-200 rounded-lg"
+                        placeholder="e.g. 2kg Pack"
+                        className="h-12 px-4 rounded-xl border-white bg-white shadow-sm focus:border-orange-400 focus:ring-4 focus:ring-orange-100 transition-all"
                       />
-                      <p className="text-xs text-gray-500 mt-1">Describe the variation (e.g., "2 kg", "Premium Pack", "1 dozen")</p>
                     </div>
-                    <div className="col-span-1">
-                      <Label className="text-xs sm:text-sm font-medium text-gray-700 mb-1.5 sm:mb-2 block">Price (₦)</Label>
+                    <div className="space-y-3">
+                      <Label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] ml-1">Price (₦)</Label>
                       <Input
                         type="number"
-                        min="0"
-                        step="0.01"
                         value={variation.price}
                         onChange={(e) => onUpdateVariation(index, 'price', parseFloat(e.target.value) || 0)}
-                        onBlur={(e) => {
-                          const val = parseFloat(e.target.value) || 0
-                          const charm = toCharmPrice(val)
-                          if (val !== charm) onUpdateVariation(index, 'price', charm)
-                        }}
                         placeholder="0.00"
-                        className="w-full h-10 sm:h-11 text-sm sm:text-base bg-white border-2 border-gray-300 focus:border-orange-500 focus:ring-2 focus:ring-orange-200 rounded-lg"
+                        className="h-12 px-4 rounded-xl border-white bg-white shadow-sm focus:border-orange-400 focus:ring-4 focus:ring-orange-100 transition-all font-black"
                       />
                     </div>
-                    <div className="col-span-1">
-                      <Label className="text-xs sm:text-sm font-medium text-gray-700 mb-1.5 sm:mb-2 block">Stock</Label>
+                    <div className="space-y-3">
+                      <Label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] ml-1">Availability</Label>
                       <Input
                         type="number"
-                        min="0"
                         value={variation.stock || 0}
                         onChange={(e) => onUpdateVariation(index, 'stock', parseInt(e.target.value) || 0)}
                         placeholder="0"
-                        className="w-full h-10 sm:h-11 text-sm sm:text-base bg-white border-2 border-gray-300 focus:border-orange-500 focus:ring-2 focus:ring-orange-200 rounded-lg"
+                        className="h-12 px-4 rounded-xl border-white bg-white shadow-sm focus:border-orange-400 focus:ring-4 focus:ring-orange-100 transition-all"
                       />
-                    </div>
-                    <div className="col-span-1">
-                      <Label className="text-xs sm:text-sm font-medium text-gray-700 mb-1.5 sm:mb-2 block">Weight (kg)</Label>
-                      <Input
-                        type="number"
-                        min="0"
-                        step="0.1"
-                        value={variation.weightKg ?? ''}
-                        onChange={(e) => {
-                          const val = e.target.value
-                          onUpdateVariation(index, 'weightKg', val === '' ? null : parseFloat(val) || 0)
-                        }}
-                        placeholder="e.g. 2.5"
-                        className="w-full h-10 sm:h-11 text-sm sm:text-base bg-white border-2 border-gray-300 focus:border-orange-500 focus:ring-2 focus:ring-orange-200 rounded-lg"
-                      />
-                      <p className="text-xs text-gray-500 mt-1">Used for delivery fee (weight-based). Empty = use product weight.</p>
                     </div>
                   </div>
 
-                  {/* Variation Image Upload */}
-                  <div className="col-span-full pt-2">
-                    <Label className="text-xs sm:text-sm font-semibold text-gray-800 mb-3 block">
-                      Variation Image
-                      <span className="text-gray-500 font-normal ml-1">(Optional)</span>
-                    </Label>
-                    <div className="flex flex-col sm:flex-row items-start gap-4">
-                      {/* Image Preview */}
-                      <div className="relative group flex-shrink-0">
-                        {variation.image ? (
-                          <>
-                            <div className="w-28 h-28 sm:w-36 sm:h-36 rounded-xl overflow-hidden border-2 border-gray-200 bg-gradient-to-br from-gray-50 to-gray-100 shadow-sm ring-1 ring-gray-200/50 transition-all duration-200 group-hover:shadow-md group-hover:ring-orange-200">
-                              <img
-                                src={variation.image}
-                                alt={variation.quantity ? String(variation.quantity) : `Variation ${index + 1}`}
-                                className="w-full h-full object-cover"
-                              />
-                            </div>
-                            <button
-                              type="button"
-                              onClick={() => onRemoveVariationImage(index)}
-                              className="absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 text-white rounded-full p-1.5 shadow-lg hover:shadow-xl transition-all duration-200 opacity-0 group-hover:opacity-100 transform hover:scale-110 z-10"
-                              aria-label="Remove image"
-                            >
-                              <X className="h-3.5 w-3.5" />
-                            </button>
-                            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 rounded-xl transition-colors duration-200 pointer-events-none" />
-                          </>
-                        ) : (
-                          <button
-                            type="button"
-                            onClick={() => {
-                              const fileInput = document.getElementById(`variation-image-${index}`) as HTMLInputElement
-                              if (fileInput && !uploadingVariationImages[index]) {
-                                fileInput.click()
-                              }
-                            }}
-                            disabled={uploadingVariationImages[index]}
-                            className="w-28 h-28 sm:w-36 sm:h-36 rounded-xl border-2 border-dashed border-gray-300 bg-gradient-to-br from-gray-50 to-gray-100 flex flex-col items-center justify-center transition-all duration-200 hover:border-orange-400 hover:bg-orange-50/30 group cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-orange-400 focus:ring-offset-2"
-                          >
-                            <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-lg bg-white/80 flex items-center justify-center mb-2 shadow-sm">
-                              <ImageIcon className="h-6 w-6 sm:h-7 sm:w-7 text-gray-400 group-hover:text-orange-500 transition-colors" />
-                            </div>
-                            <p className="text-[10px] sm:text-xs text-gray-500 font-medium group-hover:text-orange-600 transition-colors">Click to upload</p>
-                          </button>
-                        )}
+                  <div className="flex flex-col sm:flex-row items-end sm:items-center justify-between gap-6 pt-6 border-t border-gray-100">
+                    <div className="flex items-center gap-6">
+                      <div className="space-y-2">
+                        <Label className="text-[9px] font-black text-gray-400 uppercase tracking-[0.2em] ml-1">Mass (kg)</Label>
+                        <Input
+                          type="number"
+                          step="0.1"
+                          value={variation.weightKg ?? ''}
+                          onChange={(e) => onUpdateVariation(index, 'weightKg', e.target.value === '' ? null : parseFloat(e.target.value) || 0)}
+                          placeholder="0.0"
+                          className="w-32 h-10 px-4 rounded-xl border-white bg-white shadow-sm text-xs font-bold"
+                        />
                       </div>
-
-                      {/* Upload Controls */}
-                      <div className="flex-1 min-w-0 space-y-3">
-                        <div>
-                          <input
-                            type="file"
-                            accept="image/*"
-                            onChange={(e) => onVariationImageUpload(index, e)}
-                            className="hidden"
-                            id={`variation-image-${index}`}
-                            disabled={uploadingVariationImages[index]}
-                          />
-                          <Button
-                            type="button"
-                            variant="outline"
-                            disabled={uploadingVariationImages[index]}
-                            onClick={() => {
-                              const fileInput = document.getElementById(`variation-image-${index}`) as HTMLInputElement
-                              if (fileInput && !uploadingVariationImages[index]) {
-                                fileInput.click()
-                              }
-                            }}
-                            className="w-full sm:w-auto cursor-pointer border-2 border-gray-300 hover:border-orange-400 hover:bg-orange-50 text-gray-700 hover:text-orange-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 font-medium shadow-sm hover:shadow"
-                          >
-                            {uploadingVariationImages[index] ? (
-                              <span className="flex items-center">
-                                <div className="animate-spin rounded-full h-4 w-4 border-2 border-orange-400 border-t-transparent mr-2"></div>
-                                Uploading...
-                              </span>
-                            ) : (
-                              <span className="flex items-center">
-                                <Upload className="h-4 w-4 mr-2" />
-                                {variation.image ? 'Change Image' : 'Upload Image'}
-                              </span>
-                            )}
-                          </Button>
-                        </div>
-                        
-                        {errors[`variation_${index}_image`] && (
-                          <div className="bg-red-50 border border-red-200 rounded-lg p-2.5">
-                            <p className="text-xs text-red-700 font-medium flex items-center">
-                              <X className="h-3.5 w-3.5 mr-1.5 flex-shrink-0" />
-                              {errors[`variation_${index}_image`]}
-                            </p>
-                          </div>
-                        )}
-                        
-                        <p className="text-xs text-gray-500 leading-relaxed">
-                          Upload a specific image for this variation to help customers identify it better. Recommended: Square image, max 5MB.
+                      {errors[`variation_${index}_image`] && (
+                        <p className="text-[9px] font-black text-red-500 uppercase tracking-widest bg-red-50 px-3 py-2 rounded-lg border border-red-100">
+                          Invalid variation image
                         </p>
-                      </div>
+                      )}
                     </div>
-                  </div>
 
-                  {/* Remove Button */}
-                  <div className="flex justify-end pt-2">
                     <Button
                       type="button"
                       onClick={() => onRemoveVariation(index)}
                       variant="outline"
-                      className="text-red-600 border-2 border-red-600 hover:bg-red-50 active:bg-red-100 hover:border-red-700 h-10 sm:h-11 rounded-lg font-medium text-sm sm:text-base"
+                      className="h-10 px-4 border-none text-red-500 hover:bg-red-50 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all"
                     >
-                      <Minus className="h-4 w-4 mr-2" />
-                      Remove Variation
+                      <Minus className="h-3 w-3 mr-2" />
+                      Remove variation
                     </Button>
                   </div>
                 </div>
-              </motion.div>
-            ))}
-          </div>
-        )}
+              </div>
+            </div>
+          </motion.div>
+        ))}
 
         {variations.length === 0 && (
-          <div className="text-center py-12 bg-gray-50 rounded-xl border-2 border-dashed border-gray-300">
-            <Layers className="h-12 w-12 text-gray-400 mx-auto mb-3" />
-            <p className="text-sm text-gray-600 font-medium">
-              No variations added yet
-            </p>
-            <p className="text-xs text-gray-500 mt-1">
-              Add variations for different sizes, quantities, or packaging options
-            </p>
+          <div className="py-20 border-2 border-dashed border-gray-100 rounded-[3rem] flex flex-col items-center justify-center bg-gray-50/30">
+            <div className="w-16 h-16 rounded-[1.5rem] bg-white shadow-sm flex items-center justify-center mb-6">
+              <Layers className="h-8 w-8 text-gray-300" strokeWidth={1.5} />
+            </div>
+            <p className="text-sm font-black text-gray-400 uppercase tracking-[0.2em]">No variations yet</p>
+            <p className="text-[10px] font-bold text-gray-300 uppercase tracking-widest mt-2">Add a variation or import rows from a CSV file</p>
           </div>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   )
 }

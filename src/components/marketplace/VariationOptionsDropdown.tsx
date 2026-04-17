@@ -32,7 +32,7 @@ export function VariationOptionsDropdown({
           onShowOptionsChange(!showOptions)
         }}
         disabled={!isActuallyInStock}
-        className="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-300 text-xs sm:text-sm py-1.5 sm:py-2 h-auto min-h-[32px] sm:min-h-[36px]"
+        className="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-300 text-xs sm:text-sm xxs:text-[11px] py-1.5 sm:py-2 xxs:py-1.5 h-auto min-h-[32px] sm:min-h-[36px] xxs:min-h-[30px]"
         onMouseEnter={() => onShowOptionsChange(true)}
         onMouseLeave={() => {
           // Delay hiding to allow user to move to dropdown
@@ -52,13 +52,13 @@ export function VariationOptionsDropdown({
       {showOptions && (
         <div
           data-options-dropdown
-          className="absolute left-0 right-0 bottom-full mb-2.5 w-full max-w-[min(320px,calc(100vw-2rem))] min-w-0 bg-white rounded-xl shadow-xl border border-gray-200 z-[60] overflow-hidden ring-1 ring-black/5"
+          className="absolute left-0 right-0 bottom-full mb-2.5 w-full max-w-[min(100%,calc(100vw-2rem))] xxs:max-w-[min(100%,calc(100vw-10px))] min-w-0 bg-white rounded-xl xxs:rounded-lg shadow-xl border border-gray-200 z-[60] overflow-hidden ring-1 ring-black/5"
           onMouseEnter={() => onShowOptionsChange(true)}
           onMouseLeave={() => {
             setTimeout(() => onShowOptionsChange(false), 300)
           }}
         >
-          <div className="max-h-[280px] overflow-y-auto overscroll-contain p-2">
+          <div className="max-h-[220px] xxs:max-h-[200px] overflow-y-auto overscroll-contain p-1.5 pr-2 [scrollbar-width:thin]">
             <ul className="space-y-1" role="list">
               {options.map((option) => {
                 const variation = option.kind === "variation"
@@ -96,25 +96,20 @@ export function VariationOptionsDropdown({
                       disabled={stock <= 0}
                       className="w-full text-left rounded-lg hover:bg-orange-50/80 border border-transparent hover:border-orange-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-400 focus-visible:ring-offset-1 overflow-hidden"
                     >
-                      <div className="flex items-start sm:items-center gap-2 p-2 min-w-0 w-full">
-                        <span className="flex-shrink-0 w-9 h-9 rounded-md overflow-hidden bg-gray-100 border border-gray-200">
-                          <img src={normalizedImage} alt="" className="w-full h-full object-cover" />
+                      <div className="flex flex-col gap-2 p-2 min-w-0 w-full">
+                        <span className="shrink-0 mx-auto h-14 w-14 max-w-[3.5rem] rounded-md overflow-hidden bg-gray-100 border border-gray-200">
+                          <img src={normalizedImage} alt="" className="h-full w-full object-cover object-center" />
                         </span>
-                        <div className="flex-1 min-w-0">
-                          {/* Mobile: stacked so label/stock/price stay visible */}
-                          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-1 sm:gap-2 min-w-0">
-                            <div className="min-w-0">
-                              <span className="block font-medium text-gray-900 text-xs w-full text-left leading-tight break-words line-clamp-2 sm:line-clamp-1 sm:truncate">
-                                {option.label}
-                              </span>
-                              <span className="block text-[10px] text-gray-500 leading-tight mt-0.5">
-                                Stock: {stock}
-                              </span>
-                            </div>
-                            <span className="flex-shrink-0 text-[11px] sm:text-xs font-semibold text-orange-600 tabular-nums whitespace-nowrap">
-                              {formatPrice(option.price)}
-                            </span>
-                          </div>
+                        <div className="min-w-0 w-full flex flex-col gap-1 text-left">
+                          <span className="block font-semibold text-gray-900 text-xs leading-snug break-words">
+                            {option.label}
+                          </span>
+                          <span className="block text-[10px] text-gray-500 leading-tight">
+                            Stock: {stock}
+                          </span>
+                          <span className="text-xs font-bold text-orange-600 tabular-nums">
+                            {formatPrice(option.price)}
+                          </span>
                         </div>
                       </div>
                     </button>

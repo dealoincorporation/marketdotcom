@@ -29,21 +29,23 @@ export function ProductActionsSection({
   onAddToCart,
 }: ProductActionsSectionProps) {
   return (
-    <div className="relative mt-2.5 sm:mt-3 z-20 flex-shrink-0" onClick={(e) => e.stopPropagation()}>
-      <div className="flex flex-col gap-2.5 sm:gap-3">
+    <div className="relative mt-2 z-20 flex-shrink-0" onClick={(e) => e.stopPropagation()}>
+      <div className="flex flex-col gap-4 xxs:gap-3">
         {/* Options Button - Only show if product has variations */}
         {hasVariationChoices && (
-          <VariationOptionsDropdown
-            product={product}
-            options={options}
-            showOptions={showOptions}
-            isActuallyInStock={isActuallyInStock}
-            onShowOptionsChange={onShowOptionsChange}
-            onVariationSelect={onVariationSelect}
-          />
+          <div className="relative">
+            <VariationOptionsDropdown
+              product={product}
+              options={options}
+              showOptions={showOptions}
+              isActuallyInStock={isActuallyInStock}
+              onShowOptionsChange={onShowOptionsChange}
+              onVariationSelect={onVariationSelect}
+            />
+          </div>
         )}
-        
-        {/* Add to Cart Button with Sliding Animation */}
+
+        {/* Add to Cart Button */}
         <Button
           onClick={(e) => {
             e.preventDefault()
@@ -51,18 +53,21 @@ export function ProductActionsSection({
             onAddToCart()
           }}
           disabled={!isActuallyInStock}
-          className="relative w-full bg-orange-600 text-white overflow-hidden group text-xs sm:text-sm md:text-base py-2 sm:py-2.5"
+          className="relative w-full h-14 xxs:h-12 bg-gray-900 hover:bg-orange-600 text-white rounded-2xl xxs:rounded-xl group overflow-hidden transition-all duration-500 premium-shadow active:scale-95 disabled:opacity-50"
         >
-          <span className="relative z-10 flex items-center justify-center">
-            <ShoppingCart className="h-3 w-3 sm:h-4 sm:w-4 mr-1.5 sm:mr-2" />
-            <span className="truncate max-w-[140px] sm:max-w-none">
+          <div className="relative z-10 flex items-center justify-center gap-3">
+            <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center group-hover:scale-110 transition-transform">
+              <ShoppingCart className="h-4 w-4" />
+            </div>
+            <span className="text-[10px] sm:text-xs font-black uppercase tracking-widest whitespace-nowrap">
               {selectedVariation
-                ? `Add ${selectedVariation.label}`
-                : "Add to Cart"}
+                ? `Pick ${selectedVariation.label}`
+                : "Quick Add"}
             </span>
-          </span>
-          {/* Sliding background animation - slides from left to right on hover */}
-          <span className="absolute inset-0 bg-gradient-to-r from-orange-700 to-red-600 transform -translate-x-full group-hover:translate-x-0 transition-transform duration-500 ease-in-out"></span>
+          </div>
+
+          {/* Animated Glow Effect */}
+          <div className="absolute inset-0 bg-gradient-to-r from-orange-400 to-red-600 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
         </Button>
       </div>
     </div>

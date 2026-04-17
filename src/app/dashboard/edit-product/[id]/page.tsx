@@ -134,32 +134,38 @@ export default function EditProductPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+    <div className="min-h-screen bg-[#F8F9FA] relative">
+      {/* Dynamic Background Elements */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden -z-10">
+        <div className="absolute top-[-10%] right-[-5%] w-[50%] h-[50%] bg-orange-400/5 blur-[100px] rounded-full" />
+        <div className="absolute bottom-[-10%] left-[-5%] w-[50%] h-[50%] bg-blue-400/5 blur-[100px] rounded-full" />
+      </div>
+
       {/* Top bar */}
-      <header className="sticky top-0 z-40 bg-white/90 backdrop-blur border-b border-gray-200">
+      <header className="sticky top-0 z-40 glass-effect bg-white/80 backdrop-blur-xl border-b border-white shadow-xl">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between py-4 gap-3">
-            <div className="flex items-center gap-3 min-w-0">
+          <div className="flex items-center justify-between h-16 sm:h-20 gap-4">
+            <div className="flex items-center gap-4 min-w-0 flex-1">
               <Link
                 href="/dashboard?tab=manage-products"
-                className="p-2 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-colors"
+                className="p-2.5 rounded-2xl text-gray-500 hover:text-orange-600 hover:bg-orange-50 transition-all active:scale-95 group flex-shrink-0"
                 aria-label="Back to products"
               >
-                <ArrowLeft className="h-5 w-5" />
+                <ArrowLeft className="h-6 w-6 group-hover:-translate-x-1 transition-transform" strokeWidth={1.5} />
               </Link>
-              <div className="min-w-0">
-                <h1 className="text-lg sm:text-2xl font-bold text-gray-900 truncate">
-                  Edit: {product?.name || "Product"}
+              <div className="min-w-0 flex-1">
+                <h1 className="text-lg sm:text-2xl font-black text-gray-900 tracking-tight uppercase truncate">
+                  Edit product: {product?.name || "Product"}
                 </h1>
-                <p className="text-xs sm:text-sm text-gray-600 truncate">
-                  Update details, images, inventory, and variations.
+                <p className="hidden sm:block text-[11px] font-black text-gray-400 uppercase tracking-widest truncate">
+                  Update details, images, variations, and pricing
                 </p>
               </div>
             </div>
             <div className="flex items-center gap-2">
               <Link href="/dashboard?tab=manage-products">
-                <Button variant="outline" className="flex items-center gap-2">
-                  <X className="h-4 w-4" />
+                <Button variant="outline" className="flex items-center gap-2 h-12 px-4 sm:px-6 border border-white/70 bg-white/85 backdrop-blur-sm rounded-xl text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] transition-all hover:bg-red-50 hover:text-red-500 hover:border-red-100 group">
+                  <X className="h-4 w-4 group-hover:rotate-90 transition-transform" />
                   <span className="hidden sm:inline">Cancel</span>
                 </Button>
               </Link>
@@ -169,63 +175,69 @@ export default function EditProductPage() {
       </header>
 
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto py-6 sm:py-8 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto py-8 sm:py-12 px-4 sm:px-6 lg:px-8">
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
+          initial={{ opacity: 0, scale: 0.98 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
         >
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
             {/* Form */}
             <div className="lg:col-span-8">
-              <Card className="shadow-xl border-0 bg-white/90 backdrop-blur-sm">
-                <CardContent className="p-4 sm:p-6 md:p-8">
+              <div className="glass-effect rounded-[3rem] border border-white shadow-2xl overflow-hidden premium-shadow bg-white/85 backdrop-blur-3xl p-1 bg-gradient-to-br from-white/95 to-white/75">
+                <div className="p-4 sm:p-6 md:p-8 bg-white/80 rounded-[2.8rem] border border-white/70">
                   <ProductForm
                     initialData={product}
                     categories={categories}
                     onSubmit={handleSaveProduct}
                     onCancel={handleCancel}
                   />
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             </div>
 
             {/* Side panel */}
-            <aside className="lg:col-span-4 space-y-4">
-              <Card className="border-0 bg-white/90 backdrop-blur-sm shadow-md">
-                <CardContent className="p-4 sm:p-5">
-                  <div className="flex items-start gap-3">
-                    <div className="mt-0.5 text-orange-600">
-                      <AlertTriangle className="h-5 w-5" />
-                    </div>
-                    <div className="min-w-0">
-                      <p className="font-semibold text-gray-900">This affects Marketplace cards</p>
-                      <p className="text-sm text-gray-600 mt-1">
-                        Changes here update the same product shown on <span className="font-medium">/marketplace</span> and the dashboard marketplace.
-                      </p>
-                    </div>
+            <aside className="lg:col-span-4 space-y-6">
+              <div className="glass-effect rounded-[2rem] border border-white bg-white/85 backdrop-blur-3xl p-6 shadow-xl premium-shadow">
+                <div className="flex items-start gap-4">
+                  <div className="mt-1 p-3 bg-orange-100 rounded-2xl">
+                    <AlertTriangle className="h-5 w-5 text-orange-600" strokeWidth={2} />
                   </div>
-                </CardContent>
-              </Card>
+                  <div className="min-w-0">
+                    <p className="text-sm font-black text-gray-900 uppercase tracking-widest mb-2">Marketplace</p>
+                    <p className="text-xs text-gray-600 font-medium leading-relaxed">
+                      Changes you save here update the product on the public marketplace and in your admin dashboard.
+                    </p>
+                  </div>
+                </div>
+              </div>
 
-              <Card className="border-0 bg-white/90 backdrop-blur-sm shadow-md">
-                <CardContent className="p-4 sm:p-5 space-y-2">
-                  <p className="font-semibold text-gray-900">Current Inventory Snapshot</p>
-                  <div className="text-sm text-gray-700 flex items-center justify-between">
-                    <span>Base stock</span>
-                    <span className="font-medium">{product.stock} {product.unit}</span>
+              <div className="glass-effect rounded-[2.5rem] border border-white bg-white/85 backdrop-blur-3xl p-8 shadow-xl premium-shadow space-y-6">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                  <p className="text-[10px] font-black text-gray-900 uppercase tracking-[0.3em]">Inventory snapshot</p>
+                </div>
+
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between pb-4 border-b border-gray-100">
+                    <span className="text-[11px] font-black text-gray-400 uppercase tracking-widest">Base stock</span>
+                    <span className="text-sm font-black text-gray-900">{product.stock} <span className="text-[10px] opacity-40 uppercase ml-1">{product.unit}</span></span>
                   </div>
-                  <div className="text-sm text-gray-700 flex items-center justify-between">
-                    <span>In-stock variations</span>
-                    <span className="font-medium">
+
+                  <div className="flex items-center justify-between pb-4 border-b border-gray-100">
+                    <span className="text-[11px] font-black text-gray-400 uppercase tracking-widest">In-stock variations</span>
+                    <span className="text-sm font-black text-gray-900">
                       {(product.variations || []).filter((v: any) => (v.stock || 0) > 0).length}
                     </span>
                   </div>
-                  <p className="text-xs text-gray-500 pt-2">
-                    Tip: if base stock is 0, at least one variation must have stock for the item to be purchasable.
+                </div>
+
+                <div className="p-4 bg-gray-50/50 rounded-2xl border border-gray-100">
+                  <p className="text-[10px] text-gray-500 font-bold leading-relaxed uppercase tracking-tight">
+                    If base stock is zero, keep at least one variation in stock so the product can stay visible in the marketplace.
                   </p>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             </aside>
           </div>
         </motion.div>

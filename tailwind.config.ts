@@ -17,6 +17,10 @@ const config: Config = {
       },
     },
     extend: {
+      /** Viewports ≤350px — very narrow phones; use prefix `xxs:` */
+      screens: {
+        xxs: { max: "350px" },
+      },
       fontFamily: {
         sans: ['var(--font-space-grotesk)', 'system-ui', 'sans-serif'],
         mono: ['var(--font-roboto-mono)', 'monospace'],

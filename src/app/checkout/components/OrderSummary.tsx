@@ -1,6 +1,7 @@
 "use client"
 
-import { Shield, Truck, Check, Trash2 } from "lucide-react"
+import { Shield, Truck, Check, Trash2, AlertTriangle } from "lucide-react"
+import { motion } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { useCartStore } from "@/lib/cart-store"
 import { cleanCartItemNameForDisplay } from "@/components/marketplace/utils"
@@ -62,132 +63,145 @@ export function OrderSummary({
   const { removeItem } = useCartStore()
 
   return (
-    <div className="lg:col-span-1 min-w-0 w-full max-w-full overflow-hidden order-last lg:order-none">
-      <div className="sticky top-4 sm:top-8 space-y-4 sm:space-y-6">
-        {/* Order Items */}
-        <div className="bg-gradient-to-br from-orange-50 to-white rounded-xl sm:rounded-2xl shadow-xl border border-orange-200 overflow-hidden w-full max-w-full min-w-0">
-          <div className="bg-gradient-to-r from-orange-500 to-orange-600 p-4 sm:p-6">
-            <h2 className="text-lg sm:text-xl font-bold text-white flex items-center gap-2 break-words">
-              🛒 Order Summary
-            </h2>
-            <p className="text-orange-100 mt-1 text-sm sm:text-base">{totalItems} items in your cart</p>
+    <div className="lg:col-span-1 min-w-0 w-full max-w-full order-last lg:order-none">
+      <div className="sticky top-24 space-y-6">
+        {/* Order summary */}
+        <div className="bg-white/85 backdrop-blur-3xl rounded-[2.5rem] shadow-[0_32px_64px_-16px_rgba(0,0,0,0.1)] border border-white/70 overflow-hidden w-full transition-all duration-500">
+          <div className="bg-gray-900 p-8 sm:p-10 relative overflow-hidden">
+            <div className="absolute top-0 right-0 p-10 opacity-[0.05]">
+              <Shield className="h-40 w-40 text-white" />
+            </div>
+            <div className="relative z-10">
+              <h2 className="text-sm font-black text-white uppercase tracking-[0.4em] mb-2">
+                Order Summary
+              </h2>
+              <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-relaxed">
+                Review your items and total before payment. <br />
+                Items: <span className="text-orange-400">{totalItems}</span>
+              </p>
+            </div>
           </div>
-          <div className="p-4 sm:p-6 min-w-0">
-            <div className="space-y-3 sm:space-y-4 mb-6">
+
+          <div className="p-8 sm:p-10">
+            {/* Items */}
+            <div className="space-y-4 mb-10 max-h-[400px] overflow-y-auto custom-scrollbar pr-2">
               {items.map(item => (
-                <div key={item.id} className="flex items-start space-x-3 p-3 bg-gray-50 rounded-lg">
-                  <div className="relative w-12 h-12 sm:w-16 sm:h-16 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0 border border-gray-200">
-                    <img
-                      src={item.image || "/market_image.jpeg"}
-                      alt={item.name}
-                      className="w-full h-full object-cover"
-                    />
-                    <div className="absolute top-0 right-0 bg-orange-600 text-white text-xs font-bold px-1.5 py-0.5 rounded-bl-lg">
-                      {item.quantity}
+                <div key={item.id} className="glass-effect rounded-[1.5rem] border border-gray-100 bg-white/40 backdrop-blur-sm p-4 shadow-sm hover:shadow-md transition-all group">
+                  <div className="flex items-start gap-4">
+                    <div className="relative w-16 h-16 rounded-2xl overflow-hidden bg-white border border-gray-100 flex-shrink-0 shadow-inner">
+                      <img
+                        src={item.image || "/market_image.jpeg"}
+                        alt={item.name}
+                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                      />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[11px] font-black text-gray-900 uppercase tracking-tight line-clamp-1 mb-1">{cleanCartItemNameForDisplay(item.name)}</p>
+                      <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest">{getQuantityUnitDisplay(item)}</p>
+                      <div className="flex items-center justify-between mt-2">
+                        <span className="text-[10px] font-black text-gray-900">₦{(item.price * item.quantity).toLocaleString()}</span>
+                        <button
+                          onClick={() => removeItem(item.id)}
+                          className="p-2 hover:bg-red-50 text-gray-300 hover:text-red-500 rounded-lg transition-all"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
                     </div>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-gray-900 line-clamp-2 break-words">{cleanCartItemNameForDisplay(item.name)}</p>
-                    <p className="text-xs text-gray-500 mt-0.5">{getQuantityUnitDisplay(item)}</p>
-                    <p className="text-xs sm:text-sm text-gray-600 font-medium mt-1">₦{(item.price * item.quantity).toLocaleString()}</p>
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => removeItem(item.id)}
-                    className="h-8 w-8 p-0 shrink-0 text-red-600 hover:text-red-700 hover:bg-red-50"
-                    aria-label={`Remove ${item.name} from cart`}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
                 </div>
               ))}
             </div>
 
-            <div className="space-y-3 border-t border-orange-200 pt-4">
-              <div className="flex justify-between items-center bg-orange-50 p-3 rounded-lg">
-                <span className="text-gray-700 text-sm sm:text-base">Subtotal</span>
-                <span className="font-semibold text-orange-700 text-sm sm:text-base">₦{subtotal.toLocaleString()}</span>
+            {/* Totals */}
+            <div className="space-y-4 border-t border-gray-100 pt-8">
+              <div className="flex justify-between items-center px-2">
+                <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Subtotal</span>
+                <span className="text-[11px] font-black text-gray-900">₦{subtotal.toLocaleString()}</span>
               </div>
 
               {totalWeight > 0 && (
-                <div className="flex justify-between items-center bg-blue-50 p-3 rounded-lg border border-blue-100">
-                  <span className="text-gray-700 text-sm sm:text-base flex items-center gap-1.5">
-                    <Truck className="h-3.5 w-3.5 text-blue-500" />
-                    Total Weight
+                <div className="flex justify-between items-center px-2 py-3 bg-gray-50/50 rounded-xl">
+                  <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest flex items-center gap-2">
+                    <Truck className="h-3 w-3" /> Total Weight
                   </span>
-                  <span className="font-semibold text-blue-700 text-sm sm:text-base">{totalWeight.toFixed(1)} kg</span>
+                  <span className="text-[11px] font-black text-gray-900">{totalWeight.toFixed(1)} KG</span>
                 </div>
               )}
 
-              <div className="flex justify-between items-center bg-gray-50 p-3 rounded-lg border border-gray-100">
-                <span className="text-gray-700 text-sm sm:text-base">Delivery Fee</span>
-                <span className={`font-semibold text-sm sm:text-base ${deliveryFee === 0 ? 'text-green-600' : 'text-orange-700'}`}>
-                  {deliveryFee === 0 ? 'Free' : `₦${deliveryFee.toLocaleString()}`}
+              <div className="flex justify-between items-center px-2">
+                <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Delivery Fee</span>
+                <span className={`text-[11px] font-black ${deliveryFee === 0 ? 'text-emerald-600' : 'text-gray-900'}`}>
+                  {deliveryFee === 0 ? 'FREE' : `₦${deliveryFee.toLocaleString()}`}
                 </span>
               </div>
 
-              <div className="relative">
-                <div className="border-t border-orange-300 pt-3">
-                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 bg-gradient-to-r from-orange-500 to-orange-600 text-white p-3 sm:p-4 rounded-lg">
-                    <span className="text-base sm:text-lg font-bold">Total</span>
-                    <span className="text-base sm:text-lg font-bold">
-                      ₦{finalTotal.toLocaleString()}
-                    </span>
+              <div className="mt-8">
+                <div className="bg-gray-950 rounded-2xl p-6 shadow-2xl relative overflow-hidden group">
+                  <div className="absolute top-0 right-0 p-6 opacity-10 rotate-12 group-hover:scale-110 transition-transform">
+                    <Shield className="h-16 w-16 text-white" />
+                  </div>
+                  <div className="relative z-10 flex justify-between items-center">
+                    <div>
+                      <p className="text-[9px] font-black text-orange-400 uppercase tracking-[0.3em] mb-1">Total</p>
+                      <span className="text-xl font-black text-white tracking-widest">
+                        ₦{finalTotal.toLocaleString()}
+                      </span>
+                    </div>
+                    <div className="h-10 w-10 bg-white/10 rounded-xl flex items-center justify-center">
+                      <Check className="h-5 w-5 text-white" />
+                    </div>
                   </div>
                 </div>
               </div>
 
-              {/* Delivery note (admin-set) and optional free-delivery message, only after date & time selected */}
+              {/* Delivery notes */}
               {deliveryDate && deliveryTime && (
-                <>
+                <div className="p-4 bg-orange-50/30 rounded-2xl border border-orange-100/50 space-y-2 mt-4">
                   {deliverySlotDescription && (
-                    <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
-                      <p className="text-xs font-medium text-amber-800 mb-0.5">Delivery note</p>
-                      <p className="text-sm text-amber-900">{deliverySlotDescription}</p>
+                    <div className="flex gap-2">
+                      <div className="h-1.5 w-1.5 bg-orange-400 rounded-full mt-1 flex-shrink-0" />
+                      <p className="text-[10px] font-bold text-gray-600 leading-normal">{deliverySlotDescription}</p>
                     </div>
                   )}
                   {deliveryFee === 0 && (
-                    <div className="bg-green-50 border border-green-200 rounded-lg p-3">
-                      <p className="text-xs sm:text-sm text-green-800 font-medium">
-                        🎉 {typeof window !== 'undefined' && localStorage.getItem('freeDeliveryMessage') 
-                          ? localStorage.getItem('freeDeliveryMessage') 
-                          : 'Free delivery!'}
-                      </p>
+                    <div className="flex items-center gap-2 text-emerald-600">
+                      <div className="h-1.5 w-1.5 bg-emerald-500 rounded-full flex-shrink-0" />
+                      <span className="text-[9px] font-black uppercase tracking-widest">Free delivery applied</span>
                     </div>
                   )}
-                </>
+                </div>
               )}
             </div>
 
             <Button
               onClick={onContinue}
-              className="w-full h-12 sm:h-14 mt-4 sm:mt-6 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-300 border-0 text-sm sm:text-base"
+              className="w-full h-16 mt-8 bg-gray-900 hover:bg-gray-800 text-white rounded-[1.25rem] font-black uppercase tracking-[0.3em] text-[11px] shadow-2xl transition-all active:scale-[0.98] disabled:opacity-50"
               disabled={!canContinue}
             >
-              Continue to Payment →
+              Continue to Payment
             </Button>
 
             {!selectedAddress && (
-              <p className="text-xs sm:text-sm text-red-600 mt-2 flex items-center justify-center flex-wrap gap-1 text-center">
-                <span>⚠️</span> Please select a delivery address
+              <p className="text-[9px] font-black text-red-500 mt-4 text-center uppercase tracking-widest flex items-center justify-center gap-2">
+                <AlertTriangle className="h-3 w-3" /> Please select a delivery address
               </p>
             )}
             {selectedAddress && (!deliveryDate || !deliveryTime) && (
-              <p className="text-xs sm:text-sm text-red-600 mt-2 flex items-center justify-center">
-                <span className="mr-1">⚠️</span> Please select delivery date and time
+              <p className="text-[9px] font-black text-red-500 mt-4 text-center uppercase tracking-widest flex items-center justify-center gap-2">
+                <AlertTriangle className="h-3 w-3" /> Please select a delivery date and time
               </p>
             )}
             {moqNotMet && (
-              <div className="text-xs sm:text-sm text-amber-700 mt-2 space-y-1 text-center">
+              <div className="mt-4 p-4 bg-amber-50 rounded-2xl border border-amber-100 space-y-2">
                 {moqQuantityNotMet && (
-                  <p className="flex items-center justify-center">
-                    <span className="mr-1">⚠️</span> Minimum order: {minimumOrderQuantity} items required. Add {minimumOrderQuantity - totalItems} more to continue.
+                  <p className="text-[9px] font-black text-amber-700 uppercase tracking-tight text-center">
+                    Minimum quantity required: {minimumOrderQuantity}. Add {minimumOrderQuantity - totalItems} more.
                   </p>
                 )}
                 {moqAmountNotMet && (
-                  <p className="flex items-center justify-center">
-                    <span className="mr-1">⚠️</span> Minimum order amount: ₦{minimumOrderAmount.toLocaleString()}. Add ₦{(minimumOrderAmount - subtotal).toLocaleString()} more to continue.
+                  <p className="text-[9px] font-black text-amber-700 uppercase tracking-tight text-center">
+                    Minimum order amount: ₦{minimumOrderAmount.toLocaleString()}. Add ₦{(minimumOrderAmount - subtotal).toLocaleString()} more.
                   </p>
                 )}
               </div>
@@ -195,20 +209,28 @@ export function OrderSummary({
           </div>
         </div>
 
-        {/* Trust Indicators */}
-        <div className="bg-white/70 backdrop-blur-sm rounded-xl shadow-lg border border-white/20 p-4">
-          <div className="flex items-center justify-center space-x-6 text-sm text-gray-600">
-            <div className="flex items-center space-x-2">
-              <Shield className="h-4 w-4 text-green-600" />
-              <span>Secure</span>
+        {/* Trust indicators */}
+        <div className="bg-white/80 backdrop-blur-xl rounded-[2rem] border border-white/70 p-6 shadow-sm overflow-hidden group">
+          <div className="flex items-center justify-around">
+            <div className="flex flex-col items-center gap-2 grayscale group-hover:grayscale-0 transition-all duration-700">
+              <div className="p-3 bg-white rounded-2xl shadow-sm">
+                <Shield className="h-5 w-5 text-gray-900" />
+              </div>
+              <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest">Secure</span>
             </div>
-            <div className="flex items-center space-x-2">
-              <Truck className="h-4 w-4 text-blue-600" />
-              <span>Fast Delivery</span>
+            <div className="w-px h-8 bg-gray-100" />
+            <div className="flex flex-col items-center gap-2 grayscale group-hover:grayscale-0 transition-all duration-700 delay-75">
+              <div className="p-3 bg-white rounded-2xl shadow-sm">
+                <Truck className="h-5 w-5 text-gray-900" />
+              </div>
+              <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest">Fast Delivery</span>
             </div>
-            <div className="flex items-center space-x-2">
-              <Check className="h-4 w-4 text-purple-600" />
-              <span>Quality</span>
+            <div className="w-px h-8 bg-gray-100" />
+            <div className="flex flex-col items-center gap-2 grayscale group-hover:grayscale-0 transition-all duration-700 delay-150">
+              <div className="p-3 bg-white rounded-2xl shadow-sm">
+                <Check className="h-5 w-5 text-gray-900" />
+              </div>
+              <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest">Verified</span>
             </div>
           </div>
         </div>

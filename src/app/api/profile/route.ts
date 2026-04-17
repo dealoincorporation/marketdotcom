@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { getUserFromRequest } from "@/lib/auth"
 import { getPrismaClient } from "@/lib/prisma"
+import { getMissingProfileFields } from "@/lib/profile-completion"
 
 // This route uses request headers for authentication, so it must be dynamic
 export const dynamic = 'force-dynamic'
@@ -24,6 +25,7 @@ export async function GET(request: NextRequest) {
         role: true,
         emailVerified: true,
         image: true,
+        password: true,
         walletBalance: true,
         points: true,
         referralCode: true,
@@ -36,7 +38,14 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "User not found" }, { status: 404 })
     }
 
-    return NextResponse.json(userProfile)
+    const missingFields = getMissingProfileFields(userProfile)
+    return NextResponse.json({
+      ...userProfile,
+      hasPassword: Boolean(userProfile.password),
+      password: undefined,
+      missingFields,
+      needsProfileCompletion: missingFields.length > 0,
+    })
   } catch (error) {
     console.error("GET /api/profile error:", error)
     return NextResponse.json(
@@ -89,6 +98,7 @@ export async function PUT(request: NextRequest) {
         role: true,
         emailVerified: true,
         image: true,
+        password: true,
         walletBalance: true,
         points: true,
         referralCode: true,
@@ -99,7 +109,11 @@ export async function PUT(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      user: updatedUser,
+      user: {
+        ...updatedUser,
+        hasPassword: Boolean(updatedUser.password),
+        password: undefined,
+      },
       message: "Profile updated successfully",
     })
   } catch (error: any) {

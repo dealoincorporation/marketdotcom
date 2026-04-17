@@ -40,86 +40,77 @@ export function ProductForm({
   })
 
   return (
-    <div className="w-full max-w-5xl mx-auto p-4 sm:p-6">
+    <div className="w-full">
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.3 }}
-        className="space-y-6"
+        initial={{ opacity: 0, scale: 0.98 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.5 }}
+        className="space-y-12"
       >
-        {/* Header */}
-        <div className="bg-gradient-to-r from-orange-500 to-red-500 rounded-2xl p-6 sm:p-8 text-white shadow-lg">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm">
-              <Package className="h-6 w-6" />
-            </div>
-            <div>
-              <h1 className="text-2xl sm:text-3xl font-bold">
-                {initialData?.id ? 'Edit Product' : 'Add New Product'}
-              </h1>
-              <p className="text-orange-50 text-sm sm:text-base mt-1">
-                {initialData?.id ? 'Update your product information' : 'Create a new product listing'}
-              </p>
-            </div>
+        <form onSubmit={handleSubmit} className="space-y-16">
+          <div className="space-y-16">
+            {/* Image Upload Section */}
+            <ProductImageUpload
+              imagePreviews={imagePreviews}
+              uploadingImages={uploadingImages}
+              errors={errors}
+              selectedImages={selectedImages}
+              onImageUpload={handleImageUpload}
+              onRemoveImage={removeImage}
+            />
+
+            {/* Basic Information Section */}
+            <ProductBasicInfo
+              formData={formData}
+              categories={categories}
+              errors={errors}
+              onInputChange={handleInputChange}
+            />
+
+            {/* Variations Section */}
+            <ProductVariationsSection
+              variations={formData.variations}
+              onAddVariation={addVariation}
+              onUpdateVariation={updateVariation}
+              onRemoveVariation={removeVariation}
+              onBulkImport={handleBulkVariationImport}
+              onVariationImageUpload={handleVariationImageUpload}
+              onRemoveVariationImage={removeVariationImage}
+              uploadingVariationImages={uploadingVariationImages}
+              errors={errors}
+            />
           </div>
-        </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Image Upload Section */}
-          <ProductImageUpload
-            imagePreviews={imagePreviews}
-            uploadingImages={uploadingImages}
-            errors={errors}
-            selectedImages={selectedImages}
-            onImageUpload={handleImageUpload}
-            onRemoveImage={removeImage}
-          />
-
-          {/* Basic Information Section */}
-          <ProductBasicInfo
-            formData={formData}
-            categories={categories}
-            errors={errors}
-            onInputChange={handleInputChange}
-          />
-
-          {/* Variations Section */}
-          <ProductVariationsSection
-            variations={formData.variations}
-            onAddVariation={addVariation}
-            onUpdateVariation={updateVariation}
-            onRemoveVariation={removeVariation}
-            onBulkImport={handleBulkVariationImport}
-            onVariationImageUpload={handleVariationImageUpload}
-            onRemoveVariationImage={removeVariationImage}
-            uploadingVariationImages={uploadingVariationImages}
-            errors={errors}
-          />
-
-          {/* Form Actions */}
-          <div className="flex flex-col sm:flex-row justify-end gap-4 pt-6 border-t-2 border-gray-200">
+          {/* Form actions */}
+          <div className="flex flex-col sm:flex-row justify-end gap-5 pt-12 border-t border-gray-100">
             <Button
               type="button"
               variant="outline"
               onClick={onCancel}
               disabled={isLoading}
-              className="w-full sm:w-auto h-12 text-base border-2 border-gray-300 hover:bg-gray-50 font-medium"
+              className="w-full sm:w-40 h-14 border border-white/70 bg-white/85 backdrop-blur-sm rounded-xl text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] transition-all hover:bg-gray-50 hover:text-gray-900"
             >
               Cancel
             </Button>
             <Button
               type="submit"
               disabled={isLoading}
-              className="bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 w-full sm:w-auto h-12 text-base font-bold text-white shadow-lg hover:shadow-xl transition-all"
+              className="w-full sm:w-64 h-14 rounded-xl bg-gray-900 border border-white/20 text-white font-black text-[12px] uppercase tracking-[0.2em] shadow-2xl hover:bg-black hover:scale-[1.02] active:scale-[0.98] transition-all relative overflow-hidden group"
             >
-              {isLoading ? (
-                <span className="flex items-center gap-2">
-                  <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
-                  Saving...
-                </span>
-              ) : (
-                initialData?.id ? 'Update Product' : 'Create Product'
-              )}
+              <div className="absolute inset-0 bg-gradient-to-r from-orange-600/20 via-transparent to-orange-600/20 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
+              <div className="relative z-10 flex items-center justify-center gap-3">
+                {isLoading ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-2 border-white/30 border-t-white"></div>
+                    Processing...
+                  </>
+                ) : (
+                  <>
+                    <Package className="h-5 w-5 text-orange-500" />
+                    {initialData?.id ? 'Update product' : 'Create product'}
+                  </>
+                )}
+              </div>
             </Button>
           </div>
         </form>

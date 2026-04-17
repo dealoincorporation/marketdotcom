@@ -76,8 +76,20 @@ export async function POST(request: NextRequest) {
     const accessToken = generateToken(tokenPayload, '24h')
     const refreshToken = generateRefreshToken(tokenPayload)
 
-    // Remove sensitive data from response
-    const { password: _, emailVerificationToken: __, ...userWithoutSensitiveData } = user
+    const userWithoutSensitiveData = {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      phone: user.phone,
+      role: user.role,
+      emailVerified: user.emailVerified,
+      image: user.image,
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt,
+      walletBalance: user.walletBalance,
+      referralCode: user.referralCode,
+      hasPassword: Boolean(user.password),
+    }
 
     return NextResponse.json(
       {

@@ -49,7 +49,7 @@ export function WhatsAppFloat() {
               damping: 25,
               duration: 0.4
             }}
-            className="fixed bottom-24 right-6 z-50 max-w-xs"
+            className="fixed bottom-28 left-4 sm:left-auto sm:right-6 z-[60] max-w-xs"
           >
             <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-2xl shadow-2xl border border-green-400/20 p-4 relative">
               {/* Close button */}
@@ -97,7 +97,7 @@ export function WhatsAppFloat() {
             </div>
 
             {/* Chat bubble tail */}
-            <div className="absolute bottom-0 right-8 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-green-600"></div>
+            <div className="absolute bottom-0 left-8 sm:left-auto sm:right-8 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-green-600"></div>
           </motion.div>
         )}
       </AnimatePresence>
@@ -107,7 +107,7 @@ export function WhatsAppFloat() {
         initial={{ scale: 0 }}
         animate={{ scale: 1 }}
         transition={{ delay: 1, type: "spring", stiffness: 260, damping: 20 }}
-        className="fixed bottom-24 right-6 z-50"
+        className="fixed bottom-28 left-4 sm:left-auto sm:right-6 z-[60]"
       >
         {/* Online Indicator */}
         <motion.div
@@ -150,9 +150,9 @@ export function WhatsAppFloat() {
         </motion.a>
 
         {/* Tooltip */}
-        <div className="absolute bottom-full right-0 mb-2 px-3 py-2 bg-gray-800 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">
+        <div className="absolute bottom-full left-0 sm:left-auto sm:right-0 mb-2 px-3 py-2 bg-gray-800 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">
           Chat on WhatsApp
-          <div className="absolute top-full right-4 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-800"></div>
+          <div className="absolute top-full left-4 sm:left-auto sm:right-4 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-800"></div>
         </div>
       </motion.div>
     </>

@@ -236,32 +236,32 @@ export default function ManageDeliveriesTab({ isAdmin }: ManageDeliveriesTabProp
     )
   }
 
-  return (
-    <motion.div
+  return (    <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
+      className="space-y-10"
     >
-      <div className="mb-6 sm:mb-8">
-        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">Delivery Management</h1>
-        <p className="text-sm sm:text-base text-gray-600">Configure available delivery dates and time slots</p>
+      <div className="mb-0">
+        <h1 className="text-3xl sm:text-4xl font-black text-gray-900 mb-2 tracking-tight uppercase tracking-[0.1em]">Shipping & Logistics</h1>
+        <p className="text-[11px] font-black text-gray-400 uppercase tracking-[0.3em]">Configure and control your store's regional delivery windows</p>
       </div>
 
       {/* Statistics Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 mb-6 sm:mb-8">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.3, delay: 0.1 }}
         >
-          <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200">
-            <CardContent className="p-3 sm:p-4">
+          <Card className="glass-effect border-white/70 rounded-[1.5rem] premium-shadow h-28 flex flex-col justify-center">
+            <CardContent className="p-5">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-blue-600 text-xs sm:text-sm font-medium">Total Slots</p>
-                  <p className="text-lg sm:text-xl font-bold text-blue-900">{totalSlots}</p>
+                  <p className="text-[9px] font-black text-gray-500 uppercase tracking-widest mb-1">Total Windows</p>
+                  <p className="text-2xl font-black text-gray-900 tabular-nums">{totalSlots}</p>
                 </div>
-                <Calendar className="h-5 w-5 sm:h-6 sm:w-6 text-blue-600" />
+                <Calendar className="h-6 w-6 text-gray-900 opacity-20" />
               </div>
             </CardContent>
           </Card>
@@ -272,14 +272,14 @@ export default function ManageDeliveriesTab({ isAdmin }: ManageDeliveriesTabProp
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.3, delay: 0.2 }}
         >
-          <Card className="bg-gradient-to-br from-green-50 to-green-100 border-green-200">
-            <CardContent className="p-3 sm:p-4">
+          <Card className="glass-effect border-white/70 rounded-[1.5rem] premium-shadow h-28 flex flex-col justify-center">
+            <CardContent className="p-5">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-green-600 text-xs sm:text-sm font-medium">Available</p>
-                  <p className="text-lg sm:text-xl font-bold text-green-900">{availableSlots}</p>
+                  <p className="text-[9px] font-black text-green-600 uppercase tracking-widest mb-1">Open Slots</p>
+                  <p className="text-2xl font-black text-green-600 tabular-nums">{availableSlots}</p>
                 </div>
-                <CheckCircle className="h-5 w-5 sm:h-6 sm:w-6 text-green-600" />
+                <CheckCircle className="h-6 w-6 text-green-600 opacity-20" />
               </div>
             </CardContent>
           </Card>
@@ -290,14 +290,14 @@ export default function ManageDeliveriesTab({ isAdmin }: ManageDeliveriesTabProp
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.3, delay: 0.3 }}
         >
-          <Card className="bg-gradient-to-br from-orange-50 to-orange-100 border-orange-200">
-            <CardContent className="p-3 sm:p-4">
+          <Card className="glass-effect border-white/70 rounded-[1.5rem] premium-shadow h-28 flex flex-col justify-center">
+            <CardContent className="p-5">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-orange-600 text-xs sm:text-sm font-medium">Booked Orders</p>
-                  <p className="text-lg sm:text-xl font-bold text-orange-900">{bookedSlots}</p>
+                  <p className="text-[9px] font-black text-orange-600 uppercase tracking-widest mb-1">Current Bookings</p>
+                  <p className="text-2xl font-black text-orange-900 tabular-nums">{bookedSlots}</p>
                 </div>
-                <Users className="h-5 w-5 sm:h-6 sm:w-6 text-orange-600" />
+                <Users className="h-6 w-6 text-orange-600 opacity-20" />
               </div>
             </CardContent>
           </Card>
@@ -308,19 +308,20 @@ export default function ManageDeliveriesTab({ isAdmin }: ManageDeliveriesTabProp
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.3, delay: 0.4 }}
         >
-          <Card className="bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200">
-            <CardContent className="p-3 sm:p-4">
+          <Card className="glass-effect border-white/70 rounded-[1.5rem] premium-shadow h-28 flex flex-col justify-center bg-gray-950">
+            <CardContent className="p-5">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-purple-600 text-xs sm:text-sm font-medium">Revenue</p>
-                  <p className="text-base sm:text-lg font-bold text-purple-900">{formatPrice(totalRevenue)}</p>
+                  <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1">Logistics Revenue</p>
+                  <p className="text-xl font-black text-white tabular-nums">{formatPrice(totalRevenue)}</p>
                 </div>
-                <BarChart3 className="h-5 w-5 sm:h-6 sm:w-6 text-purple-600" />
+                <BarChart3 className="h-6 w-6 text-white opacity-20" />
               </div>
             </CardContent>
           </Card>
         </motion.div>
       </div>
+
 
       {/* Add Slot Section - Always Visible, responsive no overflow */}
       <Card className="mb-6 shadow-md border-orange-200 min-w-0 overflow-hidden w-full max-w-full">
