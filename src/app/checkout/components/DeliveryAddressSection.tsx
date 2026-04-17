@@ -39,27 +39,27 @@ export function DeliveryAddressSection({
   onAddAddress,
 }: DeliveryAddressSectionProps) {
   return (
-    <div className="bg-white/85 backdrop-blur-3xl rounded-[2.5rem] shadow-[0_32px_64px_-16px_rgba(0,0,0,0.1)] border border-white/70 overflow-hidden w-full transition-all duration-500">
+    <div className="checkout-card bg-white/85 backdrop-blur-3xl rounded-[1.5rem] sm:rounded-[2.5rem] shadow-[0_32px_64px_-16px_rgba(0,0,0,0.1)] border border-white/70 overflow-hidden w-full transition-all duration-500">
       {/* Section Header */}
-      <div className="bg-gray-900 p-8 sm:p-10 relative overflow-hidden">
+      <div className="bg-gray-900 p-5 sm:p-10 relative overflow-hidden">
         <div className="absolute top-0 right-0 p-10 opacity-10">
           <MapPin className="h-40 w-40 text-white" />
         </div>
         <div className="relative z-10">
-          <div className="flex items-center gap-4 mb-2">
-            <div className="p-3 bg-white/10 rounded-2xl">
-              <MapPin className="h-6 w-6 text-orange-400" />
+          <div className="flex items-center gap-3 sm:gap-4 mb-2">
+            <div className="p-2.5 sm:p-3 bg-white/10 rounded-xl sm:rounded-2xl">
+              <MapPin className="h-5 w-5 sm:h-6 sm:w-6 text-orange-400" />
             </div>
-            <h2 className="text-sm font-black text-white uppercase tracking-[0.4em]">Delivery Address</h2>
+            <h2 className="text-[11px] sm:text-sm font-black text-white uppercase tracking-[0.2em] sm:tracking-[0.4em]">Delivery Address</h2>
           </div>
-          <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-relaxed">
+          <p className="text-[9px] sm:text-[10px] font-black text-gray-400 uppercase tracking-wide sm:tracking-widest leading-relaxed">
             Choose where you want your order delivered. <br className="hidden sm:block" />
             Current delivery area: <span className="text-orange-400">Lagos Region</span>
           </p>
         </div>
       </div>
 
-      <div className="p-8 sm:p-10">
+      <div className="p-4 sm:p-10">
         <RadioGroup value={selectedAddress} onValueChange={onAddressSelect} className="space-y-4">
           {addresses.map(address => (
             <motion.div
@@ -70,7 +70,7 @@ export function DeliveryAddressSection({
                   : 'border-gray-100 bg-gray-50/50 hover:border-gray-300 hover:bg-white'
                 }`}
             >
-              <div className="p-6 sm:p-8 flex items-start gap-6">
+              <div className="p-4 sm:p-8 flex items-start gap-3 sm:gap-6">
                 <div className="pt-1">
                   <RadioGroupItem
                     value={address.id}
@@ -80,14 +80,14 @@ export function DeliveryAddressSection({
                 </div>
 
                 <Label htmlFor={address.id} className="flex-1 cursor-pointer">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
-                    <div className="flex items-center gap-4">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 mb-3 sm:mb-4">
+                    <div className="flex items-center gap-3 sm:gap-4 min-w-0">
                       <div className={`p-3 rounded-2xl ${address.type === "home" ? 'bg-blue-50 text-blue-600' : 'bg-purple-50 text-purple-600'
                         }`}>
                         {address.type === "home" ? <Home className="h-5 w-5" /> : <Building className="h-5 w-5" />}
                       </div>
                       <div>
-                        <h3 className="text-[11px] font-black text-gray-900 uppercase tracking-widest">{address.name}</h3>
+                        <h3 className="text-[10px] sm:text-[11px] font-black text-gray-900 uppercase tracking-wide sm:tracking-widest break-words">{address.name}</h3>
                         {address.isDefault && (
                           <span className="text-[8px] font-black text-emerald-600 uppercase tracking-tighter">Default Address</span>
                         )}
@@ -124,11 +124,11 @@ export function DeliveryAddressSection({
                   </div>
 
                   <div className="space-y-1">
-                    <p className="text-sm font-black text-gray-900 leading-snug">{address.address}</p>
-                    <div className="flex items-center gap-4">
-                      <p className="text-[10px] font-bold text-gray-400 uppercase tracking-tight">{address.city}, {address.state}</p>
+                    <p className="text-xs sm:text-sm font-black text-gray-900 leading-snug break-words">{address.address}</p>
+                    <div className="flex flex-wrap items-center gap-2 sm:gap-4">
+                      <p className="text-[9px] sm:text-[10px] font-bold text-gray-400 uppercase tracking-tight break-words">{address.city}, {address.state}</p>
                       <div className="w-1 h-1 bg-gray-200 rounded-full" />
-                      <p className="text-[10px] font-black text-gray-900 tracking-widest">{address.phone}</p>
+                      <p className="text-[9px] sm:text-[10px] font-black text-gray-900 tracking-wide sm:tracking-widest break-all">{address.phone}</p>
                     </div>
                   </div>
                 </Label>
@@ -137,11 +137,11 @@ export function DeliveryAddressSection({
           ))}
         </RadioGroup>
 
-        <div className="mt-10">
+        <div className="mt-6 sm:mt-10">
           <Button
             variant="outline"
             onClick={() => onShowNewAddressForm(true)}
-            className="w-full h-20 bg-gray-50 border-2 border-dashed border-gray-200 hover:border-gray-900 hover:bg-white rounded-[1.5rem] transition-all duration-500 group"
+            className="w-full h-14 sm:h-20 bg-gray-50 border-2 border-dashed border-gray-200 hover:border-gray-900 hover:bg-white rounded-xl sm:rounded-[1.5rem] transition-all duration-500 group"
           >
             <div className="flex flex-col items-center gap-1">
               <div className="flex items-center gap-3">
@@ -158,7 +158,7 @@ export function DeliveryAddressSection({
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 20 }}
-              className="mt-8 p-8 sm:p-10 bg-white rounded-[2.5rem] border border-gray-100 shadow-2xl"
+              className="mt-6 sm:mt-8 p-4 sm:p-10 bg-white rounded-[1.5rem] sm:rounded-[2.5rem] border border-gray-100 shadow-2xl"
             >
               <div className="flex items-center gap-4 mb-10">
                 <div className="p-3 bg-blue-50 rounded-2xl text-blue-600">
@@ -167,8 +167,8 @@ export function DeliveryAddressSection({
                 <h3 className="text-sm font-black text-gray-900 uppercase tracking-[0.3em]">Add New Address</h3>
               </div>
 
-              <div className="space-y-8">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
+              <div className="space-y-5 sm:space-y-8">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-8">
                   <div className="space-y-3">
                     <Label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Address Type</Label>
                     <Select value={newAddress.type} onValueChange={(value: any) => onNewAddressChange({ ...newAddress, type: value })}>
@@ -204,7 +204,7 @@ export function DeliveryAddressSection({
                   />
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-8">
                   <div className="space-y-3">
                     <Label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">City</Label>
                     <Input
@@ -220,7 +220,7 @@ export function DeliveryAddressSection({
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-8">
                   <div className="space-y-3">
                     <Label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Postal Code</Label>
                     <Input
@@ -240,17 +240,17 @@ export function DeliveryAddressSection({
                   </div>
                 </div>
 
-                <div className="flex flex-col sm:flex-row gap-4 pt-6">
+                <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 pt-4 sm:pt-6">
                   <Button
                     onClick={onAddAddress}
-                    className="flex-1 h-16 bg-gray-900 hover:bg-gray-800 text-white font-black text-[11px] uppercase tracking-[0.2em] rounded-[1.25rem] shadow-xl transition-all active:scale-95"
+                    className="flex-1 h-12 sm:h-16 bg-gray-900 hover:bg-gray-800 text-white font-black text-[10px] sm:text-[11px] uppercase tracking-[0.15em] sm:tracking-[0.2em] rounded-xl sm:rounded-[1.25rem] shadow-xl transition-all active:scale-95"
                   >
                     Save Address
                   </Button>
                   <Button
                     variant="outline"
                     onClick={() => onShowNewAddressForm(false)}
-                    className="flex-1 h-16 border-gray-100 text-[11px] font-black uppercase tracking-[0.2em] rounded-[1.25rem] hover:bg-gray-50 transition-all font-sans"
+                    className="flex-1 h-12 sm:h-16 border-gray-100 text-[10px] sm:text-[11px] font-black uppercase tracking-[0.15em] sm:tracking-[0.2em] rounded-xl sm:rounded-[1.25rem] hover:bg-gray-50 transition-all font-sans"
                   >
                     Cancel
                   </Button>

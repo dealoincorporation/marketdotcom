@@ -40,24 +40,24 @@ export function PaymentSummary({
 }: PaymentSummaryProps) {
 
   return (
-    <div className="lg:col-span-1">
-      <div className="sticky top-24 space-y-6">
-        <div className="bg-white/85 backdrop-blur-3xl rounded-[2.5rem] shadow-[0_32px_64px_-16px_rgba(0,0,0,0.1)] border border-white/70 overflow-hidden w-full transition-all duration-500">
-          <div className="bg-gray-900 p-8 sm:p-10 relative overflow-hidden">
+    <div className="lg:col-span-1 min-w-0">
+      <div className="checkout-sticky space-y-4 sm:space-y-6 lg:sticky lg:top-24">
+        <div className="checkout-card bg-white/85 backdrop-blur-3xl rounded-[2.5rem] shadow-[0_32px_64px_-16px_rgba(0,0,0,0.1)] border border-white/70 overflow-hidden w-full transition-all duration-500">
+          <div className="bg-gray-900 p-5 sm:p-10 relative overflow-hidden">
             <div className="absolute top-0 right-0 p-10 opacity-[0.05]">
               <span className="text-8xl">💳</span>
             </div>
             <div className="relative z-10">
-              <h2 className="text-sm font-black text-white uppercase tracking-[0.4em] mb-2">
+              <h2 className="text-[11px] sm:text-sm font-black text-white uppercase tracking-[0.2em] sm:tracking-[0.4em] mb-2">
                 Payment Summary
               </h2>
-              <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-relaxed">
+              <p className="text-[9px] sm:text-[10px] font-black text-gray-400 uppercase tracking-wide sm:tracking-widest leading-relaxed">
                 Review your totals before placing the order.
               </p>
             </div>
           </div>
 
-          <div className="p-8 sm:p-10">
+          <div className="p-4 sm:p-10">
             {/* Breakdown */}
             <div className="space-y-4 mb-10">
               <div className="flex justify-between items-center px-2 py-3 bg-gray-50/50 rounded-xl">
@@ -111,7 +111,7 @@ export function PaymentSummary({
             <div className="space-y-4">
               <Button
                 onClick={onPlaceOrder}
-                className="w-full h-18 bg-gray-900 hover:bg-gray-800 text-white rounded-[1.25rem] font-black uppercase tracking-[0.3em] text-[11px] shadow-2xl transition-all active:scale-[0.98] py-6"
+                className="checkout-primary-action w-full h-14 sm:h-16 bg-gray-900 hover:bg-gray-800 text-white rounded-xl sm:rounded-[1.25rem] font-black uppercase tracking-[0.2em] sm:tracking-[0.3em] text-[10px] sm:text-[11px] shadow-2xl transition-all active:scale-[0.98] py-3 sm:py-6"
                 disabled={loading || moqNotMet}
               >
                 {loading ? (
@@ -127,7 +127,7 @@ export function PaymentSummary({
               <Button
                 variant="outline"
                 onClick={onBack}
-                className="w-full h-14 border-2 border-gray-100 hover:border-gray-900 rounded-[1.25rem] font-black uppercase tracking-[0.3em] text-[10px] text-gray-400 hover:text-gray-900 transition-all"
+                className="w-full h-12 sm:h-14 border-2 border-gray-100 hover:border-gray-900 rounded-xl sm:rounded-[1.25rem] font-black uppercase tracking-[0.2em] sm:tracking-[0.3em] text-[9px] sm:text-[10px] text-gray-400 hover:text-gray-900 transition-all"
               >
                 Back to Delivery
               </Button>
@@ -142,8 +142,8 @@ export function PaymentSummary({
             )}
 
             {/* Payment preview */}
-            <div className="mt-8 p-4 bg-gray-50/50 rounded-2xl border border-dashed border-gray-200">
-              <div className="flex items-center justify-center gap-4">
+            <div className="mt-6 sm:mt-8 p-3 sm:p-4 bg-gray-50/50 rounded-xl sm:rounded-2xl border border-dashed border-gray-200">
+              <div className="flex items-center justify-center gap-2 sm:gap-4 flex-wrap">
                 <div className="text-[9px] font-black text-gray-400 uppercase tracking-[0.2em]">Pay with:</div>
                 <div className="flex items-center gap-2">
                   {paymentMethod === 'paystack' ? (

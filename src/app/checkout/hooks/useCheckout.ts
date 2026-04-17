@@ -324,11 +324,36 @@ export function useCheckout() {
       const paymentData = await paymentResponse.json()
       console.log('Payment initialized:', paymentData.reference)
 
-      if (!window.PaystackPop) {
-        await loadPaystackScript()
+      const fallbackToHostedPaystack = () => {
+        if (paymentData.authorization_url && typeof window !== 'undefined') {
+          // Fallback when inline script/popup is blocked by browser, extensions, or CSP.
+          window.location.href = paymentData.authorization_url
+          return true
+        }
+        return false
+      }
+
+      // Some production environments block Paystack popup assets (403 on checkout.paystack.com/assets/*).
+      // In that case, skip inline popup entirely and use hosted checkout directly.
+      const isLocalHost =
+        typeof window !== 'undefined' &&
+        (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+      if (!isLocalHost && fallbackToHostedPaystack()) {
+        return
       }
 
       if (!window.PaystackPop) {
+        try {
+          await loadPaystackScript()
+        } catch (scriptError) {
+          console.error('Paystack inline script failed to load, redirecting to hosted checkout:', scriptError)
+          if (fallbackToHostedPaystack()) return
+          throw new Error('Paystack script failed to load')
+        }
+      }
+
+      if (!window.PaystackPop) {
+        if (fallbackToHostedPaystack()) return
         throw new Error('Paystack script failed to load')
       }
 
@@ -368,7 +393,13 @@ export function useCheckout() {
         }
       })
 
-      handler.openIframe()
+      try {
+        handler.openIframe()
+      } catch (openError) {
+        console.error('Paystack inline modal failed to open, redirecting to hosted checkout:', openError)
+        if (fallbackToHostedPaystack()) return
+        throw openError
+      }
     } catch (error) {
       console.error('Error initializing Paystack payment:', error)
       setLoading(false)

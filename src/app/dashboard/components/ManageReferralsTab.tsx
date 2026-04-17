@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { motion } from "framer-motion"
 import {
   Users,
@@ -148,6 +148,66 @@ export default function ManageReferralsTab() {
       setFilteredUsers(filtered)
     }
   }, [searchQuery, referredUsers])
+
+  const referralAnalytics = useMemo(() => {
+    const total = referredUsers.length
+    const verified = referredUsers.filter((u) => Boolean(u.emailVerified)).length
+    const rewarded = referredUsers.filter((u) => (u.referralRecord?.rewardAmount || 0) > 0).length
+    const totalRewards = referredUsers.reduce((sum, u) => sum + (u.referralRecord?.rewardAmount || 0), 0)
+    const conversionRate = total > 0 ? Math.round((verified / total) * 100) : 0
+    const rewardRate = total > 0 ? Math.round((rewarded / total) * 100) : 0
+    return {
+      total,
+      verified,
+      rewarded,
+      totalRewards,
+      conversionRate,
+      rewardRate,
+    }
+  }, [referredUsers])
+
+  const topReferrers = useMemo(() => {
+    const byReferrer = new Map<
+      string,
+      {
+        id: string
+        name: string
+        email: string
+        referralCode: string
+        total: number
+        verified: number
+        rewardAmount: number
+      }
+    >()
+
+    referredUsers.forEach((user) => {
+      if (!user.referrer) return
+      const key = user.referrer.id
+      const current = byReferrer.get(key) || {
+        id: user.referrer.id,
+        name: user.referrer.name || "No name",
+        email: user.referrer.email,
+        referralCode: user.referrer.referralCode,
+        total: 0,
+        verified: 0,
+        rewardAmount: 0,
+      }
+      current.total += 1
+      if (user.emailVerified) current.verified += 1
+      current.rewardAmount += user.referralRecord?.rewardAmount || 0
+      byReferrer.set(key, current)
+    })
+
+    return Array.from(byReferrer.values())
+      .sort((a, b) => b.total - a.total || b.rewardAmount - a.rewardAmount)
+      .slice(0, 6)
+  }, [referredUsers])
+
+  const recentReferralSignups = useMemo(() => {
+    return [...referredUsers]
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+      .slice(0, 6)
+  }, [referredUsers])
 
   const fetchReferredUsers = async () => {
     try {
@@ -457,6 +517,82 @@ export default function ManageReferralsTab() {
           </Card>
         </motion.div>
       </div>
+
+      {/* Referral Operations Hub */}
+      <Card className="glass-effect border-white/70 rounded-[2rem] premium-shadow overflow-hidden">
+        <CardHeader className="bg-gradient-to-r from-purple-500/5 to-blue-500/5 border-b border-white/50 p-8">
+          <CardTitle className="flex items-center gap-3 text-gray-900 text-xl font-black uppercase tracking-widest">
+            <UserCheck className="h-6 w-6 text-purple-600" />
+            <span>Referral Operations Hub</span>
+          </CardTitle>
+          <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mt-2">
+            All referral performance and activity in one place
+          </p>
+        </CardHeader>
+        <CardContent className="p-8 space-y-8">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="rounded-2xl border border-gray-100 bg-white/70 p-6 space-y-4">
+              <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Program Health</p>
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-black text-gray-500 uppercase tracking-wide">Verification Rate</span>
+                  <span className="text-sm font-black text-emerald-600 tabular-nums">{referralAnalytics.conversionRate}%</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-black text-gray-500 uppercase tracking-wide">Reward Activation</span>
+                  <span className="text-sm font-black text-blue-600 tabular-nums">{referralAnalytics.rewardRate}%</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-black text-gray-500 uppercase tracking-wide">Total Payout</span>
+                  <span className="text-sm font-black text-orange-600 tabular-nums">{formatCurrency(referralAnalytics.totalRewards)}</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="rounded-2xl border border-gray-100 bg-white/70 p-6 space-y-4">
+              <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Top Referrers</p>
+              {topReferrers.length === 0 ? (
+                <p className="text-xs font-bold text-gray-400">No referral referrers recorded yet.</p>
+              ) : (
+                <div className="space-y-2">
+                  {topReferrers.slice(0, 4).map((referrer) => (
+                    <div key={referrer.id} className="flex items-center justify-between gap-3 rounded-xl bg-gray-50/80 px-3 py-2">
+                      <div className="min-w-0">
+                        <p className="text-xs font-black text-gray-900 truncate">{referrer.name}</p>
+                        <p className="text-[10px] font-bold text-gray-500 truncate">{referrer.email}</p>
+                      </div>
+                      <Badge variant="outline" className="text-[10px] font-black tabular-nums">
+                        {referrer.total}
+                      </Badge>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div className="rounded-2xl border border-gray-100 bg-white/70 p-6 space-y-4">
+              <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Recent Referral Signups</p>
+              {recentReferralSignups.length === 0 ? (
+                <p className="text-xs font-bold text-gray-400">No referral signups yet.</p>
+              ) : (
+                <div className="space-y-2">
+                  {recentReferralSignups.slice(0, 4).map((entry) => (
+                    <div key={entry.id} className="flex items-center justify-between gap-3 rounded-xl bg-gray-50/80 px-3 py-2">
+                      <div className="min-w-0">
+                        <p className="text-xs font-black text-gray-900 truncate">{entry.name || "No name"}</p>
+                        <p className="text-[10px] font-bold text-gray-500 truncate">{entry.referrer?.name || "No referrer"}</p>
+                      </div>
+                      <Badge className={entry.emailVerified ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-700"}>
+                        {entry.emailVerified ? "Verified" : "Pending"}
+                      </Badge>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Search */}
       <Card>

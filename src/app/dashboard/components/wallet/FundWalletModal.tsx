@@ -24,7 +24,7 @@ export function FundWalletModal({
 }: FundWalletModalProps) {
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-[100] flex items-center justify-center sm:p-4 overflow-y-auto custom-scrollbar">
+      <div className="fixed inset-0 z-[100] flex items-center justify-center sm:p-4 lg:p-6 overflow-y-auto custom-scrollbar">
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -37,11 +37,11 @@ export function FundWalletModal({
           initial={{ opacity: 0, scale: 0.95, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 20 }}
-          className="relative w-full max-w-lg min-h-screen sm:min-h-0 bg-white sm:bg-transparent"
+          className="relative w-full max-w-lg min-h-screen sm:min-h-0 sm:max-h-[calc(100dvh-2rem)] bg-white sm:bg-transparent"
         >
-          <Card className="h-full min-h-screen sm:min-h-0 sm:h-auto overflow-hidden sm:glass-effect sm:border-white/70 rounded-none sm:rounded-[3rem] premium-shadow border-none shadow-none sm:shadow-2xl sm:bg-white/85 sm:backdrop-blur-3xl flex flex-col pt-[max(env(safe-area-inset-top),1rem)]">
-            <div className="flex-1 p-8 sm:p-12 flex flex-col justify-center sm:block">
-              <div className="flex items-center justify-between mb-12 sm:mb-10">
+          <Card className="h-full min-h-screen sm:min-h-0 sm:h-auto sm:max-h-[calc(100dvh-2rem)] overflow-hidden sm:glass-effect sm:border-white/70 rounded-none sm:rounded-[3rem] premium-shadow border-none shadow-none sm:shadow-2xl sm:bg-white/85 sm:backdrop-blur-3xl flex flex-col pt-[max(env(safe-area-inset-top),1rem)]">
+            <div className="flex-1 p-8 sm:p-8 lg:p-10 flex flex-col justify-center sm:justify-start sm:overflow-y-auto">
+              <div className="flex items-center justify-between mb-10 sm:mb-8">
                 <div className="flex items-center gap-4">
                   <div className="w-14 h-14 bg-gray-900 rounded-2xl flex items-center justify-center shadow-lg transform -rotate-3 group-hover:rotate-0 transition-transform">
                     <Wallet className="h-7 w-7 text-orange-400" />
@@ -59,7 +59,7 @@ export function FundWalletModal({
                 </button>
               </div>
 
-              <div className="space-y-10 sm:space-y-8 flex-1 sm:flex-none">
+              <div className="space-y-8 sm:space-y-6 flex-1 sm:flex-none">
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <label className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em]">
@@ -77,7 +77,7 @@ export function FundWalletModal({
                       onChange={(e) => onFundingAmountChange(e.target.value)}
                       placeholder="0"
                       aria-label="Amount to add in naira"
-                      className="w-full pl-16 pr-8 py-10 bg-gray-50/50 sm:bg-white/50 border border-gray-100 sm:border-white/60 rounded-[2.5rem] text-4xl sm:text-5xl font-black text-gray-900 placeholder:text-gray-100 focus:outline-none focus:ring-[12px] focus:ring-orange-500/5 focus:border-orange-500/20 transition-all tabular-nums text-center sm:text-left"
+                      className="w-full pl-16 pr-8 py-8 sm:py-7 bg-gray-50/50 sm:bg-white/50 border border-gray-100 sm:border-white/60 rounded-[2.5rem] text-4xl sm:text-4xl font-black text-gray-900 placeholder:text-gray-100 focus:outline-none focus:ring-[12px] focus:ring-orange-500/5 focus:border-orange-500/20 transition-all tabular-nums text-center sm:text-left"
                     />
                   </div>
                 </div>
@@ -103,12 +103,12 @@ export function FundWalletModal({
                   </div>
                 </div>
 
-                <div className="flex flex-col gap-5 pt-4 pb-[max(env(safe-area-inset-bottom),1rem)] sm:pb-0">
+                <div className="flex flex-col gap-4 pt-2 pb-[max(env(safe-area-inset-bottom),1rem)] sm:pb-0">
                   <div className="flex flex-col gap-3">
                     <Button
                       onClick={onFund}
                       disabled={!fundingAmount || parseFloat(fundingAmount) < 100 || isFunding}
-                      className="w-full h-20 bg-orange-600 hover:bg-orange-700 text-white rounded-[2.5rem] font-black uppercase text-xs tracking-[0.3em] transition-all duration-500 shadow-[0_24px_48px_-12px_rgba(234,88,12,0.4)] hover:shadow-[0_32px_64px_-16px_rgba(234,88,12,0.6)] active:scale-95 disabled:opacity-30 group flex items-center justify-center gap-4"
+                      className="w-full h-20 sm:h-16 bg-orange-600 hover:bg-orange-700 text-white rounded-[2.5rem] font-black uppercase text-xs tracking-[0.3em] transition-all duration-500 shadow-[0_24px_48px_-12px_rgba(234,88,12,0.4)] hover:shadow-[0_32px_64px_-16px_rgba(234,88,12,0.6)] active:scale-95 disabled:opacity-30 group flex items-center justify-center gap-4"
                     >
                       {isFunding ? (
                         <div className="w-6 h-6 border-3 border-white/30 border-t-white rounded-full animate-spin" />

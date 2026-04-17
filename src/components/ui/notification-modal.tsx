@@ -80,7 +80,7 @@ export function NotificationModal({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[90] bg-black/65 backdrop-blur-sm"
+            className="fixed inset-0 z-[90] bg-black/75 backdrop-blur-md"
             onClick={onCancel}
           />
 
@@ -91,7 +91,7 @@ export function NotificationModal({
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 30 }}
               transition={{ type: "spring", stiffness: 400, damping: 30 }}
-              className={`relative w-full max-w-md bg-white rounded-[2.5rem] border border-gray-100 shadow-[0_40px_80px_-16px_rgba(0,0,0,0.2)] pointer-events-auto overflow-hidden p-8`}
+              className={`relative w-full max-w-md bg-white/95 backdrop-blur-xl rounded-[2.5rem] border border-gray-200 shadow-[0_40px_80px_-16px_rgba(0,0,0,0.28)] pointer-events-auto overflow-hidden p-8`}
             >
               {/* Content */}
               <div className="relative z-10">
@@ -120,7 +120,7 @@ export function NotificationModal({
                       <Button
                         onClick={onCancel}
                         variant="outline"
-                        className="flex-1 h-14 border border-white/60 bg-white/40 backdrop-blur-sm hover:bg-white/80 rounded-xl text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] transition-all"
+                        className="flex-1 h-14 border border-gray-200 bg-white/90 backdrop-blur-sm hover:bg-white rounded-xl text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] transition-all"
                       >
                         {cancelText}
                       </Button>

@@ -146,3 +146,50 @@ body {
 .animate-floating {
   animation: floating 3s ease-in-out infinite;
 }
+
+/* Checkout route hard responsive guards */
+.checkout-page {
+  overflow-x: clip;
+}
+
+.checkout-page * {
+  min-width: 0;
+}
+
+@media (max-width: 1024px) {
+  .checkout-page .checkout-sticky {
+    position: static !important;
+    top: auto !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .checkout-page .checkout-card {
+    border-radius: 1rem !important;
+  }
+
+  .checkout-page .checkout-header {
+    backdrop-filter: blur(12px);
+  }
+
+  .checkout-page [class*="tracking-"] {
+    letter-spacing: 0.06em;
+  }
+
+  .checkout-page .checkout-primary-action {
+    min-height: 3rem;
+    font-size: 10px;
+    letter-spacing: 0.12em;
+  }
+}
+
+@media (max-width: 390px) {
+  .checkout-page {
+    font-size: 14px;
+  }
+
+  .checkout-page .checkout-primary-action {
+    min-height: 2.85rem;
+    padding-inline: 0.6rem;
+  }
+}

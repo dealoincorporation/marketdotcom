@@ -40,7 +40,7 @@ import { MobileBottomNav } from './dashboard/MobileBottomNav'
 import { CartDrawer } from '@/components/cart/CartDrawer'
 import { getMissingProfileFields } from '@/lib/profile-completion'
 
-type DashboardTab = "marketplace" | "orders" | "manage-products" | "manage-categories" | "manage-deliveries" | "manage-delivery-fees" | "manage-referrals" | "manage-points" | "wallet" | "transactions" | "admin" | "notifications" | "admin-notifications"
+type DashboardTab = "marketplace" | "orders" | "referrals" | "manage-products" | "manage-categories" | "manage-deliveries" | "manage-delivery-fees" | "manage-referrals" | "manage-points" | "wallet" | "transactions" | "admin" | "notifications" | "admin-notifications"
 
 interface DashboardLayoutProps {
   children: ReactNode
@@ -53,6 +53,7 @@ interface DashboardLayoutProps {
 const navigationItems = [
   { id: 'marketplace' as DashboardTab, label: 'Marketplace', icon: Package, color: 'text-orange-600', bg: 'bg-orange-50' },
   { id: 'orders' as DashboardTab, label: 'Orders', icon: Truck, color: 'text-blue-600', bg: 'bg-blue-50' },
+  { id: 'referrals' as DashboardTab, label: 'Referrals', icon: Users, color: 'text-purple-600', bg: 'bg-purple-50' },
   { id: 'wallet' as DashboardTab, label: 'Wallet', icon: Wallet, color: 'text-green-600', bg: 'bg-green-50' },
   { id: 'transactions' as DashboardTab, label: 'Transactions', icon: ReceiptText, color: 'text-purple-600', bg: 'bg-purple-50' },
 ]
@@ -305,7 +306,10 @@ export function DashboardLayout({
                             </button>
 
                             <button
-                              onClick={() => { setProfileDropdownOpen(false); onTabChange('manage-referrals') }}
+                              onClick={() => {
+                                setProfileDropdownOpen(false)
+                                onTabChange(user?.role === 'ADMIN' ? 'manage-referrals' : 'referrals')
+                              }}
                               className="group flex flex-col items-center justify-center p-4 rounded-[1.5rem] bg-gray-50/50 hover:bg-purple-600 transition-all duration-500 border border-transparent hover:border-purple-500/30"
                             >
                               <div className="w-8 h-8 rounded-xl bg-purple-100 text-purple-600 flex items-center justify-center mb-2 group-hover:bg-white/20 group-hover:text-white transition-colors duration-500">
@@ -327,7 +331,10 @@ export function DashboardLayout({
                             )}
 
                             <button
-                              onClick={() => { setProfileDropdownOpen(false); onTabChange('manage-points') }}
+                              onClick={() => {
+                                setProfileDropdownOpen(false)
+                                onTabChange(user?.role === 'ADMIN' ? 'manage-points' : 'wallet')
+                              }}
                               className={`group flex flex-col items-center justify-center p-4 rounded-[1.5rem] bg-orange-600 text-white shadow-xl shadow-orange-600/20 hover:bg-orange-700 transition-all duration-500 ${user?.role === 'ADMIN' ? 'col-span-1' : 'col-span-2'}`}
                             >
                               <Coins className="h-5 w-5 mb-2 group-hover:scale-110 group-hover:-rotate-12 transition-transform duration-500" />

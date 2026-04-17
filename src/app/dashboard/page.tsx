@@ -28,6 +28,7 @@ import ManagePointsTab from "./components/ManagePointsTab"
 import NotificationsTab from "./components/NotificationsTab"
 import AdminNotificationsTab from "./components/AdminNotificationsTab"
 import TransactionsTab from "./components/TransactionsTab"
+import ReferralsTab from "./components/ReferralsTab"
 import { ProductForm } from "@/components/forms/product-form"
 
 // Import hooks
@@ -38,7 +39,7 @@ import { useCartStore } from "@/lib/cart-store"
 import { Product } from "@prisma/client"
 import { getCartItemDisplayName } from "@/components/marketplace/utils"
 
-type DashboardTab = "marketplace" | "orders" | "manage-products" | "manage-categories" | "manage-deliveries" | "manage-delivery-fees" | "manage-referrals" | "manage-points" | "wallet" | "transactions" | "admin" | "notifications" | "admin-notifications"
+type DashboardTab = "marketplace" | "orders" | "referrals" | "manage-products" | "manage-categories" | "manage-deliveries" | "manage-delivery-fees" | "manage-referrals" | "manage-points" | "wallet" | "transactions" | "admin" | "notifications" | "admin-notifications"
 
 function DashboardContent() {
   // Custom hooks
@@ -70,7 +71,7 @@ function DashboardContent() {
   // Handle URL tab parameter
   useEffect(() => {
     const tabParam = searchParams.get('tab')
-    if (tabParam && ['marketplace', 'orders', 'wallet', 'transactions', 'admin', 'manage-products', 'manage-categories', 'manage-deliveries', 'manage-delivery-fees', 'manage-referrals', 'manage-points', 'notifications', 'admin-notifications'].includes(tabParam)) {
+    if (tabParam && ['marketplace', 'orders', 'referrals', 'wallet', 'transactions', 'admin', 'manage-products', 'manage-categories', 'manage-deliveries', 'manage-delivery-fees', 'manage-referrals', 'manage-points', 'notifications', 'admin-notifications'].includes(tabParam)) {
       setActiveTab(tabParam as DashboardTab)
     }
   }, [searchParams])
@@ -295,6 +296,13 @@ function DashboardContent() {
 
         {activeTab === "wallet" && (
           <WalletTab walletInfo={walletInfo} onTabChange={setActiveTab} />
+        )}
+
+        {activeTab === "referrals" && (
+          <ReferralsTab
+            fallbackReferralCode={walletInfo.referralCode}
+            onGoToWallet={() => setActiveTab("wallet")}
+          />
         )}
 
         {activeTab === "transactions" && (

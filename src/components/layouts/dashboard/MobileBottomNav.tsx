@@ -3,7 +3,7 @@
 import { Package, Truck, Wallet, ShoppingCart } from "lucide-react"
 import { motion } from "framer-motion"
 
-type DashboardTab = "marketplace" | "orders" | "manage-products" | "manage-categories" | "manage-deliveries" | "manage-delivery-fees" | "manage-referrals" | "manage-points" | "wallet" | "transactions" | "admin" | "notifications" | "admin-notifications"
+type DashboardTab = "marketplace" | "orders" | "referrals" | "manage-products" | "manage-categories" | "manage-deliveries" | "manage-delivery-fees" | "manage-referrals" | "manage-points" | "wallet" | "transactions" | "admin" | "notifications" | "admin-notifications"
 
 interface MobileBottomNavProps {
   activeTab: DashboardTab

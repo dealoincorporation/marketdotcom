@@ -17,6 +17,7 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
     const { items, removeItem, updateQuantity, getTotalPrice, getTotalItems, clearCart } = useCartStore()
     const totalPrice = getTotalPrice()
     const totalItems = getTotalItems()
+    const [quantityInputs, setQuantityInputs] = React.useState<Record<string, string>>({})
 
     // Close drawer when clicking outside
     const drawerRef = React.useRef<HTMLDivElement>(null)
@@ -39,6 +40,55 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
             document.body.style.overflow = 'unset'
         }
     }, [isOpen, onClose])
+
+    React.useEffect(() => {
+        if (!isOpen) return
+        const syncedInputs: Record<string, string> = {}
+        items.forEach((item) => {
+            syncedInputs[item.id] = String(item.quantity)
+        })
+        setQuantityInputs(syncedInputs)
+    }, [items, isOpen])
+
+    const handleQuantityInputChange = (itemId: string, value: string) => {
+        const digitsOnly = value.replace(/\D/g, "")
+        setQuantityInputs((prev) => ({
+            ...prev,
+            [itemId]: digitsOnly,
+        }))
+    }
+
+    const commitQuantityInput = async (itemId: string) => {
+        const item = items.find((cartItem) => cartItem.id === itemId)
+        if (!item) return
+
+        const maxAllowed = item.maxQuantity ?? 999
+        const rawValue = quantityInputs[itemId] ?? String(item.quantity)
+        const parsed = parseInt(rawValue, 10)
+
+        if (Number.isNaN(parsed)) {
+            setQuantityInputs((prev) => ({ ...prev, [itemId]: String(item.quantity) }))
+            return
+        }
+
+        const nextQuantity = Math.min(Math.max(parsed, 1), maxAllowed)
+        setQuantityInputs((prev) => ({ ...prev, [itemId]: String(nextQuantity) }))
+
+        if (nextQuantity !== item.quantity) {
+            await updateQuantity(itemId, nextQuantity)
+        }
+    }
+
+    const applyStepQuantity = async (itemId: string, nextQuantity: number) => {
+        const item = items.find((cartItem) => cartItem.id === itemId)
+        if (!item) return
+        const maxAllowed = item.maxQuantity ?? 999
+        const clampedQuantity = Math.min(Math.max(nextQuantity, 1), maxAllowed)
+        setQuantityInputs((prev) => ({ ...prev, [itemId]: String(clampedQuantity) }))
+        if (clampedQuantity !== item.quantity) {
+            await updateQuantity(itemId, clampedQuantity)
+        }
+    }
 
     return (
         <AnimatePresence>
@@ -158,17 +208,42 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                                                         <div className="flex items-center justify-between mt-4">
                                                             <div className="flex items-center bg-white/60 border border-gray-100 rounded-xl h-8">
                                                                 <button
-                                                                    onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                                                                    onClick={() => {
+                                                                        void applyStepQuantity(item.id, item.quantity - 1)
+                                                                    }}
                                                                     className="w-8 h-full flex items-center justify-center hover:bg-orange-50 text-gray-400 hover:text-orange-600 rounded-l-xl transition-all disabled:opacity-30"
                                                                     disabled={item.quantity <= 1}
                                                                 >
                                                                     <Minus className="h-3 w-3" />
                                                                 </button>
-                                                                <span className="w-8 text-center text-[10px] font-black text-gray-900 tabular-nums">
-                                                                    {item.quantity}
-                                                                </span>
+                                                                <input
+                                                                    type="text"
+                                                                    inputMode="numeric"
+                                                                    pattern="[0-9]*"
+                                                                    value={quantityInputs[item.id] ?? String(item.quantity)}
+                                                                    onChange={(e) => handleQuantityInputChange(item.id, e.target.value)}
+                                                                    onBlur={() => {
+                                                                        void commitQuantityInput(item.id)
+                                                                    }}
+                                                                    onKeyDown={(e) => {
+                                                                        if (e.key === "Enter") {
+                                                                            e.preventDefault()
+                                                                            void commitQuantityInput(item.id)
+                                                                        }
+                                                                        if (e.key === "Escape") {
+                                                                            setQuantityInputs((prev) => ({
+                                                                                ...prev,
+                                                                                [item.id]: String(item.quantity),
+                                                                            }))
+                                                                        }
+                                                                    }}
+                                                                    aria-label={`Quantity for ${item.name}`}
+                                                                    className="w-10 h-full text-center text-[10px] font-black text-gray-900 tabular-nums bg-transparent border-0 focus:outline-none"
+                                                                />
                                                                 <button
-                                                                    onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                                                                    onClick={() => {
+                                                                        void applyStepQuantity(item.id, item.quantity + 1)
+                                                                    }}
                                                                     className="w-8 h-full flex items-center justify-center hover:bg-orange-50 text-gray-400 hover:text-orange-600 rounded-r-xl transition-all disabled:opacity-30"
                                                                     disabled={item.maxQuantity ? item.quantity >= item.maxQuantity : false}
                                                                 >

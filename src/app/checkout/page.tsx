@@ -80,7 +80,7 @@ function CheckoutContent() {
   }
 
   return (
-    <div className="min-h-screen bg-[#f8fafc] text-slate-900 selection:bg-orange-100 selection:text-orange-900 relative overflow-x-hidden">
+    <div className="checkout-page min-h-screen bg-[#f8fafc] text-slate-900 selection:bg-orange-100 selection:text-orange-900 relative overflow-x-hidden">
       {/* Background Aesthetic Layer */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
         <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-orange-100/30 blur-[120px] rounded-full animate-pulse" />
@@ -91,11 +91,11 @@ function CheckoutContent() {
       <div className="relative z-10 min-h-screen flex flex-col">
         <CheckoutHeader step={step} totalItems={totalItems} subtotal={subtotal} />
 
-        <div className="max-w-7xl mx-auto w-full px-3 sm:px-4 md:px-6 lg:px-8 py-4 sm:py-6 md:py-8 lg:py-12 overflow-x-hidden box-border pb-[env(safe-area-inset-bottom)]">
+        <div className="max-w-7xl mx-auto w-full px-2.5 sm:px-4 md:px-6 lg:px-8 py-3 sm:py-6 md:py-8 lg:py-12 overflow-x-hidden box-border pb-[env(safe-area-inset-bottom)]">
           {step === 1 && (
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8 lg:gap-12 min-w-0">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-8 lg:gap-12 min-w-0">
               {/* Delivery Information */}
-              <div className="lg:col-span-2 space-y-6 sm:space-y-8 min-w-0 overflow-hidden">
+              <div className="lg:col-span-2 space-y-4 sm:space-y-8 min-w-0 overflow-hidden">
                 <DeliveryAddressSection
                   addresses={addresses}
                   selectedAddress={selectedAddress}
@@ -149,9 +149,9 @@ function CheckoutContent() {
           )}
 
           {step === 2 && (
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8 lg:gap-12 min-w-0">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-8 lg:gap-12 min-w-0">
               {/* Payment Information */}
-              <div className="lg:col-span-2 space-y-8">
+              <div className="lg:col-span-2 space-y-4 sm:space-y-8 min-w-0">
                 <PaymentMethodSection
                   paymentMethod={paymentMethod}
                   onPaymentMethodChange={setPaymentMethod}
@@ -221,8 +221,8 @@ function CheckoutContent() {
 
         {/* Slot full – deliveries exceeded for the day */}
         {showSlotFullModal && (
-          <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/50">
-            <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-6 space-y-4">
+          <div className="fixed inset-0 z-[200] flex items-center justify-center p-3 sm:p-4 bg-black/50">
+            <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-4 sm:p-6 space-y-4">
               <h3 className="text-xl font-bold text-gray-900">Deliveries exceeded for this day</h3>
               <p className="text-gray-600">
                 The number of orders we can deliver today has been reached. If you place your order now, <strong>your products will be delivered the next available day</strong>. You will get a notification when your delivery is scheduled.
@@ -230,7 +230,7 @@ function CheckoutContent() {
               <p className="text-sm text-gray-500">
                 You can choose another slot below if one is still available, or continue to place your order for delivery on the next day.
               </p>
-              <div className="flex gap-3 pt-2">
+              <div className="flex flex-col sm:flex-row gap-3 pt-2">
                 <button
                   type="button"
                   onClick={() => setShowSlotFullModal(false)}

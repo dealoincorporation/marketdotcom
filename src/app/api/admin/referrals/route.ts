@@ -33,56 +33,85 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    // Get all users who signed up through referrals (have referredById)
-    const referredUsers = await prisma.user.findMany({
-      where: {
-        referredById: {
-          not: null
-        }
-      },
+    // Pull referral rows first (source of truth), then map the referred user by email.
+    const referralRows = await prisma.referral.findMany({
       include: {
-        referredBy: {
+        referrer: {
           select: {
             id: true,
             name: true,
             email: true,
-            referralCode: true
-          }
+            referralCode: true,
+          },
         },
-        referredReferrals: {
-          select: {
-            id: true,
-            code: true,
-            isUsed: true,
-            usedAt: true,
-            rewardAmount: true,
-            referredEmail: true
-          }
-        }
       },
       orderBy: {
-        createdAt: 'desc'
+        createdAt: "desc",
+      },
+    })
+
+    const referredEmails = Array.from(new Set(referralRows.map((row) => row.referredEmail.toLowerCase())))
+    const referredUsers = referredEmails.length
+      ? await prisma.user.findMany({
+          where: {
+            email: {
+              in: referredEmails,
+            },
+          },
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            phone: true,
+            referralCode: true,
+            createdAt: true,
+            emailVerified: true,
+            walletBalance: true,
+            referredById: true,
+          },
+        })
+      : []
+
+    const userByEmail = new Map(referredUsers.map((u) => [u.email.toLowerCase(), u]))
+
+    // Keep one row per referred user email (latest referral row wins).
+    const latestReferralByEmail = new Map<string, (typeof referralRows)[number]>()
+    referralRows.forEach((row) => {
+      const key = row.referredEmail.toLowerCase()
+      if (!latestReferralByEmail.has(key)) {
+        latestReferralByEmail.set(key, row)
       }
     })
 
-    // Format the response
-    const formattedUsers = referredUsers.map(user => ({
-      id: user.id,
-      name: user.name,
-      email: user.email,
-      phone: user.phone,
-      referralCode: user.referralCode,
-      createdAt: user.createdAt,
-      emailVerified: user.emailVerified,
-      walletBalance: user.walletBalance,
-      referrer: user.referredBy ? {
-        id: user.referredBy.id,
-        name: user.referredBy.name,
-        email: user.referredBy.email,
-        referralCode: user.referredBy.referralCode
-      } : null,
-      referralRecord: user.referredReferrals[0] || null
-    }))
+    const formattedUsers = Array.from(latestReferralByEmail.entries()).map(([email, referral]) => {
+      const referredUser = userByEmail.get(email)
+      return {
+        id: referredUser?.id || referral.id,
+        name: referredUser?.name || null,
+        email: referredUser?.email || referral.referredEmail,
+        phone: referredUser?.phone || null,
+        referralCode: referredUser?.referralCode || "",
+        createdAt: referredUser?.createdAt || referral.createdAt,
+        emailVerified: referredUser?.emailVerified || null,
+        walletBalance: referredUser?.walletBalance || 0,
+        referrer: referral.referrer
+          ? {
+              id: referral.referrer.id,
+              name: referral.referrer.name,
+              email: referral.referrer.email,
+              referralCode: referral.referrer.referralCode,
+            }
+          : null,
+        referralRecord: {
+          id: referral.id,
+          code: referral.code,
+          isUsed: referral.isUsed,
+          usedAt: referral.usedAt,
+          rewardAmount: referral.rewardAmount,
+          referredEmail: referral.referredEmail,
+        },
+      }
+    })
 
     return NextResponse.json(
       {

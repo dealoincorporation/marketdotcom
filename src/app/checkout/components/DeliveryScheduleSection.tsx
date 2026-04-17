@@ -57,37 +57,37 @@ export function DeliveryScheduleSection({
   const availableSlotsForDate = slotsForDate
 
   return (
-    <div className="bg-white/85 backdrop-blur-3xl rounded-[2.5rem] shadow-[0_32px_64px_-16px_rgba(0,0,0,0.1)] border border-white/70 overflow-hidden w-full transition-all duration-500">
+    <div className="checkout-card bg-white/85 backdrop-blur-3xl rounded-[1.5rem] sm:rounded-[2.5rem] shadow-[0_32px_64px_-16px_rgba(0,0,0,0.1)] border border-white/70 overflow-hidden w-full transition-all duration-500">
       {/* Section Header */}
-      <div className="bg-gray-900 p-8 sm:p-10 relative overflow-hidden">
+      <div className="bg-gray-900 p-5 sm:p-10 relative overflow-hidden">
         <div className="absolute top-0 right-0 p-10 opacity-10">
           <Calendar className="h-40 w-40 text-white" />
         </div>
         <div className="relative z-10">
-          <div className="flex items-center gap-4 mb-2">
-            <div className="p-3 bg-white/10 rounded-2xl">
-              <Calendar className="h-6 w-6 text-orange-400" />
+          <div className="flex items-center gap-3 sm:gap-4 mb-2">
+            <div className="p-2.5 sm:p-3 bg-white/10 rounded-xl sm:rounded-2xl">
+              <Calendar className="h-5 w-5 sm:h-6 sm:w-6 text-orange-400" />
             </div>
-            <h2 className="text-sm font-black text-white uppercase tracking-[0.4em]">Delivery Schedule</h2>
+            <h2 className="text-[11px] sm:text-sm font-black text-white uppercase tracking-[0.2em] sm:tracking-[0.4em]">Delivery Schedule</h2>
           </div>
-          <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-relaxed">
+          <p className="text-[9px] sm:text-[10px] font-black text-gray-400 uppercase tracking-wide sm:tracking-widest leading-relaxed">
             Choose a delivery date and time from available slots. <br className="hidden sm:block" />
             Live slot status: <span className="text-orange-400 font-black">Available</span>
           </p>
         </div>
       </div>
 
-      <div className="p-8 sm:p-10 space-y-10">
+      <div className="p-4 sm:p-10 space-y-6 sm:space-y-10">
         {/* Selected Date Summary Node */}
         {deliveryDate && (
-          <div className="bg-emerald-50/50 border border-emerald-100 rounded-[2rem] p-6 sm:p-8 flex items-center justify-between group hover:bg-emerald-50 transition-colors">
-            <div className="flex items-center gap-5">
+          <div className="bg-emerald-50/50 border border-emerald-100 rounded-[1.25rem] sm:rounded-[2rem] p-4 sm:p-8 flex flex-col sm:flex-row items-start sm:items-center gap-4 justify-between group hover:bg-emerald-50 transition-colors">
+            <div className="flex items-center gap-3 sm:gap-5">
               <div className="p-4 bg-emerald-100 text-emerald-600 rounded-2xl">
                 <Check className="h-6 w-6" />
               </div>
               <div>
                 <p className="text-[9px] font-black text-emerald-600 uppercase tracking-widest mb-1">Delivery Date Selected</p>
-                <p className="text-base sm:text-lg font-black text-gray-900 uppercase tracking-tight">
+                <p className="text-sm sm:text-lg font-black text-gray-900 uppercase tracking-tight">
                   {new Date(deliveryDate).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
                 </p>
                 {deliveryTime && (
@@ -101,7 +101,7 @@ export function DeliveryScheduleSection({
             {user?.role === 'ADMIN' && (
               <Button
                 onClick={onShowCreateSlotsModal}
-                className="h-12 px-6 bg-gray-900 text-white rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-gray-800 transition-all"
+                className="h-10 sm:h-12 px-4 sm:px-6 bg-gray-900 text-white rounded-xl font-black text-[9px] sm:text-[10px] uppercase tracking-wide sm:tracking-widest hover:bg-gray-800 transition-all"
               >
                 <Plus className="h-4 w-4 mr-2" /> Adjust Slots
               </Button>
@@ -156,16 +156,16 @@ export function DeliveryScheduleSection({
             )}
           </div>
 
-          <div className="relative" ref={dropdownRef}>
+          <div className="relative min-w-0" ref={dropdownRef}>
             <button
               type="button"
               onClick={() => onShowDeliveryDateDropdown(!showDeliveryDateDropdown)}
               disabled={deliverySlotsLoading || deliverySlots.length === 0}
-              className="w-full h-20 border-2 border-gray-100 bg-gray-50/50 hover:bg-white hover:border-gray-900 rounded-[1.5rem] px-8 flex items-center justify-between transition-all duration-300 group disabled:opacity-50"
+              className="w-full min-h-[3.5rem] sm:h-20 border-2 border-gray-100 bg-gray-50/50 hover:bg-white hover:border-gray-900 rounded-xl sm:rounded-[1.5rem] px-4 sm:px-8 py-3 sm:py-0 flex items-center justify-between transition-all duration-300 group disabled:opacity-50 gap-3"
             >
-              <div className="flex items-center gap-4">
-                <Calendar className="h-5 w-5 text-gray-400 group-hover:text-gray-900 transition-colors" />
-                <span className={`text-[11px] font-black uppercase tracking-widest transition-colors ${deliveryDate ? "text-gray-900" : "text-gray-400"}`}>
+              <div className="flex items-center gap-3 min-w-0">
+                <Calendar className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400 group-hover:text-gray-900 transition-colors shrink-0" />
+                <span className={`text-[10px] sm:text-[11px] font-black tracking-tight sm:tracking-widest transition-colors text-left break-words ${deliveryDate ? "text-gray-900" : "text-gray-400"}`}>
                   {deliverySlotsLoading
                     ? "Loading available dates..."
                     : deliveryDate
@@ -185,7 +185,7 @@ export function DeliveryScheduleSection({
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: 10 }}
-                  className="absolute top-full left-0 right-0 mt-4 bg-white rounded-[2.5rem] border border-gray-100 shadow-[0_40px_80px_-16px_rgba(0,0,0,0.1)] z-[100] max-h-80 overflow-y-auto custom-scrollbar p-3"
+                  className="absolute top-full left-0 right-0 mt-3 bg-white rounded-[1.25rem] sm:rounded-[2.5rem] border border-gray-100 shadow-[0_40px_80px_-16px_rgba(0,0,0,0.1)] z-[100] max-h-72 sm:max-h-80 overflow-y-auto custom-scrollbar p-2 sm:p-3"
                 >
                   {deliverySlotsLoading ? (
                     <div className="py-10 text-center space-y-4">
@@ -212,7 +212,7 @@ export function DeliveryScheduleSection({
                             onDeliveryDateChange(date)
                             onShowDeliveryDateDropdown(false)
                           }}
-                          className="w-full p-6 text-left rounded-2xl hover:bg-gray-50 border border-transparent hover:border-gray-100 transition-all group"
+                          className="w-full p-4 sm:p-6 text-left rounded-xl sm:rounded-2xl hover:bg-gray-50 border border-transparent hover:border-gray-100 transition-all group"
                         >
                           <div className="flex items-center justify-between">
                             <div>
@@ -241,7 +241,7 @@ export function DeliveryScheduleSection({
         {deliveryDate && (
           <div className="space-y-4">
             <Label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.3em] ml-2">Available Time Slots</Label>
-            <RadioGroup value={deliveryTime} onValueChange={onDeliveryTimeChange} className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <RadioGroup value={deliveryTime} onValueChange={onDeliveryTimeChange} className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
               {availableSlotsForDate.map(slot => {
                 const atCapacity = slot.currentOrders >= slot.maxOrders
                 const isSelected = deliveryTime === slot.timeSlot
@@ -255,16 +255,16 @@ export function DeliveryScheduleSection({
                         : 'border-gray-50 bg-gray-50/50 hover:border-gray-300 hover:bg-white'
                       }`}
                   >
-                    <div className="p-6 sm:p-8 flex items-start gap-5">
+                    <div className="p-4 sm:p-8 flex items-start gap-3 sm:gap-5">
                       <div className="pt-1">
                         <RadioGroupItem value={slot.timeSlot} id={slot.id} className="h-5 w-5 border-gray-200 text-orange-600" />
                       </div>
                       <Label htmlFor={slot.id} className="flex-1 cursor-pointer">
-                        <div className="flex items-center gap-3 mb-2">
+                        <div className="flex items-center gap-2.5 sm:gap-3 mb-2">
                           <div className={`p-2.5 rounded-xl ${isSelected ? 'bg-orange-50 text-orange-600' : 'bg-gray-100 text-gray-400'}`}>
                             <Clock className="h-4 w-4" />
                           </div>
-                          <span className="text-[11px] font-black text-gray-900 uppercase tracking-widest">{slot.timeSlot}</span>
+                          <span className="text-[10px] sm:text-[11px] font-black text-gray-900 uppercase tracking-wide sm:tracking-widest">{slot.timeSlot}</span>
                         </div>
                         <p className="text-[10px] font-bold text-gray-500 uppercase tracking-tighter leading-tight pr-4">
                           {slot.description?.trim() || "Preferred delivery time"}
@@ -292,16 +292,16 @@ export function DeliveryScheduleSection({
             onChange={(e) => onDeliveryNotesChange(e.target.value)}
             placeholder="Add any notes for the delivery team..."
             rows={3}
-            className="rounded-[2rem] border-2 border-gray-50 bg-gray-50/50 focus:bg-white focus:border-gray-900 transition-all font-bold text-sm resize-none p-6 min-h-[120px]"
+            className="rounded-[1.25rem] sm:rounded-[2rem] border-2 border-gray-50 bg-gray-50/50 focus:bg-white focus:border-gray-900 transition-all font-bold text-sm resize-none p-4 sm:p-6 min-h-[96px] sm:min-h-[120px]"
           />
         </div>
 
         {/* Delivery guidelines */}
-        <div className="bg-gray-900 rounded-[2.5rem] p-8 sm:p-10 relative overflow-hidden group">
+        <div className="bg-gray-900 rounded-[1.5rem] sm:rounded-[2.5rem] p-4 sm:p-10 relative overflow-hidden group">
           <div className="absolute top-0 right-0 p-12 opacity-[0.03] group-hover:opacity-[0.05] transition-opacity">
             <Truck className="h-48 w-48 text-white rotate-[-12deg]" />
           </div>
-          <div className="relative z-10 flex flex-col md:flex-row gap-10">
+          <div className="relative z-10 flex flex-col md:flex-row gap-6 sm:gap-10">
             <div className="md:w-1/3">
               <div className="p-4 bg-white/10 rounded-[1.5rem] w-fit mb-6">
                 <Truck className="h-6 w-6 text-orange-400" />

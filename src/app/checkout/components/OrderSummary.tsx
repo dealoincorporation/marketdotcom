@@ -64,31 +64,31 @@ export function OrderSummary({
 
   return (
     <div className="lg:col-span-1 min-w-0 w-full max-w-full order-last lg:order-none">
-      <div className="sticky top-24 space-y-6">
+      <div className="checkout-sticky space-y-4 sm:space-y-6 lg:sticky lg:top-24">
         {/* Order summary */}
-        <div className="bg-white/85 backdrop-blur-3xl rounded-[2.5rem] shadow-[0_32px_64px_-16px_rgba(0,0,0,0.1)] border border-white/70 overflow-hidden w-full transition-all duration-500">
-          <div className="bg-gray-900 p-8 sm:p-10 relative overflow-hidden">
+        <div className="checkout-card bg-white/85 backdrop-blur-3xl rounded-[2.5rem] shadow-[0_32px_64px_-16px_rgba(0,0,0,0.1)] border border-white/70 overflow-hidden w-full transition-all duration-500">
+          <div className="bg-gray-900 p-5 sm:p-10 relative overflow-hidden">
             <div className="absolute top-0 right-0 p-10 opacity-[0.05]">
               <Shield className="h-40 w-40 text-white" />
             </div>
             <div className="relative z-10">
-              <h2 className="text-sm font-black text-white uppercase tracking-[0.4em] mb-2">
+              <h2 className="text-[11px] sm:text-sm font-black text-white uppercase tracking-[0.2em] sm:tracking-[0.4em] mb-2">
                 Order Summary
               </h2>
-              <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-relaxed">
+              <p className="text-[9px] sm:text-[10px] font-black text-gray-400 uppercase tracking-wide sm:tracking-widest leading-relaxed">
                 Review your items and total before payment. <br />
                 Items: <span className="text-orange-400">{totalItems}</span>
               </p>
             </div>
           </div>
 
-          <div className="p-8 sm:p-10">
+          <div className="p-4 sm:p-10">
             {/* Items */}
-            <div className="space-y-4 mb-10 max-h-[400px] overflow-y-auto custom-scrollbar pr-2">
+            <div className="space-y-3 sm:space-y-4 mb-6 sm:mb-10 max-h-[320px] sm:max-h-[400px] overflow-y-auto custom-scrollbar pr-1 sm:pr-2">
               {items.map(item => (
-                <div key={item.id} className="glass-effect rounded-[1.5rem] border border-gray-100 bg-white/40 backdrop-blur-sm p-4 shadow-sm hover:shadow-md transition-all group">
+                <div key={item.id} className="glass-effect rounded-[1.25rem] sm:rounded-[1.5rem] border border-gray-100 bg-white/40 backdrop-blur-sm p-3 sm:p-4 shadow-sm hover:shadow-md transition-all group">
                   <div className="flex items-start gap-4">
-                    <div className="relative w-16 h-16 rounded-2xl overflow-hidden bg-white border border-gray-100 flex-shrink-0 shadow-inner">
+                    <div className="relative w-14 h-14 sm:w-16 sm:h-16 rounded-xl sm:rounded-2xl overflow-hidden bg-white border border-gray-100 flex-shrink-0 shadow-inner">
                       <img
                         src={item.image || "/market_image.jpeg"}
                         alt={item.name}
@@ -96,7 +96,7 @@ export function OrderSummary({
                       />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-[11px] font-black text-gray-900 uppercase tracking-tight line-clamp-1 mb-1">{cleanCartItemNameForDisplay(item.name)}</p>
+                      <p className="text-[10px] sm:text-[11px] font-black text-gray-900 uppercase tracking-tight line-clamp-2 sm:line-clamp-1 mb-1">{cleanCartItemNameForDisplay(item.name)}</p>
                       <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest">{getQuantityUnitDisplay(item)}</p>
                       <div className="flex items-center justify-between mt-2">
                         <span className="text-[10px] font-black text-gray-900">₦{(item.price * item.quantity).toLocaleString()}</span>
@@ -176,7 +176,7 @@ export function OrderSummary({
 
             <Button
               onClick={onContinue}
-              className="w-full h-16 mt-8 bg-gray-900 hover:bg-gray-800 text-white rounded-[1.25rem] font-black uppercase tracking-[0.3em] text-[11px] shadow-2xl transition-all active:scale-[0.98] disabled:opacity-50"
+              className="checkout-primary-action w-full h-14 sm:h-16 mt-6 sm:mt-8 bg-gray-900 hover:bg-gray-800 text-white rounded-xl sm:rounded-[1.25rem] font-black uppercase tracking-[0.2em] sm:tracking-[0.3em] text-[10px] sm:text-[11px] shadow-2xl transition-all active:scale-[0.98] disabled:opacity-50"
               disabled={!canContinue}
             >
               Continue to Payment
@@ -210,7 +210,7 @@ export function OrderSummary({
         </div>
 
         {/* Trust indicators */}
-        <div className="bg-white/80 backdrop-blur-xl rounded-[2rem] border border-white/70 p-6 shadow-sm overflow-hidden group">
+        <div className="bg-white/80 backdrop-blur-xl rounded-[1.5rem] sm:rounded-[2rem] border border-white/70 p-4 sm:p-6 shadow-sm overflow-hidden group">
           <div className="flex items-center justify-around">
             <div className="flex flex-col items-center gap-2 grayscale group-hover:grayscale-0 transition-all duration-700">
               <div className="p-3 bg-white rounded-2xl shadow-sm">
